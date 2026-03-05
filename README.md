@@ -142,3 +142,6 @@ npm run start
 }
 ```
 
+## Documentacion ampliada
+
+Consulta la documentacion para onboarding y mantenimiento en [`docs/README.md`](./docs/README.md).
