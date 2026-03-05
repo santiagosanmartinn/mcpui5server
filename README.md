@@ -1,103 +1,144 @@
-﻿# SAPUI5 MCP Server (Node.js, STDIO)
+# SAPUI5 MCP Server
 
-MCP server that exposes SAPUI5 documentation and example discovery tools.
+Specialized MCP server for SAPUI5/Fiori JavaScript development with modular tools for project analysis, code generation, refactoring, validation, and documentation lookup.
 
-## Stack
+## Architecture
 
-- Node.js ESM
-- MCP SDK v1 (`@modelcontextprotocol/sdk`)
-- STDIO transport
+```text
+src/
+  index.js
+  server/
+    mcpServer.js
+    toolRegistry.js
+  tools/
+    ui5/
+      generateController.js
+      generateFragment.js
+      generateFormatter.js
+      generateViewLogic.js
+      validateUi5Code.js
+    javascript/
+      generateFunction.js
+      refactorCode.js
+      lintCode.js
+      securityCheck.js
+    project/
+      analyzeProject.js
+      readFile.js
+      searchFiles.js
+      analyzeCurrentFile.js
+    documentation/
+      searchUI5SDK.js
+      searchMDN.js
+    index.js
+  utils/
+    fileSystem.js
+    parser.js
+    validator.js
+    logger.js
+    errors.js
+    http.js
+```
 
-## Tools
+## Implemented MCP Tools
 
-1. `search_ui5_docs`
-- Searches official SAPUI5 documentation markdown files in `SAP-docs/sapui5` (`docs/` path).
-- Inputs: `query`, optional `limit`.
+1. `analyze_ui5_project`
+2. `generate_ui5_controller`
+3. `generate_ui5_fragment`
+4. `generate_ui5_formatter`
+5. `generate_ui5_view_logic`
+6. `read_project_file`
+7. `search_project_files`
+8. `analyze_current_file`
+9. `search_ui5_sdk`
+10. `search_mdn`
+11. `generate_javascript_function`
+12. `refactor_javascript_code`
+13. `lint_javascript_code`
+14. `security_check_javascript`
+15. `validate_ui5_code`
 
-2. `get_ui5_doc_content`
-- Fetches markdown content for a documentation page from `SAP-docs/sapui5` by path.
-- Inputs: `path` (with or without `docs/` and `.md`), optional `maxChars`.
+All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 
-3. `search_ui5_examples`
-- Searches OpenUI5 demokit sample/tutorial sources in `SAP/openui5`.
-- Inputs: `query`, optional `limit`, optional `ui5Version`.
+- name
+- description
+- input schema
+- output schema
 
-4. `create_ui5_app_and_run`
-- Scaffolds a SAPUI5 project using Fiori generator, installs dependencies, and starts UI5 dev server.
-- Input: `projectName`.
-- Executes:
-  - `yo @sap/fiori:headless ui5config.json {projectName}`
-  - `cd {projectName}`
-  - `npm install`
-  - `npx ui5 serve -o index.html`
-- Returns command stdout/stderr and a server status (`running` or `not running`).
+## Reliability and Safety
 
-## Product-level behavior
+- JSON-RPC and MCP-compatible tool registration via `@modelcontextprotocol/sdk`.
+- Structured input/output validation with `zod`.
+- Deterministic tool output shape via `structuredContent`.
+- Sandboxed file access to workspace root only.
+- Path traversal protection (`..` and out-of-root resolution blocked).
+- Structured error responses with machine-readable `code` and `message`.
+- Centralized logging for tool failures and lifecycle events.
 
-### Source strategy
-
-`UI5_SOURCE_STRATEGY` controls fetch behavior:
-
-- `live` (default): always fetch fresh data.
-- `cache`: keep in-memory TTL cache for HTTP responses.
-
-`UI5_CACHE_TTL_MS` sets cache TTL (default `300000`).
-
-### UI5 version behavior
-
-`UI5_VERSION` controls generated UI5 SDK base links:
-
-- `latest` (default): `https://ui5.sap.com`
-- pinned version (example `1.120.0`): `https://ui5.sap.com/1.120.0`
-
-`search_ui5_examples` can override this per call with `ui5Version`.
-
-## Run locally
+## Run
 
 ```bash
 npm install
 npm run start
 ```
 
-## MCP client config example
+## Example Tool Calls
+
+### `analyze_ui5_project`
+
+```json
+{
+  "tool": "analyze_ui5_project",
+  "arguments": {}
+}
+```
+
+### `generate_ui5_controller`
+
+```json
+{
+  "tool": "generate_ui5_controller",
+  "arguments": {
+    "controllerName": "demo.app.controller.Main",
+    "methods": ["onPressSave", "onNavBack"]
+  }
+}
+```
+
+### `read_project_file`
+
+```json
+{
+  "tool": "read_project_file",
+  "arguments": {
+    "path": "webapp/controller/Main.controller.js"
+  }
+}
+```
+
+### `generate_javascript_function`
+
+```json
+{
+  "tool": "generate_javascript_function",
+  "arguments": {
+    "description": "create a cache-aware fetch wrapper",
+    "runtime": "node",
+    "typescript": false
+  }
+}
+```
+
+## Codex MCP Configuration
 
 ```json
 {
   "mcpServers": {
     "sapui5": {
       "command": "node",
-      "args": ["/absolute/path/to/src/index.js"],
-      "env": {
-        "UI5_SOURCE_STRATEGY": "cache",
-        "UI5_CACHE_TTL_MS": "300000",
-        "UI5_VERSION": "latest"
-      }
+      "args": ["/absolute/path/to/MCPServerUI5/src/index.js"]
     }
   }
 }
 ```
 
-## Notes
-
-- Data sources are official upstream repositories:
-- Docs: `https://github.com/SAP-docs/sapui5`
-- Examples: `https://github.com/SAP/openui5`
-- GitHub unauthenticated API limits apply. If rate-limited, retry later or add token support.
-
-## Calling from Codex
-
-Example MCP tool call:
-
-```json
-{
-  "tool": "create_ui5_app_and_run",
-  "arguments": {
-    "projectName": "my-ui5-app"
-  }
-}
-```
-
-Prerequisites on the machine where this MCP server runs:
-- `yo` and `@sap/fiori` generator available
-- `npm` available
-- `npx ui5` available

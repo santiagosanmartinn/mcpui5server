@@ -1,7 +1,7 @@
 ﻿{
   "name": "sapui5-mcp-server",
-  "version": "0.1.0",
-  "description": "MCP server exposing SAPUI5 documentation and example discovery tools",
+  "version": "1.0.0",
+  "description": "Modular MCP server optimized for SAPUI5/Fiori JavaScript development workflows",
   "type": "module",
   "main": "src/index.js",
   "bin": {
