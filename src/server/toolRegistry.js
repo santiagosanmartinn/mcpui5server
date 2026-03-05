@@ -6,6 +6,7 @@ const logger = createLogger("tool-registry");
 
 export class ToolRegistry {
   constructor() {
+    // List of tool definitions to be registered on server startup.
     this.tools = [];
   }
 
@@ -32,12 +33,14 @@ export class ToolRegistry {
         },
         async (args, extra) => {
           try {
+            // Handlers receive parsed args plus shared runtime context.
             const output = await tool.handler(args ?? {}, {
               context,
               extra
             });
 
             if (tool.outputSchema) {
+              // Structured payload enables deterministic client parsing.
               return {
                 structuredContent: output,
                 content: [{ type: "text", text: JSON.stringify(output, null, 2) }]
@@ -54,6 +57,7 @@ export class ToolRegistry {
               content: [{ type: "text", text: JSON.stringify(output, null, 2) }]
             };
           } catch (error) {
+            // Normalize all failures to stable machine-readable error shape.
             const normalized = normalizeError(error);
             logger.error(`Tool failed: ${tool.name}`, {
               code: normalized.code,
@@ -85,4 +89,3 @@ export class ToolRegistry {
     }
   }
 }
-

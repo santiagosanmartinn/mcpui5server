@@ -25,6 +25,7 @@ export const analyzeCurrentFileTool = {
   async handler(args, { context }) {
     const { path } = inputSchema.parse(args);
     const code = await readTextFile(path, context.rootDir);
+    // Parser utilities expose shape useful for IDE automation and audits.
     const analysis = analyzeFileStructure(code);
 
     return outputSchema.parse({
@@ -36,4 +37,3 @@ export const analyzeCurrentFileTool = {
     });
   }
 };
-

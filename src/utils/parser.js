@@ -9,6 +9,7 @@ export function extractImports(code) {
 
   const defineDeps = extractSapUiDefineDependencies(code);
   return {
+    // ESM imports and UI5 AMD dependencies are tracked separately.
     esmImports: importLines,
     sapUiDefineDependencies: defineDeps
   };
@@ -31,6 +32,7 @@ export function extractSapUiDefineDependencies(code) {
 export function extractControllerMethods(code) {
   const methods = [];
 
+  // Matches classic UI5 object-literal controller methods: key: function () {}
   const objectMethodRegex = /^\s*([A-Za-z_$][\w$]*)\s*:\s*function\s*\(/gm;
   let match = objectMethodRegex.exec(code);
   while (match) {
@@ -68,4 +70,3 @@ export function analyzeFileStructure(code) {
     controllerMethods
   };
 }
-

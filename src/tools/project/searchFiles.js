@@ -19,6 +19,7 @@ export const searchProjectFilesTool = {
   outputSchema,
   async handler(args, { context }) {
     const { query, maxResults, extensions } = inputSchema.parse(args);
+    // Normalize extension filters so callers can pass "js" or ".js".
     const fileExtensions = (extensions ?? []).map((value) => value.startsWith(".") ? value : `.${value}`);
     const matches = await searchFiles(query, {
       root: context.rootDir,
@@ -32,4 +33,3 @@ export const searchProjectFilesTool = {
     });
   }
 };
-

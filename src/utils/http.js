@@ -7,6 +7,7 @@ export async function fetchJson(url, options = {}) {
   } = options;
 
   const controller = new AbortController();
+  // Hard timeout avoids hanging tool calls in MCP clients.
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -29,4 +30,3 @@ export async function fetchJson(url, options = {}) {
     clearTimeout(timeout);
   }
 }
-

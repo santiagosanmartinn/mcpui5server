@@ -10,6 +10,7 @@ const DEFAULT_IGNORED_DIRS = new Set([
 ]);
 
 export function workspaceRoot() {
+  // Workspace root is always the current process directory.
   return path.resolve(process.cwd());
 }
 
@@ -20,6 +21,7 @@ export function resolveWorkspacePath(inputPath, root = workspaceRoot()) {
 
   const safeRoot = path.resolve(root);
   const resolved = path.resolve(safeRoot, inputPath);
+  // Prevent escaping the workspace via relative segments/symlink-like paths.
   if (!isPathInsideRoot(resolved, safeRoot)) {
     throw new ToolError("Path traversal detected. Access outside workspace is not allowed.", {
       code: "PATH_TRAVERSAL"
@@ -91,6 +93,7 @@ export async function searchFiles(query, options = {}) {
       const relative = path.relative(resolvedRoot, absolute);
 
       if (entry.isDirectory()) {
+        // Skip heavy/non-source folders for predictable performance.
         if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
           continue;
         }
@@ -128,8 +131,8 @@ async function assertPathExists(absolutePath) {
 }
 
 function isPathInsideRoot(targetPath, rootPath) {
+  // Allow the root itself or any descendant path.
   const normalizedRoot = path.resolve(rootPath);
   const normalizedTarget = path.resolve(targetPath);
   return normalizedTarget === normalizedRoot || normalizedTarget.startsWith(`${normalizedRoot}${path.sep}`);
 }
-

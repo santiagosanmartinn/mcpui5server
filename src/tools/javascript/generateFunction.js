@@ -20,6 +20,7 @@ export const generateJavaScriptFunctionTool = {
   outputSchema,
   async handler(args) {
     const { description, runtime, typescript } = inputSchema.parse(args);
+    // Derive predictable function name from free-text description.
     const functionName = toFunctionName(description);
 
     const code = typescript
@@ -95,4 +96,3 @@ function buildTypeScriptFunction(functionName, description, runtime) {
     ""
   ].join("\n");
 }
-

@@ -17,6 +17,7 @@ export function validateUi5CodeQuality(code, options = {}) {
 
   const dependencyCountMatch = /sap\.ui\.define\s*\(\s*\[[\s\S]*?\]\s*,\s*function\s*\(([\s\S]*?)\)/m.exec(code);
   if (dependencyCountMatch) {
+    // UI5 dependency array order must match factory function parameters.
     const parameters = dependencyCountMatch[1]
       .split(",")
       .map((item) => item.trim())
@@ -77,6 +78,7 @@ export function lintJavaScript(code) {
 
 export function securityScanJavaScript(code) {
   const findings = [];
+  // Heuristic scan for common high-risk JavaScript patterns.
   pushIfMatch(/\beval\s*\(/, "HIGH", "Use of eval() can enable arbitrary code execution.");
   pushIfMatch(/\bnew\s+Function\s*\(/, "HIGH", "Use of Function constructor can execute dynamic code.");
   pushIfMatch(/child_process\.(exec|execSync)\s*\(/, "HIGH", "Command execution API detected.");
@@ -96,6 +98,7 @@ export function securityScanJavaScript(code) {
 }
 
 export function validateControllerMethods(code) {
+  // Minimal lifecycle coverage currently required by project rules.
   const methods = extractControllerMethods(code);
   const required = ["onInit"];
   const missing = required.filter((method) => !methods.includes(method));
@@ -105,4 +108,3 @@ export function validateControllerMethods(code) {
 function issue(severity, code, message) {
   return { severity, code, message };
 }
-

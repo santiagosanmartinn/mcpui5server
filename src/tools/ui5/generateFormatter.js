@@ -17,6 +17,7 @@ export const generateUi5FormatterTool = {
   outputSchema,
   async handler(args) {
     const { formatterName, functions } = inputSchema.parse(args);
+    // Ensure formatter API has stable and valid JavaScript identifiers.
     const functionNames = Array.from(new Set(functions.map((name) => sanitizeIdentifier(name)).filter(Boolean)));
 
     const code = [
@@ -83,4 +84,3 @@ function implementationFor(name) {
     "return value;"
   ];
 }
-

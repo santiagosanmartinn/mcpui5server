@@ -24,6 +24,7 @@ export const generateUi5ControllerTool = {
   outputSchema,
   async handler(args) {
     const { controllerName, methods } = inputSchema.parse(args);
+    // Always include lifecycle methods, then merge caller-provided custom methods.
     const normalizedMethods = normalizeMethods(methods);
     const allMethods = Array.from(new Set([...LIFECYCLE_METHODS, ...normalizedMethods]));
 
@@ -79,4 +80,3 @@ function describeMethod(name) {
       return `Custom controller method: ${name}.`;
   }
 }
-

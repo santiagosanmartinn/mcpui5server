@@ -26,6 +26,7 @@ export const searchMdnTool = {
   outputSchema,
   async handler(args) {
     const { query, maxResults } = inputSchema.parse(args);
+    // Uses official MDN API endpoint to return lightweight references.
     const endpoint = `https://developer.mozilla.org/api/v1/search?q=${encodeURIComponent(query)}&locale=en-US`;
     let payload;
     try {
@@ -54,4 +55,3 @@ export const searchMdnTool = {
     });
   }
 };
-

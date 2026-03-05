@@ -17,6 +17,7 @@ export const generateUi5ViewLogicTool = {
   outputSchema,
   async handler(args) {
     const { viewName, events } = inputSchema.parse(args);
+    // Event names are normalized to conventional on<Event> handler names.
     const methods = events.map((event) => sanitizeMethod(event)).filter(Boolean);
     const code = [
       `// Suggested view logic for ${viewName}`,
@@ -54,4 +55,3 @@ function sanitizeMethod(eventName) {
   const first = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   return `on${first}`;
 }
-

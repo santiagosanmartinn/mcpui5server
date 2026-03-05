@@ -19,6 +19,7 @@ export const refactorJavaScriptCodeTool = {
     const changes = [];
     let updated = code;
 
+    // Safe textual refactor for var declarations based on simple reassignment check.
     const varRefactor = replaceVarDeclarations(updated);
     updated = varRefactor.code;
     if (varRefactor.count > 0) {

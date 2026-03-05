@@ -12,15 +12,19 @@ const SERVER_INFO = {
 };
 
 export function createMcpServer() {
+  // High-level MCP server instance exposed through stdio transport.
   const server = new McpServer(SERVER_INFO);
+  // Central registry keeps tool registration logic in one place.
   const registry = new ToolRegistry();
   registry.registerMany(allTools);
 
+  // Shared runtime context injected into every tool handler.
   const context = {
     rootDir: workspaceRoot(),
     logger
   };
 
+  // Register tools dynamically so MCP clients can discover them.
   registry.applyToServer(server, context);
   logger.info("Server initialized", {
     toolCount: allTools.length,
@@ -29,4 +33,3 @@ export function createMcpServer() {
 
   return server;
 }
-

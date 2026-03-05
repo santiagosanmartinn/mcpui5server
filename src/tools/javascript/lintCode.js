@@ -23,6 +23,7 @@ export const lintJavaScriptCodeTool = {
   outputSchema,
   async handler(args) {
     const { code } = inputSchema.parse(args);
+    // Reuse shared validator heuristics plus inline rule checks with line numbers.
     const basic = lintJavaScript(code);
     const warnings = [];
 
@@ -66,4 +67,3 @@ export const lintJavaScriptCodeTool = {
     });
   }
 };
-

@@ -2,12 +2,14 @@ export class ToolError extends Error {
   constructor(message, options = {}) {
     super(message);
     this.name = "ToolError";
+    // Stable code for clients to branch logic without parsing free text.
     this.code = options.code ?? "TOOL_ERROR";
     this.details = options.details ?? null;
   }
 }
 
 export function normalizeError(error) {
+  // Keep ToolError untouched so domain-specific codes survive.
   if (error instanceof ToolError) {
     return error;
   }
@@ -22,4 +24,3 @@ export function normalizeError(error) {
     code: "UNEXPECTED_ERROR"
   });
 }
-

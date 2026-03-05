@@ -17,6 +17,7 @@ export const generateUi5FragmentTool = {
   outputSchema,
   async handler(args) {
     const { fragmentName, controls } = inputSchema.parse(args);
+    // Provide sensible defaults when no controls are requested.
     const bodyControls = controls.length > 0
       ? controls.map((control, index) => `    ${toControlLine(control, index)}`)
       : ["    <Text text=\"Sample fragment content\" />"];
@@ -55,4 +56,3 @@ function toFormatterNamespace(fragmentName) {
   const base = fragmentName.includes(".") ? fragmentName.split(".").slice(0, -1).join(".") : fragmentName;
   return `${base}.model.formatter`;
 }
-

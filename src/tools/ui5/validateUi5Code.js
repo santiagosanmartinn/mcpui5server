@@ -26,6 +26,7 @@ export const validateUi5CodeTool = {
   outputSchema,
   async handler(args) {
     const { code, expectedControllerName } = inputSchema.parse(args);
+    // Combines structural UI5 checks and lifecycle method extraction.
     const quality = validateUi5CodeQuality(code, { expectedControllerName });
     const methodReport = validateControllerMethods(code);
     const missingLifecycleMethods = methodReport.missing.filter((name) =>
@@ -40,4 +41,3 @@ export const validateUi5CodeTool = {
     });
   }
 };
-

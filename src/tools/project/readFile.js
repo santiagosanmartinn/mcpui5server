@@ -19,6 +19,7 @@ export const readProjectFileTool = {
   outputSchema,
   async handler(args, { context }) {
     const { path, maxChars } = inputSchema.parse(args);
+    // File access is sandboxed by utils/fileSystem to workspace root.
     const fullContent = await readTextFile(path, context.rootDir);
     const limit = maxChars ?? 120000;
     const truncated = fullContent.length > limit;
@@ -31,4 +32,3 @@ export const readProjectFileTool = {
     });
   }
 };
-

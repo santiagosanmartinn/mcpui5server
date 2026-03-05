@@ -29,6 +29,7 @@ export const searchUi5SdkTool = {
   outputSchema,
   async handler(args) {
     const { query, maxResults } = inputSchema.parse(args);
+    // Pull SDK index and map it to a stable result contract.
     const data = await fetchSdkIndex();
     const allEntries = normalizeSdkEntries(data);
     const matches = filterEntries(allEntries, query).slice(0, maxResults ?? 5);
@@ -61,6 +62,7 @@ async function fetchSdkIndex() {
 }
 
 function normalizeSdkEntries(data) {
+  // SDK endpoint shape may vary; normalize known variants.
   if (Array.isArray(data)) {
     return data.map((item) => normalizeEntry(item)).filter(Boolean);
   }
@@ -115,4 +117,3 @@ function filterEntries(entries, query) {
     );
   });
 }
-

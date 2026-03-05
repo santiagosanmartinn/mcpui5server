@@ -26,6 +26,7 @@ export const analyzeUi5ProjectTool = {
   outputSchema,
   async handler(_args, { context }) {
     const root = context.rootDir;
+    // Manifest can exist at project root or under webapp in typical UI5 layouts.
     const ui5YamlExists = await fileExists("ui5.yaml", root);
     const manifestPath = (await fileExists("webapp/manifest.json", root)) ? "webapp/manifest.json" : "manifest.json";
     const manifestExists = await fileExists(manifestPath, root);
@@ -50,6 +51,7 @@ export const analyzeUi5ProjectTool = {
     const targets = routingConfig.targets ? Object.keys(routingConfig.targets).length : 0;
 
     const ui5Version =
+      // Resolution priority keeps output deterministic across project variants.
       extractUi5VersionFromYaml(ui5Yaml) ??
       manifest?.["sap.ui5"]?.dependencies?.minUI5Version ??
       packageJson?.ui5?.version ??
@@ -93,6 +95,7 @@ function extractUi5VersionFromYaml(ui5Yaml) {
 
 async function detectControllerPattern(rootDir) {
   try {
+    // Lightweight project-level detection by searching source text patterns.
     const extendMatches = await searchFiles("Controller.extend(", {
       root: rootDir,
       maxResults: 1,
@@ -118,4 +121,3 @@ async function detectControllerPattern(rootDir) {
 
   return "unknown";
 }
-

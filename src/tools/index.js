@@ -15,7 +15,9 @@ import { searchUi5SdkTool } from "./documentation/searchUI5SDK.js";
 import { searchMdnTool } from "./documentation/searchMDN.js";
 
 export const allTools = [
+  // Project intelligence
   analyzeUi5ProjectTool,
+  // UI5 generation and validation
   generateUi5ControllerTool,
   generateUi5FragmentTool,
   generateUi5FormatterTool,
@@ -23,12 +25,13 @@ export const allTools = [
   readProjectFileTool,
   searchProjectFilesTool,
   analyzeCurrentFileTool,
+  // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,
+  // JavaScript assistant tools
   generateJavaScriptFunctionTool,
   refactorJavaScriptCodeTool,
   lintJavaScriptCodeTool,
   securityCheckJavaScriptTool,
   validateUi5CodeTool
 ];
-

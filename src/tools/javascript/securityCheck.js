@@ -22,8 +22,8 @@ export const securityCheckJavaScriptTool = {
   outputSchema,
   async handler(args) {
     const { code } = inputSchema.parse(args);
+    // Heuristic static scan; does not execute code.
     const report = securityScanJavaScript(code);
     return outputSchema.parse(report);
   }
 };
-
