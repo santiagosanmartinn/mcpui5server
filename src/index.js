@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { exec } from "node:child_process";
+import path from "node:path";
 import { z } from "zod";
 
 const SERVER_INFO = {
@@ -224,7 +226,131 @@ function asToolError(error) {
   };
 }
 
+function formatCommandResult(command, stdout, stderr, exitCode = 0) {
+  return [
+    `$ ${command}`,
+    `exitCode: ${exitCode}`,
+    "",
+    "stdout:",
+    stdout?.trim() ? stdout.trim() : "(empty)",
+    "",
+    "stderr:",
+    stderr?.trim() ? stderr.trim() : "(empty)"
+  ].join("\n");
+}
+
+function execCommand(command, options = {}) {
+  return new Promise((resolve, reject) => {
+    exec(command, options, (error, stdout, stderr) => {
+      if (error) {
+        reject({
+          command,
+          error,
+          stdout: stdout ?? "",
+          stderr: stderr ?? ""
+        });
+        return;
+      }
+
+      resolve({
+        command,
+        stdout: stdout ?? "",
+        stderr: stderr ?? ""
+      });
+    });
+  });
+}
+
 const server = new McpServer(SERVER_INFO);
+
+server.tool(
+  "create_ui5_app_and_run",
+  {
+    projectName: z.string().min(1)
+  },
+  async ({ projectName }) => {
+    const trimmedProjectName = projectName.trim();
+    const projectDir = path.resolve(process.cwd(), trimmedProjectName);
+    const commandOutputs = [];
+
+    try {
+      const scaffoldCommand = `yo @sap/fiori:headless ui5config.json ${trimmedProjectName}`;
+      const scaffoldResult = await execCommand(scaffoldCommand, { cwd: process.cwd() });
+      commandOutputs.push(formatCommandResult(scaffoldCommand, scaffoldResult.stdout, scaffoldResult.stderr, 0));
+
+      const installCommand = "npm install";
+      const installResult = await execCommand(installCommand, { cwd: projectDir });
+      commandOutputs.push(formatCommandResult(installCommand, installResult.stdout, installResult.stderr, 0));
+
+      const serveCommand = "npx ui5 serve -o index.html";
+      const serveProcess = exec(serveCommand, { cwd: projectDir });
+
+      let serveStdout = "";
+      let serveStderr = "";
+      serveProcess.stdout?.on("data", (chunk) => {
+        serveStdout += String(chunk);
+      });
+      serveProcess.stderr?.on("data", (chunk) => {
+        serveStderr += String(chunk);
+      });
+
+      await new Promise((resolve) => {
+        const done = () => resolve();
+        const timer = setTimeout(done, 2500);
+
+        serveProcess.once("spawn", () => {
+          clearTimeout(timer);
+          setTimeout(done, 1000);
+        });
+
+        serveProcess.once("error", () => {
+          clearTimeout(timer);
+          done();
+        });
+
+        serveProcess.once("exit", () => {
+          clearTimeout(timer);
+          done();
+        });
+      });
+
+      const isRunning = serveProcess.exitCode === null && !serveProcess.killed;
+      const serveExit = serveProcess.exitCode === null ? "N/A (process still running)" : serveProcess.exitCode;
+      commandOutputs.push(formatCommandResult(serveCommand, serveStdout, serveStderr, serveExit));
+
+      return asTextResult([
+        `Project: ${trimmedProjectName}`,
+        `Project directory: ${projectDir}`,
+        `Server status: ${isRunning ? "running" : "not running"}`,
+        "",
+        ...commandOutputs
+      ].join("\n"));
+    } catch (failure) {
+      const command = failure?.command ?? "unknown command";
+      const stderr = failure?.stderr ?? failure?.error?.message ?? "No stderr captured.";
+      const stdout = failure?.stdout ?? "";
+      const exitCode = Number.isNaN(Number.parseInt(String(failure?.error?.code), 10))
+        ? 1
+        : Number.parseInt(String(failure.error.code), 10);
+      const details = formatCommandResult(command, stdout, stderr, exitCode);
+
+      return {
+        content: [{
+          type: "text",
+          text: [
+            `Project: ${trimmedProjectName}`,
+            `Project directory: ${projectDir}`,
+            "Server status: not running",
+            "",
+            "Command failed:",
+            details
+          ].join("\n")
+        }],
+        isError: true
+      };
+    }
+  }
+);
 
 server.tool(
   "search_ui5_docs",

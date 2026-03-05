@@ -1,0 +1,9 @@
+{
+  "generator-fiori": {
+    "floorplan": "SAPUI5 freestyle",
+    "viewType": "XML",
+    "projectName": "demoapp",
+    "namespace": "demo.app",
+    "ui5Version": "1.120.0"
+  }
+}

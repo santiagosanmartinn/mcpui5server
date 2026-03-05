@@ -22,6 +22,16 @@ MCP server that exposes SAPUI5 documentation and example discovery tools.
 - Searches OpenUI5 demokit sample/tutorial sources in `SAP/openui5`.
 - Inputs: `query`, optional `limit`, optional `ui5Version`.
 
+4. `create_ui5_app_and_run`
+- Scaffolds a SAPUI5 project using Fiori generator, installs dependencies, and starts UI5 dev server.
+- Input: `projectName`.
+- Executes:
+  - `yo @sap/fiori:headless ui5config.json {projectName}`
+  - `cd {projectName}`
+  - `npm install`
+  - `npx ui5 serve -o index.html`
+- Returns command stdout/stderr and a server status (`running` or `not running`).
+
 ## Product-level behavior
 
 ### Source strategy
@@ -73,3 +83,21 @@ npm run start
 - Docs: `https://github.com/SAP-docs/sapui5`
 - Examples: `https://github.com/SAP/openui5`
 - GitHub unauthenticated API limits apply. If rate-limited, retry later or add token support.
+
+## Calling from Codex
+
+Example MCP tool call:
+
+```json
+{
+  "tool": "create_ui5_app_and_run",
+  "arguments": {
+    "projectName": "my-ui5-app"
+  }
+}
+```
+
+Prerequisites on the machine where this MCP server runs:
+- `yo` and `@sap/fiori` generator available
+- `npm` available
+- `npx ui5` available
