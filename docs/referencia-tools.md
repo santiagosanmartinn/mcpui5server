@@ -260,3 +260,44 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
 - Devuelve:
   - resultados
   - `trace` con fecha/hora de consulta y origen de datos (cache/red)
+
+## Dominio agents
+
+### `scaffold_project_agents`
+
+- Objetivo: generar artefactos base para agentes autocontenidos del proyecto con flujo seguro (`dryRun` + `preview` + `apply`).
+- Genera:
+  - blueprint JSON de agentes
+  - guia operativa de agentes
+  - prompt bootstrap
+  - configuracion opcional MCP en `.vscode/mcp.json`
+- Entrada destacada:
+  - `projectName`, `projectType`, `namespace` (opcionales)
+  - `outputDir` (opcional)
+  - `includeVscodeMcp` (opcional)
+  - `dryRun` (opcional, por defecto `true`)
+  - `allowOverwrite` (opcional, por defecto `false`)
+- Salida:
+  - metadata de proyecto detectada
+  - resumen de archivos (`created/updated/unchanged`)
+  - previews por archivo
+  - `applyResult` si `dryRun: false`
+
+### `validate_project_agents`
+
+- Objetivo: validar blueprint y artefactos de agentes para asegurar consistencia, cobertura de tools y readiness MCP.
+- Entrada destacada:
+  - `blueprintPath`, `agentsGuidePath`, `mcpConfigPath` (opcionales)
+  - `strict` (opcional, por defecto `true`)
+- Validaciones principales:
+  - schema del blueprint (`schemaVersion`, agentes, gates)
+  - unicidad de `agent.id`
+  - tools conocidas vs desconocidas
+  - cobertura de `qualityGates.requiredTools` en allowlists
+  - presencia de `npm run check` en quality gate
+  - presencia de modo `MCP-first` en guia
+  - entrada `sapui5` en `.vscode/mcp.json`
+- Salida:
+  - `valid`
+  - checks detallados, errores y warnings
+  - acciones recomendadas

@@ -216,3 +216,26 @@ Ejemplo de configuracion:
   }
 }
 ```
+
+### Scaffold de agentes de proyecto (dry-run)
+
+```json
+{
+  "tool": "scaffold_project_agents",
+  "arguments": {
+    "dryRun": true,
+    "projectType": "sapui5"
+  }
+}
+```
+
+### Validar artefactos de agentes (strict)
+
+```json
+{
+  "tool": "validate_project_agents",
+  "arguments": {
+    "strict": true
+  }
+}
+```

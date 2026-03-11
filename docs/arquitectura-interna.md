@@ -9,6 +9,9 @@ src/
     mcpServer.js
     toolRegistry.js
   tools/
+    agents/
+      scaffoldProjectAgents.js
+      validateProjectAgents.js
     ui5/
       analyzePerformance.js
       generateFeature.js

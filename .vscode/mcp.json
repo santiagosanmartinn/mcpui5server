@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sapui5": {
+      "command": "node",
+      "args": ["${workspaceFolder}/src/index.js"]
+    }
+  }
+}

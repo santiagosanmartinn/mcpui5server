@@ -12,6 +12,7 @@ Este directorio explica como usar y mantener el servidor MCP de este proyecto.
 6. [Guia para nuevos desarrolladores](./onboarding-desarrolladores.md)
 7. [ADR (decisiones de arquitectura)](./adr/README.md)
 8. [Roadmap ejecutable con Codex](./roadmap-codex/README.md)
+9. [Integracion Codex + MCP en VSCode](./integracion-codex-vscode.md)
 
 ## Alcance de esta documentacion
 

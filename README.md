@@ -11,6 +11,9 @@ src/
     mcpServer.js
     toolRegistry.js
   tools/
+    agents/
+      scaffoldProjectAgents.js
+      validateProjectAgents.js
     ui5/
       generateController.js
       generateFragment.js
@@ -76,6 +79,8 @@ src/
 20. `lint_javascript_code`
 21. `security_check_javascript`
 22. `validate_ui5_code`
+23. `scaffold_project_agents`
+24. `validate_project_agents`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

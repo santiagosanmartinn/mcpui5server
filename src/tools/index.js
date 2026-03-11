@@ -20,6 +20,8 @@ import { lintJavaScriptCodeTool } from "./javascript/lintCode.js";
 import { securityCheckJavaScriptTool } from "./javascript/securityCheck.js";
 import { searchUi5SdkTool } from "./documentation/searchUI5SDK.js";
 import { searchMdnTool } from "./documentation/searchMDN.js";
+import { scaffoldProjectAgentsTool } from "./agents/scaffoldProjectAgents.js";
+import { validateProjectAgentsTool } from "./agents/validateProjectAgents.js";
 
 export const allTools = [
   // Project intelligence
@@ -47,5 +49,8 @@ export const allTools = [
   refactorJavaScriptCodeTool,
   lintJavaScriptCodeTool,
   securityCheckJavaScriptTool,
-  validateUi5CodeTool
+  validateUi5CodeTool,
+  // Agent factory utilities
+  scaffoldProjectAgentsTool,
+  validateProjectAgentsTool
 ];

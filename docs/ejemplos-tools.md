@@ -684,6 +684,81 @@ Entrada:
 }
 ```
 
+## 23) `scaffold_project_agents`
+
+Entrada:
+```json
+{
+  "tool": "scaffold_project_agents",
+  "arguments": {
+    "projectName": "ProyectoX",
+    "projectType": "sapui5",
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "project": {
+    "name": "ProyectoX",
+    "type": "sapui5",
+    "namespace": "proyecto.x"
+  },
+  "files": {
+    "blueprintPath": ".codex/agents/agent.blueprint.json",
+    "agentsGuidePath": ".codex/agents/AGENTS.generated.md",
+    "bootstrapPromptPath": ".codex/agents/prompts/task-bootstrap.txt",
+    "mcpConfigPath": ".vscode/mcp.json"
+  },
+  "fileSummary": {
+    "created": 4,
+    "updated": 0,
+    "unchanged": 0
+  },
+  "applyResult": null
+}
+```
+
+## 24) `validate_project_agents`
+
+Entrada:
+```json
+{
+  "tool": "validate_project_agents",
+  "arguments": {
+    "strict": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "blueprintPath": ".codex/agents/agent.blueprint.json",
+  "strict": true,
+  "valid": true,
+  "detected": {
+    "projectName": "ProyectoX",
+    "projectType": "sapui5",
+    "agentCount": 3,
+    "uniqueAllowedTools": 17,
+    "requiredTools": 4
+  },
+  "summary": {
+    "checksPassed": 9,
+    "checksFailed": 0,
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  "errors": [],
+  "warnings": []
+}
+```
+
 Salida (ejemplo):
 ```json
 {
