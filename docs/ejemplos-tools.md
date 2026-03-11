@@ -709,10 +709,12 @@ Salida (ejemplo):
     "namespace": "proyecto.x"
   },
   "files": {
-    "blueprintPath": ".codex/agents/agent.blueprint.json",
-    "agentsGuidePath": ".codex/agents/AGENTS.generated.md",
-    "bootstrapPromptPath": ".codex/agents/prompts/task-bootstrap.txt",
-    "mcpConfigPath": ".vscode/mcp.json"
+    "blueprintPath": ".codex/mcp/agents/agent.blueprint.json",
+    "agentsGuidePath": ".codex/mcp/agents/AGENTS.generated.md",
+    "bootstrapPromptPath": ".codex/mcp/agents/prompts/task-bootstrap.txt",
+    "contextDocPath": "docs/mcp/project-context.md",
+    "flowsDocPath": "docs/mcp/agent-flows.md",
+    "mcpConfigPath": null
   },
   "fileSummary": {
     "created": 4,
@@ -735,10 +737,173 @@ Entrada:
 }
 ```
 
+## 25) `recommend_project_agents`
+
+Entrada:
+```json
+{
+  "tool": "recommend_project_agents",
+  "arguments": {
+    "sourceDir": "webapp",
+    "maxRecommendations": 6,
+    "includePackCatalog": true
+  }
+}
+```
+
 Salida (ejemplo):
 ```json
 {
-  "blueprintPath": ".codex/agents/agent.blueprint.json",
+  "project": {
+    "name": "demo.app",
+    "type": "sapui5",
+    "namespace": "demo.app"
+  },
+  "signals": {
+    "jsFiles": 12,
+    "xmlFiles": 5,
+    "hasI18n": true
+  },
+  "recommendations": [
+    {
+      "id": "ui5-architect",
+      "priority": "high",
+      "score": 0.98
+    }
+  ],
+  "suggestedMaterializationArgs": {
+    "agentDefinitions": [
+      {
+        "id": "architect"
+      }
+    ]
+  }
+}
+```
+
+## 26) `materialize_recommended_agents`
+
+Entrada:
+```json
+{
+  "tool": "materialize_recommended_agents",
+  "arguments": {
+    "dryRun": true,
+    "includePackCatalog": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "source": "auto-recommend",
+  "usedRecommendations": 4,
+  "selectedRecommendationIds": [
+    "ui5-architect",
+    "ui5-feature-implementer"
+  ],
+  "scaffoldResult": {
+    "dryRun": true,
+    "changed": true
+  }
+}
+```
+
+## 27) `save_agent_pack`
+
+Entrada:
+```json
+{
+  "tool": "save_agent_pack",
+  "arguments": {
+    "packName": "base-ui5-pack",
+    "packVersion": "1.0.0",
+    "dryRun": false
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": false,
+  "changed": true,
+  "pack": {
+    "name": "base-ui5-pack",
+    "slug": "base-ui5-pack",
+    "version": "1.0.0",
+    "fingerprint": "f2c1..."
+  },
+  "validation": {
+    "valid": true,
+    "errorCount": 0,
+    "warningCount": 0
+  }
+}
+```
+
+## 28) `list_agent_packs`
+
+Entrada:
+```json
+{
+  "tool": "list_agent_packs",
+  "arguments": {}
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "packCatalogPath": ".codex/mcp/packs/catalog.json",
+  "exists": true,
+  "packs": [
+    {
+      "name": "base-ui5-pack",
+      "slug": "base-ui5-pack",
+      "version": "1.0.0",
+      "projectType": "sapui5"
+    }
+  ]
+}
+```
+
+## 29) `apply_agent_pack`
+
+Entrada:
+```json
+{
+  "tool": "apply_agent_pack",
+  "arguments": {
+    "packSlug": "base-ui5-pack",
+    "dryRun": true,
+    "outputDir": ".codex/mcp/agents-from-pack"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "selectedPack": {
+    "slug": "base-ui5-pack",
+    "version": "1.0.0"
+  },
+  "integrity": {
+    "fingerprintMatches": true
+  },
+  "scaffoldResult": {
+    "dryRun": true,
+    "changed": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "blueprintPath": ".codex/mcp/agents/agent.blueprint.json",
   "strict": true,
   "valid": true,
   "detected": {

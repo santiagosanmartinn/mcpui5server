@@ -2,8 +2,8 @@ import { z } from "zod";
 import { fileExists, readTextFile } from "../../utils/fileSystem.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
-const DEFAULT_BLUEPRINT_PATH = ".codex/agents/agent.blueprint.json";
-const DEFAULT_AGENTS_GUIDE_PATH = ".codex/agents/AGENTS.generated.md";
+const DEFAULT_BLUEPRINT_PATH = ".codex/mcp/agents/agent.blueprint.json";
+const DEFAULT_AGENTS_GUIDE_PATH = ".codex/mcp/agents/AGENTS.generated.md";
 const DEFAULT_MCP_CONFIG_PATH = ".vscode/mcp.json";
 const EXPECTED_MCP_ENTRY = {
   command: "node",
@@ -34,13 +34,19 @@ const KNOWN_TOOLS = new Set([
   "search_ui5_sdk",
   "search_mdn",
   "scaffold_project_agents",
-  "validate_project_agents"
+  "validate_project_agents",
+  "recommend_project_agents",
+  "materialize_recommended_agents",
+  "save_agent_pack",
+  "list_agent_packs",
+  "apply_agent_pack"
 ]);
 
 const inputSchema = z.object({
   blueprintPath: z.string().min(1).optional(),
   agentsGuidePath: z.string().min(1).optional(),
   mcpConfigPath: z.string().min(1).optional(),
+  requireMcpConfig: z.boolean().optional(),
   strict: z.boolean().optional()
 }).strict();
 
@@ -112,6 +118,7 @@ export const validateProjectAgentsTool = {
       blueprintPath,
       agentsGuidePath,
       mcpConfigPath,
+      requireMcpConfig,
       strict
     } = inputSchema.parse(args);
     const root = context.rootDir;
@@ -119,6 +126,7 @@ export const validateProjectAgentsTool = {
     const selectedGuidePath = normalizeRelativePath(agentsGuidePath ?? DEFAULT_AGENTS_GUIDE_PATH);
     const selectedMcpConfigPath = normalizeRelativePath(mcpConfigPath ?? DEFAULT_MCP_CONFIG_PATH);
     const strictMode = strict ?? true;
+    const shouldRequireMcpConfig = requireMcpConfig ?? false;
 
     const checks = [];
     const errors = [];
@@ -319,7 +327,7 @@ export const validateProjectAgentsTool = {
       }, {
         id: "mcp_config_exists",
         ok: false,
-        severity: strictMode ? "error" : "warn",
+        severity: strictMode && shouldRequireMcpConfig ? "error" : "warn",
         message: `MCP config file is unavailable: ${selectedMcpConfigPath}`
       });
     } else {
@@ -344,7 +352,7 @@ export const validateProjectAgentsTool = {
         }, {
           id: "mcp_config_json",
           ok: false,
-          severity: strictMode ? "error" : "warn",
+          severity: strictMode && shouldRequireMcpConfig ? "error" : "warn",
           message: `MCP config parsing failed: ${error.message}`
         });
       }
@@ -358,7 +366,7 @@ export const validateProjectAgentsTool = {
         }, {
           id: "mcp_sapui5_entry",
           ok: isExpectedMcpEntry(sapui5Entry),
-          severity: strictMode ? "error" : "warn",
+          severity: strictMode && shouldRequireMcpConfig ? "error" : "warn",
           message: isExpectedMcpEntry(sapui5Entry)
             ? "MCP config contains expected sapui5 server entry."
             : "MCP config does not contain expected sapui5 server entry."

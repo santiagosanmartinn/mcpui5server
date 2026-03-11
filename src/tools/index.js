@@ -22,6 +22,11 @@ import { searchUi5SdkTool } from "./documentation/searchUI5SDK.js";
 import { searchMdnTool } from "./documentation/searchMDN.js";
 import { scaffoldProjectAgentsTool } from "./agents/scaffoldProjectAgents.js";
 import { validateProjectAgentsTool } from "./agents/validateProjectAgents.js";
+import { recommendProjectAgentsTool } from "./agents/recommendProjectAgents.js";
+import { materializeRecommendedAgentsTool } from "./agents/materializeRecommendedAgents.js";
+import { saveAgentPackTool } from "./agents/saveAgentPack.js";
+import { listAgentPacksTool } from "./agents/listAgentPacks.js";
+import { applyAgentPackTool } from "./agents/applyAgentPack.js";
 
 export const allTools = [
   // Project intelligence
@@ -52,5 +57,10 @@ export const allTools = [
   validateUi5CodeTool,
   // Agent factory utilities
   scaffoldProjectAgentsTool,
-  validateProjectAgentsTool
+  validateProjectAgentsTool,
+  recommendProjectAgentsTool,
+  materializeRecommendedAgentsTool,
+  saveAgentPackTool,
+  listAgentPacksTool,
+  applyAgentPackTool
 ];

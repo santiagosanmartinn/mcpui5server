@@ -10,8 +10,13 @@ src/
     toolRegistry.js
   tools/
     agents/
+      recommendProjectAgents.js
+      materializeRecommendedAgents.js
       scaffoldProjectAgents.js
       validateProjectAgents.js
+      saveAgentPack.js
+      listAgentPacks.js
+      applyAgentPack.js
     ui5/
       analyzePerformance.js
       generateFeature.js

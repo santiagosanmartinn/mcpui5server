@@ -266,14 +266,19 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
 ### `scaffold_project_agents`
 
 - Objetivo: generar artefactos base para agentes autocontenidos del proyecto con flujo seguro (`dryRun` + `preview` + `apply`).
+- Layout por defecto (controlado):
+  - artefactos tecnicos en `.codex/mcp/agents/...`
+  - documentacion contextual en `docs/mcp/...`
 - Genera:
   - blueprint JSON de agentes
   - guia operativa de agentes
   - prompt bootstrap
-  - configuracion opcional MCP en `.vscode/mcp.json`
+  - docs de contexto y flujos en `docs/mcp`
+  - configuracion opcional MCP en `.vscode/mcp.json` (desactivado por defecto)
 - Entrada destacada:
   - `projectName`, `projectType`, `namespace` (opcionales)
   - `outputDir` (opcional)
+  - `docsDir` y `generateDocs` (opcionales)
   - `includeVscodeMcp` (opcional)
   - `dryRun` (opcional, por defecto `true`)
   - `allowOverwrite` (opcional, por defecto `false`)
@@ -288,6 +293,7 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
 - Objetivo: validar blueprint y artefactos de agentes para asegurar consistencia, cobertura de tools y readiness MCP.
 - Entrada destacada:
   - `blueprintPath`, `agentsGuidePath`, `mcpConfigPath` (opcionales)
+  - `requireMcpConfig` (opcional, por defecto `false`)
   - `strict` (opcional, por defecto `true`)
 - Validaciones principales:
   - schema del blueprint (`schemaVersion`, agentes, gates)
@@ -296,8 +302,72 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - cobertura de `qualityGates.requiredTools` en allowlists
   - presencia de `npm run check` en quality gate
   - presencia de modo `MCP-first` en guia
-  - entrada `sapui5` en `.vscode/mcp.json`
+  - entrada `sapui5` en `.vscode/mcp.json` (si `requireMcpConfig=true`)
 - Salida:
   - `valid`
   - checks detallados, errores y warnings
   - acciones recomendadas
+
+### `recommend_project_agents`
+
+- Objetivo: analizar senales del proyecto y recomendar agentes listos para materializar.
+- Entrada destacada:
+  - `sourceDir`, `maxFiles` (opcionales para escaneo)
+  - `maxRecommendations` (opcional)
+  - `includePackCatalog` y `packCatalogPath` (opcionales)
+- Salida:
+  - `project` detectado (`name`, `type`, `namespace`)
+  - `signals` del codebase (js/xml/controllers/views/fragments, routing, i18n, blueprint existente)
+  - `recommendations` priorizadas con `score`, `rationale` y `agent`
+  - `suggestedMaterializationArgs` para usar directamente en materializacion
+
+### `materialize_recommended_agents`
+
+- Objetivo: autodesarrollar agentes recomendados en artefactos reales del proyecto.
+- Entrada destacada:
+  - `recommendations` (opcional; si no viene, ejecuta recomendacion automatica)
+  - `projectName`, `projectType`, `namespace` (opcionales)
+  - `dryRun`, `allowOverwrite`, `includeVscodeMcp` (opcionales)
+- Salida:
+  - fuente de recomendaciones (`input` o `auto-recommend`)
+  - recomendaciones usadas/descartadas
+  - `scaffoldResult` completo (previews, summary, applyResult)
+
+### `save_agent_pack`
+
+- Objetivo: guardar artefactos de agentes como pack reutilizable con fingerprint y catalogo.
+- Incluye guardrail:
+  - valida en `strict` antes de guardar.
+- Entrada destacada:
+  - `packName`, `packVersion` (opcional, default `1.0.0`)
+  - rutas de artefactos origen (opcionales)
+  - `packRootDir`/`packCatalogPath` bajo `.codex/mcp/...`
+  - `dryRun`, `allowOverwrite`
+- Salida:
+  - metadata del pack (`slug`, `version`, `fingerprint`, `path`)
+  - resumen de validacion previa
+  - previews y `applyResult`
+
+### `list_agent_packs`
+
+- Objetivo: listar packs guardados en el catalogo.
+- Entrada:
+  - `packCatalogPath` (opcional, por defecto `.codex/mcp/packs/catalog.json`)
+- Salida:
+  - existencia de catalogo
+  - listado de packs (`name`, `slug`, `version`, `projectType`, `fingerprint`, `path`)
+
+### `apply_agent_pack`
+
+- Objetivo: aplicar un pack guardado sobre el proyecto actual para reconstruir agentes sin rehacerlos.
+- Entrada destacada:
+  - `packSlug` o `packName`
+  - `packVersion` (opcional)
+  - `packCatalogPath` bajo `.codex/mcp/...`
+  - parametros de scaffold (`outputDir`, `dryRun`, `allowOverwrite`, `includeVscodeMcp`, etc.)
+- Guardrails:
+  - verifica integridad por fingerprint antes de aplicar.
+- Salida:
+  - pack seleccionado
+  - estado de integridad
+  - `scaffoldResult` completo de la materializacion

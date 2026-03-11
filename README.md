@@ -12,8 +12,13 @@ src/
     toolRegistry.js
   tools/
     agents/
+      recommendProjectAgents.js
+      materializeRecommendedAgents.js
       scaffoldProjectAgents.js
       validateProjectAgents.js
+      saveAgentPack.js
+      listAgentPacks.js
+      applyAgentPack.js
     ui5/
       generateController.js
       generateFragment.js
@@ -81,6 +86,11 @@ src/
 22. `validate_ui5_code`
 23. `scaffold_project_agents`
 24. `validate_project_agents`
+25. `recommend_project_agents`
+26. `materialize_recommended_agents`
+27. `save_agent_pack`
+28. `list_agent_packs`
+29. `apply_agent_pack`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

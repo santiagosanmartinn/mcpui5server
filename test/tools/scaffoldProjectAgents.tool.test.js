@@ -41,9 +41,9 @@ describe("scaffold_project_agents tool", () => {
     expect(result.project.name).toBe("demo.project");
     expect(result.applyResult).toBeNull();
     expect(result.previews.map((item) => item.role)).toEqual(
-      expect.arrayContaining(["blueprint", "agents-guide", "bootstrap-prompt", "mcp-config"])
+      expect.arrayContaining(["blueprint", "agents-guide", "bootstrap-prompt", "context-doc", "flows-doc"])
     );
-    await expect(fs.access(path.join(tempRoot, ".codex", "agents", "agent.blueprint.json"))).rejects.toThrow();
+    await expect(fs.access(path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json"))).rejects.toThrow();
     await expect(fs.access(path.join(tempRoot, ".vscode", "mcp.json"))).rejects.toThrow();
   });
 
@@ -59,15 +59,17 @@ describe("scaffold_project_agents tool", () => {
 
     expect(first.changed).toBe(true);
     expect(first.applyResult?.patchId).toMatch(/^patch-/);
-    const blueprintPath = path.join(tempRoot, ".codex", "agents", "agent.blueprint.json");
-    const guidePath = path.join(tempRoot, ".codex", "agents", "AGENTS.generated.md");
-    const promptPath = path.join(tempRoot, ".codex", "agents", "prompts", "task-bootstrap.txt");
+    const blueprintPath = path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json");
+    const guidePath = path.join(tempRoot, ".codex", "mcp", "agents", "AGENTS.generated.md");
+    const promptPath = path.join(tempRoot, ".codex", "mcp", "agents", "prompts", "task-bootstrap.txt");
+    const contextPath = path.join(tempRoot, "docs", "mcp", "project-context.md");
     const mcpPath = path.join(tempRoot, ".vscode", "mcp.json");
 
     await expect(fs.access(blueprintPath)).resolves.toBeUndefined();
     await expect(fs.access(guidePath)).resolves.toBeUndefined();
     await expect(fs.access(promptPath)).resolves.toBeUndefined();
-    await expect(fs.access(mcpPath)).resolves.toBeUndefined();
+    await expect(fs.access(contextPath)).resolves.toBeUndefined();
+    await expect(fs.access(mcpPath)).rejects.toThrow();
 
     const second = await scaffoldProjectAgentsTool.handler(
       {
@@ -80,18 +82,19 @@ describe("scaffold_project_agents tool", () => {
 
     expect(second.changed).toBe(false);
     expect(second.applyResult).toBeNull();
-    expect(second.fileSummary.unchanged).toBeGreaterThanOrEqual(4);
+    expect(second.fileSummary.unchanged).toBeGreaterThanOrEqual(5);
   });
 
   it("rejects overwrite of managed artifacts unless allowOverwrite is true", async () => {
-    const blueprintPath = path.join(tempRoot, ".codex", "agents", "agent.blueprint.json");
+    const blueprintPath = path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json");
     await fs.mkdir(path.dirname(blueprintPath), { recursive: true });
     await fs.writeFile(blueprintPath, "{\"legacy\":true}\n", "utf8");
 
     await expect(
       scaffoldProjectAgentsTool.handler(
         {
-          dryRun: true
+          dryRun: true,
+          includeVscodeMcp: true
         },
         {
           context: { rootDir: tempRoot }
@@ -119,7 +122,8 @@ describe("scaffold_project_agents tool", () => {
     await expect(
       scaffoldProjectAgentsTool.handler(
         {
-          dryRun: true
+          dryRun: true,
+          includeVscodeMcp: true
         },
         {
           context: { rootDir: tempRoot }

@@ -229,6 +229,11 @@ Ejemplo de configuracion:
 }
 ```
 
+Layout por defecto:
+- Artefactos de agentes en `.codex/mcp/agents/...`
+- Documentacion contextual en `docs/mcp/...`
+- `.vscode/mcp.json` solo si `includeVscodeMcp: true`
+
 ### Validar artefactos de agentes (strict)
 
 ```json
@@ -236,6 +241,66 @@ Ejemplo de configuracion:
   "tool": "validate_project_agents",
   "arguments": {
     "strict": true
+  }
+}
+```
+
+### Recomendar agentes desde analisis del proyecto
+
+```json
+{
+  "tool": "recommend_project_agents",
+  "arguments": {
+    "sourceDir": "webapp",
+    "maxRecommendations": 6,
+    "includePackCatalog": true
+  }
+}
+```
+
+### Materializar agentes recomendados automaticamente
+
+```json
+{
+  "tool": "materialize_recommended_agents",
+  "arguments": {
+    "dryRun": true,
+    "includePackCatalog": true
+  }
+}
+```
+
+### Guardar agentes actuales como pack reutilizable
+
+```json
+{
+  "tool": "save_agent_pack",
+  "arguments": {
+    "packName": "base-ui5-pack",
+    "packVersion": "1.0.0",
+    "dryRun": false
+  }
+}
+```
+
+### Listar packs disponibles
+
+```json
+{
+  "tool": "list_agent_packs",
+  "arguments": {}
+}
+```
+
+### Aplicar un pack guardado en otro proyecto
+
+```json
+{
+  "tool": "apply_agent_pack",
+  "arguments": {
+    "packSlug": "base-ui5-pack",
+    "dryRun": true,
+    "outputDir": ".codex/mcp/agents"
   }
 }
 ```

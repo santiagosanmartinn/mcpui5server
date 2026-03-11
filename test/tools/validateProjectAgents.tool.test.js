@@ -75,7 +75,7 @@ describe("validate_project_agents tool", () => {
       }
     );
 
-    const blueprintPath = path.join(tempRoot, ".codex", "agents", "agent.blueprint.json");
+    const blueprintPath = path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json");
     const blueprint = JSON.parse(await fs.readFile(blueprintPath, "utf8"));
     blueprint.agents[0].allowedTools.push("unknown_tool_contract");
     await fs.writeFile(blueprintPath, `${JSON.stringify(blueprint, null, 2)}\n`, "utf8");

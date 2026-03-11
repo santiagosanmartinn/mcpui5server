@@ -5,7 +5,8 @@ import { applyProjectPatch, previewFileWrite } from "../../utils/patchWriter.js"
 import { fileExists, readJsonFile, readTextFile } from "../../utils/fileSystem.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
-const DEFAULT_OUTPUT_DIR = ".codex/agents";
+const DEFAULT_OUTPUT_DIR = ".codex/mcp/agents";
+const DEFAULT_DOCS_DIR = "docs/mcp";
 const SAPUI5_MCP_ENTRY = {
   command: "node",
   args: ["${workspaceFolder}/src/index.js"]
@@ -44,25 +45,53 @@ const TOOL_GROUPS = {
   ],
   agents: [
     "scaffold_project_agents",
-    "validate_project_agents"
+    "validate_project_agents",
+    "recommend_project_agents",
+    "materialize_recommended_agents",
+    "save_agent_pack",
+    "list_agent_packs",
+    "apply_agent_pack"
   ]
 };
+
+const agentDefinitionSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  goal: z.string().min(1),
+  allowedTools: z.array(z.string().min(1)).min(1)
+}).strict();
+
+const qualityGatesSchema = z.object({
+  requiredTools: z.array(z.string().min(1)).optional(),
+  requiredCommands: z.array(z.string().min(1)).optional(),
+  minimumReviewAgents: z.number().int().positive().optional()
+}).strict().optional();
+
+const recommendationMetaSchema = z.object({
+  source: z.string().min(1),
+  selectedRecommendationIds: z.array(z.string().min(1)).optional()
+}).strict().optional();
 
 const inputSchema = z.object({
   projectName: z.string().min(1).optional(),
   projectType: z.enum(PROJECT_TYPES).optional(),
   namespace: z.string().min(1).optional(),
   outputDir: z.string().min(1).optional(),
+  docsDir: z.string().min(1).optional(),
+  generateDocs: z.boolean().optional(),
   includeVscodeMcp: z.boolean().optional(),
   dryRun: z.boolean().optional(),
   allowOverwrite: z.boolean().optional(),
   reason: z.string().max(200).optional(),
-  maxDiffLines: z.number().int().min(10).max(400).optional()
+  maxDiffLines: z.number().int().min(10).max(400).optional(),
+  agentDefinitions: z.array(agentDefinitionSchema).min(2).optional(),
+  qualityGates: qualityGatesSchema,
+  recommendationMeta: recommendationMetaSchema
 }).strict();
 
 const filePreviewSchema = z.object({
   path: z.string(),
-  role: z.enum(["blueprint", "agents-guide", "bootstrap-prompt", "mcp-config"]),
+  role: z.enum(["blueprint", "agents-guide", "bootstrap-prompt", "mcp-config", "context-doc", "flows-doc"]),
   existsBefore: z.boolean(),
   changed: z.boolean(),
   oldHash: z.string().nullable(),
@@ -71,7 +100,7 @@ const filePreviewSchema = z.object({
   diffTruncated: z.boolean()
 });
 
-const outputSchema = z.object({
+export const scaffoldProjectAgentsOutputSchema = z.object({
   dryRun: z.boolean(),
   changed: z.boolean(),
   project: z.object({
@@ -83,6 +112,8 @@ const outputSchema = z.object({
     blueprintPath: z.string(),
     agentsGuidePath: z.string(),
     bootstrapPromptPath: z.string(),
+    contextDocPath: z.string().nullable(),
+    flowsDocPath: z.string().nullable(),
     mcpConfigPath: z.string().nullable()
   }),
   fileSummary: z.object({
@@ -113,22 +144,31 @@ export const scaffoldProjectAgentsTool = {
   name: "scaffold_project_agents",
   description: "Scaffold reusable project agent artifacts (blueprint, guide, bootstrap prompt, optional MCP config) with dry-run and patch safety.",
   inputSchema,
-  outputSchema,
+  outputSchema: scaffoldProjectAgentsOutputSchema,
   async handler(args, { context }) {
     const {
       projectName,
       projectType,
       namespace,
       outputDir,
+      docsDir,
+      generateDocs,
       includeVscodeMcp,
       dryRun,
       allowOverwrite,
       reason,
-      maxDiffLines
+      maxDiffLines,
+      agentDefinitions,
+      qualityGates,
+      recommendationMeta
     } = inputSchema.parse(args);
     const root = context.rootDir;
     const selectedOutputDir = normalizeRelativePath(outputDir ?? DEFAULT_OUTPUT_DIR);
-    const shouldIncludeMcp = includeVscodeMcp ?? true;
+    const selectedDocsDir = normalizeRelativePath(docsDir ?? DEFAULT_DOCS_DIR);
+    enforceManagedSubtree(selectedOutputDir, ".codex/mcp", "outputDir");
+    enforceManagedSubtree(selectedDocsDir, "docs", "docsDir");
+    const shouldGenerateDocs = generateDocs ?? true;
+    const shouldIncludeMcp = includeVscodeMcp ?? false;
     const shouldDryRun = dryRun ?? true;
     const shouldAllowOverwrite = allowOverwrite ?? false;
     const projectProfile = await resolveProjectProfile({
@@ -142,10 +182,16 @@ export const scaffoldProjectAgentsTool = {
       blueprintPath: joinPath(selectedOutputDir, "agent.blueprint.json"),
       agentsGuidePath: joinPath(selectedOutputDir, "AGENTS.generated.md"),
       bootstrapPromptPath: joinPath(selectedOutputDir, "prompts/task-bootstrap.txt"),
+      contextDocPath: shouldGenerateDocs ? joinPath(selectedDocsDir, "project-context.md") : null,
+      flowsDocPath: shouldGenerateDocs ? joinPath(selectedDocsDir, "agent-flows.md") : null,
       mcpConfigPath: shouldIncludeMcp ? ".vscode/mcp.json" : null
     };
 
-    const blueprint = buildBlueprint(projectProfile);
+    const blueprint = buildBlueprint(projectProfile, {
+      agentDefinitions,
+      qualityGates,
+      recommendationMeta
+    });
     const plannedWrites = [
       {
         path: files.blueprintPath,
@@ -163,6 +209,19 @@ export const scaffoldProjectAgentsTool = {
         content: renderBootstrapPrompt(projectProfile, files)
       }
     ];
+
+    if (shouldGenerateDocs) {
+      plannedWrites.push({
+        path: files.contextDocPath,
+        role: "context-doc",
+        content: renderContextDoc(projectProfile, files)
+      });
+      plannedWrites.push({
+        path: files.flowsDocPath,
+        role: "flows-doc",
+        content: renderFlowsDoc(projectProfile, files)
+      });
+    }
 
     if (shouldIncludeMcp) {
       const mcpConfig = await resolveMcpConfigWrite({
@@ -223,7 +282,7 @@ export const scaffoldProjectAgentsTool = {
       });
     }
 
-    return outputSchema.parse({
+    return scaffoldProjectAgentsOutputSchema.parse({
       dryRun: shouldDryRun,
       changed,
       project: projectProfile,
@@ -270,9 +329,10 @@ async function resolveProjectProfile(options) {
   };
 }
 
-function buildBlueprint(projectProfile) {
+function buildBlueprint(projectProfile, options = {}) {
+  const { agentDefinitions, qualityGates, recommendationMeta } = options;
   const { name, type, namespace } = projectProfile;
-  const requiredTools = type === "sapui5"
+  const defaultRequiredTools = type === "sapui5"
     ? [
       "validate_ui5_code",
       "analyze_ui5_performance",
@@ -284,7 +344,16 @@ function buildBlueprint(projectProfile) {
       "security_check_javascript"
     ];
 
-  return {
+  const resolvedQualityGates = {
+    requiredTools: unique(qualityGates?.requiredTools ?? defaultRequiredTools),
+    requiredCommands: unique(qualityGates?.requiredCommands ?? ["npm run check"]),
+    minimumReviewAgents: qualityGates?.minimumReviewAgents ?? 1
+  };
+  const resolvedAgents = agentDefinitions
+    ? normalizeAgentDefinitions(agentDefinitions)
+    : buildAgentsByProjectType(type, name);
+
+  const blueprint = {
     schemaVersion: "1.0.0",
     project: {
       name,
@@ -297,13 +366,16 @@ function buildBlueprint(projectProfile) {
       requirePatchPreview: true,
       requireRollbackPlan: true
     },
-    qualityGates: {
-      requiredTools,
-      requiredCommands: ["npm run check"],
-      minimumReviewAgents: 1
-    },
-    agents: buildAgentsByProjectType(type, name)
+    qualityGates: resolvedQualityGates,
+    agents: resolvedAgents
   };
+  if (recommendationMeta) {
+    blueprint.recommendation = {
+      source: recommendationMeta.source,
+      selectedRecommendationIds: recommendationMeta.selectedRecommendationIds ?? []
+    };
+  }
+  return blueprint;
 }
 
 function buildAgentsByProjectType(projectType, projectName) {
@@ -455,6 +527,51 @@ function renderBootstrapPrompt(projectProfile, files) {
   ].join("\n");
 }
 
+function renderContextDoc(projectProfile, files) {
+  return [
+    "# Contexto del Proyecto",
+    "",
+    `Proyecto: ${projectProfile.name}`,
+    `Tipo: ${projectProfile.type}`,
+    `Namespace: ${projectProfile.namespace ?? "n/a"}`,
+    "",
+    "## Artefactos MCP",
+    "",
+    `- Blueprint: ${files.blueprintPath}`,
+    `- Guia de agentes: ${files.agentsGuidePath}`,
+    `- Prompt bootstrap: ${files.bootstrapPromptPath}`,
+    "",
+    "## Reglas operativas",
+    "",
+    "- Aplicar estrategia MCP-first.",
+    "- Ejecutar dry-run por defecto para cambios de escritura.",
+    "- Mantener quality gates y validacion estricta al cerrar tareas.",
+    ""
+  ].join("\n");
+}
+
+function renderFlowsDoc(projectProfile, files) {
+  return [
+    "# Flujos de Agentes",
+    "",
+    `Proyecto: ${projectProfile.name}`,
+    "",
+    "## Flujo recomendado",
+    "",
+    "1. Analisis inicial del proyecto.",
+    "2. Planificacion del cambio minimo viable.",
+    "3. Preview y aplicacion de patch.",
+    "4. Validacion de calidad y seguridad.",
+    "5. Cierre con rollback disponible.",
+    "",
+    "## Referencias",
+    "",
+    `- Blueprint: ${files.blueprintPath}`,
+    `- Guia: ${files.agentsGuidePath}`,
+    ""
+  ].join("\n");
+}
+
 async function resolveMcpConfigWrite(options) {
   const { root, allowOverwrite } = options;
   const targetPath = ".vscode/mcp.json";
@@ -572,6 +689,40 @@ function unique(values) {
   return Array.from(new Set(values));
 }
 
+function normalizeAgentDefinitions(agentDefinitions) {
+  const ids = new Set();
+  const normalized = [];
+  for (const definition of agentDefinitions) {
+    const id = definition.id.trim();
+    if (ids.has(id)) {
+      throw new ToolError(`Duplicate custom agent id: ${id}`, {
+        code: "DUPLICATE_AGENT_ID"
+      });
+    }
+    ids.add(id);
+    normalized.push({
+      id,
+      title: definition.title.trim(),
+      goal: definition.goal.trim(),
+      allowedTools: unique(definition.allowedTools.map((tool) => tool.trim()).filter(Boolean))
+    });
+  }
+  return normalized;
+}
+
 function ensureObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function enforceManagedSubtree(pathValue, rootPrefix, label) {
+  if (!pathValue.startsWith(`${rootPrefix}/`) && pathValue !== rootPrefix) {
+    throw new ToolError(`${label} must stay inside ${rootPrefix}.`, {
+      code: "INVALID_ARTIFACT_LAYOUT",
+      details: {
+        label,
+        path: pathValue,
+        expectedPrefix: rootPrefix
+      }
+    });
+  }
 }
