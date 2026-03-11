@@ -21,7 +21,8 @@ const TOOL_GROUPS = {
     "sync_manifest_json",
     "write_project_file_preview",
     "apply_project_patch",
-    "rollback_project_patch"
+    "rollback_project_patch",
+    "run_project_quality_gate"
   ],
   ui5: [
     "generate_ui5_controller",
@@ -31,7 +32,9 @@ const TOOL_GROUPS = {
     "generate_ui5_feature",
     "manage_ui5_i18n",
     "analyze_ui5_performance",
-    "validate_ui5_code"
+    "validate_ui5_code",
+    "validate_ui5_version_compatibility",
+    "security_check_ui5_app"
   ],
   javascript: [
     "generate_javascript_function",

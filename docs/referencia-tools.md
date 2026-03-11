@@ -200,6 +200,37 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - metodos detectados
   - lifecycle faltante (solo aplica para `javascript`)
 
+### `validate_ui5_version_compatibility`
+
+- Objetivo: validar que controles/modulos UI5 usados sean compatibles con la version del proyecto.
+- Entrada destacada:
+  - `code` o `path` o `sourceDir`
+  - `ui5Version` (opcional; si no viene, intenta detectarla del proyecto)
+  - `sourceType` (opcional para modo `code/path`)
+- Cobertura:
+  - comprueba disponibilidad de simbolos UI5 contra catalogo local versionado (`src/tools/ui5/catalogs/ui5SymbolCatalog.js`)
+  - detecta incompatibilidades por version minima requerida
+  - recomienda componentes mas adecuados segun guideline UX (fechas/horas, booleanos, valores finitos, estados semanticos, listas/tablas y estructura de formularios)
+- Salida:
+  - `summary` con compatibles/incompatibles/desconocidos
+  - `findings` con severidad y referencia API oficial
+  - `componentRecommendations` con sugerencias de componente ideal
+
+### `security_check_ui5_app`
+
+- Objetivo: escanear riesgos de seguridad en XML/JS UI5.
+- Entrada destacada:
+  - `code` o `path` o `sourceDir`
+  - `sourceType`, `maxFiles`, `maxFindings`
+- Reglas incluidas (resumen):
+  - HTML crudo (`core:HTML`, `innerHTML`, `document.write`)
+  - ejecucion dinamica de codigo (`eval`, `new Function`, etc.)
+  - patrones de inyeccion HTML y enlaces peligrosos (`javascript:`)
+- Salida:
+  - `safe`
+  - `summary` por severidad
+  - `findings` accionables por archivo
+
 ## Dominio javascript
 
 ### `generate_javascript_function`
@@ -388,3 +419,23 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
     - `docs/mcp/agent-flows.md`
     - `.codex/mcp/context-snapshot.json`
   - `applyResult` si `dryRun: false`
+
+## Dominio project (gates)
+
+### `run_project_quality_gate`
+
+- Objetivo: ejecutar una puerta de calidad consolidada para UI5.
+- Orquesta:
+  - `validate_ui5_version_compatibility`
+  - `security_check_ui5_app`
+  - `analyze_ui5_performance`
+  - `refresh_project_context_docs` (opcional)
+- Entrada destacada:
+  - `sourceDir`, `ui5Version`, `maxFiles`
+  - umbrales y politicas (`failOnUnknownSymbols`, `failOnMediumSecurity`, etc.)
+  - `refreshDocs`, `applyDocs`, `failOnDocDrift`
+- Salida:
+  - `pass` global
+  - `checks` detallados
+  - `summary` con metricas clave
+  - `reports` por dominio (compatibilidad, seguridad, performance, docs)

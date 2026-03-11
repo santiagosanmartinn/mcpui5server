@@ -217,6 +217,28 @@ Ejemplo de configuracion:
 }
 ```
 
+### Validar compatibilidad UI5 por version y componente ideal
+
+```json
+{
+  "tool": "validate_ui5_version_compatibility",
+  "arguments": {
+    "sourceDir": "webapp"
+  }
+}
+```
+
+### Escaneo de seguridad UI5 (XML + JS)
+
+```json
+{
+  "tool": "security_check_ui5_app",
+  "arguments": {
+    "sourceDir": "webapp"
+  }
+}
+```
+
 ### Scaffold de agentes de proyecto (dry-run)
 
 ```json
@@ -253,6 +275,19 @@ Layout por defecto:
   "arguments": {
     "sourceDir": "webapp",
     "dryRun": true
+  }
+}
+```
+
+### Ejecutar quality gate consolidado
+
+```json
+{
+  "tool": "run_project_quality_gate",
+  "arguments": {
+    "sourceDir": "webapp",
+    "refreshDocs": true,
+    "applyDocs": false
   }
 }
 ```

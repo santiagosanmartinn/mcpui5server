@@ -896,6 +896,95 @@ Entrada:
 }
 ```
 
+## 31) `validate_ui5_version_compatibility`
+
+Entrada:
+```json
+{
+  "tool": "validate_ui5_version_compatibility",
+  "arguments": {
+    "sourceDir": "webapp"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "ui5Version": "1.60.0",
+  "summary": {
+    "incompatible": 0,
+    "recommendations": 2
+  },
+  "componentRecommendations": [
+    {
+      "currentComponent": "sap.m.Input",
+      "suggestedComponent": "sap.m.DatePicker"
+    }
+  ]
+}
+```
+
+## 32) `security_check_ui5_app`
+
+Entrada:
+```json
+{
+  "tool": "security_check_ui5_app",
+  "arguments": {
+    "sourceDir": "webapp"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "safe": false,
+  "summary": {
+    "totalFindings": 3,
+    "bySeverity": {
+      "high": 1,
+      "medium": 1,
+      "low": 1
+    }
+  }
+}
+```
+
+## 33) `run_project_quality_gate`
+
+Entrada:
+```json
+{
+  "tool": "run_project_quality_gate",
+  "arguments": {
+    "sourceDir": "webapp",
+    "refreshDocs": true,
+    "applyDocs": false
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": false,
+  "summary": {
+    "incompatibleSymbols": 1,
+    "highSecurityFindings": 1
+  },
+  "reports": {
+    "compatibility": {
+      "isCompatible": false
+    },
+    "security": {
+      "safe": false
+    }
+  }
+}
+```
+
 Salida (ejemplo):
 ```json
 {

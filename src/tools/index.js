@@ -6,6 +6,7 @@ import { syncManifestJsonTool } from "./project/syncManifest.js";
 import { writeProjectFilePreviewTool } from "./project/writePreview.js";
 import { applyProjectPatchTool } from "./project/applyPatch.js";
 import { rollbackProjectPatchTool } from "./project/rollbackPatch.js";
+import { runProjectQualityGateTool } from "./project/runProjectQualityGate.js";
 import { generateUi5ControllerTool } from "./ui5/generateController.js";
 import { generateUi5FragmentTool } from "./ui5/generateFragment.js";
 import { generateUi5FormatterTool } from "./ui5/generateFormatter.js";
@@ -14,6 +15,8 @@ import { generateUi5FeatureTool } from "./ui5/generateFeature.js";
 import { manageUi5I18nTool } from "./ui5/manageI18n.js";
 import { analyzeUi5PerformanceTool } from "./ui5/analyzePerformance.js";
 import { validateUi5CodeTool } from "./ui5/validateUi5Code.js";
+import { validateUi5VersionCompatibilityTool } from "./ui5/validateUi5VersionCompatibility.js";
+import { securityCheckUi5AppTool } from "./ui5/securityCheckUi5App.js";
 import { generateJavaScriptFunctionTool } from "./javascript/generateFunction.js";
 import { refactorJavaScriptCodeTool } from "./javascript/refactorCode.js";
 import { lintJavaScriptCodeTool } from "./javascript/lintCode.js";
@@ -47,6 +50,7 @@ export const allTools = [
   writeProjectFilePreviewTool,
   applyProjectPatchTool,
   rollbackProjectPatchTool,
+  runProjectQualityGateTool,
   // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,
@@ -56,6 +60,8 @@ export const allTools = [
   lintJavaScriptCodeTool,
   securityCheckJavaScriptTool,
   validateUi5CodeTool,
+  validateUi5VersionCompatibilityTool,
+  securityCheckUi5AppTool,
   // Agent factory utilities
   scaffoldProjectAgentsTool,
   validateProjectAgentsTool,

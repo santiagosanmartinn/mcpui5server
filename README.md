@@ -21,6 +21,9 @@ src/
       applyAgentPack.js
       refreshProjectContextDocs.js
     ui5/
+      catalogs/
+        ui5ComponentFitRules.js
+        ui5SymbolCatalog.js
       generateController.js
       generateFragment.js
       generateFormatter.js
@@ -29,6 +32,8 @@ src/
       manageI18n.js
       analyzePerformance.js
       validateUi5Code.js
+      validateUi5VersionCompatibility.js
+      securityCheckUi5App.js
     javascript/
       generateFunction.js
       refactorCode.js
@@ -43,6 +48,7 @@ src/
       writePreview.js
       applyPatch.js
       rollbackPatch.js
+      runProjectQualityGate.js
     documentation/
       cacheStore.js
       searchUI5SDK.js
@@ -93,6 +99,9 @@ src/
 28. `list_agent_packs`
 29. `apply_agent_pack`
 30. `refresh_project_context_docs`
+31. `validate_ui5_version_compatibility`
+32. `security_check_ui5_app`
+33. `run_project_quality_gate`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

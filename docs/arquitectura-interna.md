@@ -19,11 +19,17 @@ src/
       applyAgentPack.js
       refreshProjectContextDocs.js
     ui5/
+      catalogs/
+        ui5ComponentFitRules.js
+        ui5SymbolCatalog.js
       analyzePerformance.js
       generateFeature.js
       manageI18n.js
+      validateUi5VersionCompatibility.js
+      securityCheckUi5App.js
     javascript/
     project/
+      runProjectQualityGate.js
     documentation/
       cacheStore.js
       searchUI5SDK.js

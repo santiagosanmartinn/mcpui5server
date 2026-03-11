@@ -302,7 +302,8 @@ function buildHeuristicRecommendations(project, signals) {
             "search_mdn",
             "refresh_project_context_docs",
             "validate_project_agents",
-            "recommend_project_agents"
+            "recommend_project_agents",
+            "validate_ui5_version_compatibility"
           ])
         }
       }),
@@ -323,6 +324,9 @@ function buildHeuristicRecommendations(project, signals) {
             "generate_ui5_formatter",
             "generate_ui5_view_logic",
             "manage_ui5_i18n",
+            "validate_ui5_version_compatibility",
+            "security_check_ui5_app",
+            "run_project_quality_gate",
             "sync_manifest_json",
             "write_project_file_preview",
             "apply_project_patch",
@@ -346,6 +350,9 @@ function buildHeuristicRecommendations(project, signals) {
           allowedTools: unique([
             "validate_ui5_code",
             "analyze_ui5_performance",
+            "validate_ui5_version_compatibility",
+            "security_check_ui5_app",
+            "run_project_quality_gate",
             "lint_javascript_code",
             "security_check_javascript",
             "refresh_project_context_docs",
@@ -397,7 +404,8 @@ function buildHeuristicRecommendations(project, signals) {
           "search_mdn",
           "refresh_project_context_docs",
           "recommend_project_agents",
-          "validate_project_agents"
+          "validate_project_agents",
+          "run_project_quality_gate"
         ])
       }
     }),
@@ -415,6 +423,7 @@ function buildHeuristicRecommendations(project, signals) {
           "generate_javascript_function",
           "refactor_javascript_code",
           "lint_javascript_code",
+          "security_check_ui5_app",
           "write_project_file_preview",
           "apply_project_patch",
           "rollback_project_patch",

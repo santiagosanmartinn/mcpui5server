@@ -237,3 +237,63 @@ phases:
         acceptance:
           - cualquier desarrollador puede seguirlos paso a paso
           - checklist final de verificacion
+
+      - id: P2-005
+        title: Sincronizacion automatica de catalogo UI5 oficial
+        priority: P2
+        effort: M
+        type: feature
+        dependencies: [P1-006]
+        outputs:
+          - job/script para refrescar `ui5SymbolCatalog` desde fuentes oficiales UI5
+          - estrategia de cache y fallback offline para no romper ejecuciones
+          - trazabilidad de version/fecha de catalogo en salida de validaciones
+        acceptance:
+          - update del catalogo ejecutable en modo controlado (manual o programado)
+          - sin degradar rendimiento en ejecucion local
+          - diferencias de catalogo auditables en repositorio
+
+      - id: P2-006
+        title: Autofix guiado de recomendaciones UI5
+        priority: P2
+        effort: L
+        type: feature
+        dependencies: [P0-004, P2-005]
+        outputs:
+          - tool de autofix con `dryRun` y `apply` para recomendaciones de alta confianza
+          - generacion de preview/diff y rollback seguro para cambios de componentes
+          - exclusion de casos ambiguos (solo fixes deterministas)
+        acceptance:
+          - nunca escribe en disco sin confirmacion explicita (`apply`)
+          - cada fix muestra razon y referencia de guideline usada
+          - tests de no-regresion sobre XML/JS en escenarios reales
+
+      - id: P2-007
+        title: Politicas de reglas por proyecto
+        priority: P2
+        effort: M
+        type: feature
+        dependencies: [P2-006]
+        outputs:
+          - archivo de configuracion de politicas (reglas activas, severidades, excepciones)
+          - resolucion de politicas en runtime para quality gate y validadores UI5
+          - soporte de overrides por proyecto sin tocar codigo fuente de tools
+        acceptance:
+          - permite activar/desactivar reglas de forma declarativa
+          - severidades y exclusiones respetadas en reporte final
+          - validacion de schema de politicas con errores claros
+
+      - id: P2-008
+        title: Golden tests de UX/UI5 enterprise
+        priority: P2
+        effort: M
+        type: feature
+        dependencies: [P2-006, P2-007]
+        outputs:
+          - corpus de escenarios UI5 reales (formularios, listas, tablas, flujos de negocio)
+          - baseline de precision para recomendaciones (precision/recall/falsos positivos)
+          - suite de regresion para futuras reglas y refactors
+        acceptance:
+          - conjunto minimo de escenarios representativos versionados
+          - reporte comparativo frente al baseline anterior en CI
+          - reduccion medible de falsos positivos frente al estado actual
