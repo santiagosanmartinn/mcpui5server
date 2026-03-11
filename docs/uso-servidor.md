@@ -245,6 +245,18 @@ Layout por defecto:
 }
 ```
 
+### Refrescar contexto incremental del proyecto
+
+```json
+{
+  "tool": "refresh_project_context_docs",
+  "arguments": {
+    "sourceDir": "webapp",
+    "dryRun": true
+  }
+}
+```
+
 ### Recomendar agentes desde analisis del proyecto
 
 ```json
@@ -264,6 +276,7 @@ Layout por defecto:
 {
   "tool": "materialize_recommended_agents",
   "arguments": {
+    "sourceDir": "webapp",
     "dryRun": true,
     "includePackCatalog": true
   }

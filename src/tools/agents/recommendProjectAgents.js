@@ -300,6 +300,7 @@ function buildHeuristicRecommendations(project, signals) {
             "read_project_file",
             "search_ui5_sdk",
             "search_mdn",
+            "refresh_project_context_docs",
             "validate_project_agents",
             "recommend_project_agents"
           ])
@@ -326,6 +327,7 @@ function buildHeuristicRecommendations(project, signals) {
             "write_project_file_preview",
             "apply_project_patch",
             "rollback_project_patch",
+            "refresh_project_context_docs",
             "materialize_recommended_agents",
             "save_agent_pack"
           ])
@@ -346,6 +348,7 @@ function buildHeuristicRecommendations(project, signals) {
             "analyze_ui5_performance",
             "lint_javascript_code",
             "security_check_javascript",
+            "refresh_project_context_docs",
             "read_project_file",
             "search_project_files",
             "validate_project_agents"
@@ -392,6 +395,7 @@ function buildHeuristicRecommendations(project, signals) {
           "analyze_current_file",
           "read_project_file",
           "search_mdn",
+          "refresh_project_context_docs",
           "recommend_project_agents",
           "validate_project_agents"
         ])
@@ -414,6 +418,7 @@ function buildHeuristicRecommendations(project, signals) {
           "write_project_file_preview",
           "apply_project_patch",
           "rollback_project_patch",
+          "refresh_project_context_docs",
           "materialize_recommended_agents",
           "save_agent_pack"
         ])
@@ -432,6 +437,7 @@ function buildHeuristicRecommendations(project, signals) {
         allowedTools: unique([
           "lint_javascript_code",
           "security_check_javascript",
+          "refresh_project_context_docs",
           "search_project_files",
           "read_project_file",
           "validate_project_agents"

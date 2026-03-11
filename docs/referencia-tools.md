@@ -371,3 +371,20 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - pack seleccionado
   - estado de integridad
   - `scaffoldResult` completo de la materializacion
+
+### `refresh_project_context_docs`
+
+- Objetivo: refrescar de forma incremental la documentacion de contexto en `docs/mcp` usando snapshot en `.codex/mcp`.
+- Entrada destacada:
+  - `sourceDir` (opcional, default `webapp`)
+  - `docsDir` (opcional, default `docs/mcp`)
+  - `cachePath` (opcional, default `.codex/mcp/context-snapshot.json`)
+  - `dryRun` y `maxDiffLines` (opcionales)
+- Salida:
+  - resumen de `delta` contra snapshot previo (`added/modified/removed/unchanged`)
+  - metricas de archivos trazados
+  - previews para:
+    - `docs/mcp/project-context.md`
+    - `docs/mcp/agent-flows.md`
+    - `.codex/mcp/context-snapshot.json`
+  - `applyResult` si `dryRun: false`

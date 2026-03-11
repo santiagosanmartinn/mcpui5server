@@ -17,6 +17,7 @@ src/
       saveAgentPack.js
       listAgentPacks.js
       applyAgentPack.js
+      refreshProjectContextDocs.js
     ui5/
       analyzePerformance.js
       generateFeature.js

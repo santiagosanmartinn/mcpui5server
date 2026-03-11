@@ -19,6 +19,7 @@ src/
       saveAgentPack.js
       listAgentPacks.js
       applyAgentPack.js
+      refreshProjectContextDocs.js
     ui5/
       generateController.js
       generateFragment.js
@@ -91,6 +92,7 @@ src/
 27. `save_agent_pack`
 28. `list_agent_packs`
 29. `apply_agent_pack`
+30. `refresh_project_context_docs`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

@@ -27,6 +27,7 @@ import { materializeRecommendedAgentsTool } from "./agents/materializeRecommende
 import { saveAgentPackTool } from "./agents/saveAgentPack.js";
 import { listAgentPacksTool } from "./agents/listAgentPacks.js";
 import { applyAgentPackTool } from "./agents/applyAgentPack.js";
+import { refreshProjectContextDocsTool } from "./agents/refreshProjectContextDocs.js";
 
 export const allTools = [
   // Project intelligence
@@ -62,5 +63,6 @@ export const allTools = [
   materializeRecommendedAgentsTool,
   saveAgentPackTool,
   listAgentPacksTool,
-  applyAgentPackTool
+  applyAgentPackTool,
+  refreshProjectContextDocsTool
 ];

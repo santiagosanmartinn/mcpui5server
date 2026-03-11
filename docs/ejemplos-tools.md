@@ -883,6 +883,43 @@ Entrada:
 }
 ```
 
+## 30) `refresh_project_context_docs`
+
+Entrada:
+```json
+{
+  "tool": "refresh_project_context_docs",
+  "arguments": {
+    "sourceDir": "webapp",
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "sourceDir": "webapp",
+  "docsDir": "docs/mcp",
+  "cachePath": ".codex/mcp/context-snapshot.json",
+  "delta": {
+    "hasPreviousSnapshot": false,
+    "added": 24,
+    "modified": 0,
+    "removed": 0,
+    "unchanged": 0
+  },
+  "tracked": {
+    "totalFiles": 24,
+    "jsFiles": 12,
+    "xmlFiles": 6
+  },
+  "applyResult": null
+}
+```
+
 Salida (ejemplo):
 ```json
 {

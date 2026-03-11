@@ -50,7 +50,8 @@ const TOOL_GROUPS = {
     "materialize_recommended_agents",
     "save_agent_pack",
     "list_agent_packs",
-    "apply_agent_pack"
+    "apply_agent_pack",
+    "refresh_project_context_docs"
   ]
 };
 
