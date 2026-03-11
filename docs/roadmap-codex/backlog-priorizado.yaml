@@ -1,0 +1,239 @@
+version: 1
+generated_on: 2026-03-10
+project: sapui5-mcp-server
+execution_mode: codex
+
+phases:
+  - id: phase-1
+    name: Fundacion tecnica
+    window: "2026-03-10..2026-04-09"
+    tasks:
+      - id: P0-001
+        title: Base de calidad y pruebas
+        priority: P0
+        effort: M
+        type: infra
+        dependencies: []
+        outputs:
+          - scripts npm para lint/test/coverage
+          - estructura de tests unitarios e integracion
+        acceptance:
+          - npm run check ejecuta sin errores
+          - npm run test ejecuta sin errores
+          - cobertura utilidades criticas >= 70
+
+      - id: P0-002
+        title: Parser AST para JS/TS
+        priority: P0
+        effort: L
+        type: feature
+        dependencies: [P0-001]
+        outputs:
+          - utilidades AST para imports, metodos, clases, dependencias UI5
+          - adaptacion de analyze_current_file a AST
+        acceptance:
+          - parser maneja Controller.extend y class extends Controller
+          - tests cubren casos invalidos y edge cases
+
+      - id: P0-003
+        title: Parser XML UI5
+        priority: P0
+        effort: M
+        type: feature
+        dependencies: [P0-001]
+        outputs:
+          - utilidad para analizar XMLView y Fragment
+          - deteccion de bindings, eventos y namespaces
+        acceptance:
+          - salida estructurada para al menos 3 ejemplos reales
+          - fallos de parseo devuelven ToolError tipificado
+
+      - id: P0-004
+        title: Escritura segura con diff
+        priority: P0
+        effort: L
+        type: feature
+        dependencies: [P0-001]
+        outputs:
+          - tools write_project_file_preview y apply_project_patch
+          - proteccion anti path traversal y limites por tamano
+        acceptance:
+          - preview no modifica disco
+          - apply modifica solo rutas dentro del workspace
+          - rollback documentado y probado
+
+      - id: P0-005
+        title: Refactor JS basado en AST
+        priority: P0
+        effort: M
+        type: feature
+        dependencies: [P0-002]
+        outputs:
+          - reemplazo de refactor textual por transformaciones AST
+          - reporte de cambios por regla aplicada
+        acceptance:
+          - no rompe codigo valido en corpus de tests
+          - formato final consistente
+
+      - id: P0-006
+        title: validate_ui5_code v2
+        priority: P0
+        effort: M
+        type: feature
+        dependencies: [P0-002, P0-003]
+        outputs:
+          - validaciones UI5 por reglas versionadas
+          - severidad y codigo de regla estable
+        acceptance:
+          - reglas separadas por categoria (estructura, MVC, naming, rendimiento)
+          - output compatible hacia atras
+
+      - id: P0-007
+        title: Documentacion tecnica integral
+        priority: P0
+        effort: M
+        type: docs
+        dependencies: [P0-001, P0-004]
+        outputs:
+          - guia de arquitectura actualizada
+          - guia de uso para nivel junior/medio/senior
+        acceptance:
+          - cada tool tiene ejemplo de entrada/salida
+          - decision log (ADR) para cambios de arquitectura
+
+  - id: phase-2
+    name: Productividad UI5 end-to-end
+    window: "2026-04-10..2026-05-09"
+    tasks:
+      - id: P1-001
+        title: Sincronizador de manifest
+        priority: P1
+        effort: M
+        type: feature
+        dependencies: [P0-004, P0-006]
+        outputs:
+          - tool sync_manifest_json
+          - reglas para routes, targets y models
+        acceptance:
+          - cambios idempotentes
+          - validacion previa y posterior al parche
+
+      - id: P1-002
+        title: Generador UI5 end-to-end
+        priority: P1
+        effort: L
+        type: feature
+        dependencies: [P0-004, P0-006]
+        outputs:
+          - tool generate_ui5_feature
+          - scaffolding view/controller/fragment/routing/i18n
+        acceptance:
+          - flujo completo con un comando
+          - dry-run disponible
+
+      - id: P1-003
+        title: Ingestion OData metadata
+        priority: P1
+        effort: L
+        type: feature
+        dependencies: [P0-003, P0-004]
+        outputs:
+          - parser de metadata OData V2 y V4
+          - mapeo entidad->pantalla inicial
+        acceptance:
+          - soporta metadatos locales y remotos
+          - errores de red y parseo con codigo estable
+
+      - id: P1-004
+        title: Gestor i18n
+        priority: P1
+        effort: M
+        type: feature
+        dependencies: [P0-003, P0-004]
+        outputs:
+          - extraccion de literales
+          - deteccion de claves faltantes/no usadas
+        acceptance:
+          - reporte por archivo y resumen global
+          - modo fix opcional con preview diff
+
+      - id: P1-005
+        title: Analizador de rendimiento UI5
+        priority: P1
+        effort: M
+        type: feature
+        dependencies: [P0-006]
+        outputs:
+          - reglas de rendimiento sobre XML/JS
+          - recomendaciones de optimizacion accionables
+        acceptance:
+          - cada finding incluye regla y sugerencia
+          - severidades consistentes
+
+      - id: P1-006
+        title: Integracion de docs oficiales
+        priority: P1
+        effort: S
+        type: docs
+        dependencies: [P0-001]
+        outputs:
+          - mejora de search_ui5_sdk y search_mdn con cache local opcional
+        acceptance:
+          - timeout configurable
+          - trazabilidad de fuente y fecha de consulta
+
+  - id: phase-3
+    name: Calidad operativa y escalado
+    window: "2026-05-10..2026-06-08"
+    tasks:
+      - id: P2-001
+        title: Observabilidad de tools
+        priority: P2
+        effort: M
+        type: infra
+        dependencies: [P0-001]
+        outputs:
+          - metricas por tool (latencia, errores, volumen)
+          - formato de logs estable
+        acceptance:
+          - dashboard JSON exportable
+          - sin informacion sensible en logs
+
+      - id: P2-002
+        title: Seguridad avanzada
+        priority: P2
+        effort: M
+        type: feature
+        dependencies: [P0-006]
+        outputs:
+          - reglas adicionales para patrones inseguros
+          - reporte con contexto por linea
+        acceptance:
+          - falsos positivos reducidos frente a baseline
+          - cobertura de tests de seguridad
+
+      - id: P2-003
+        title: Modo compatibilidad por version
+        priority: P2
+        effort: M
+        type: feature
+        dependencies: [P0-006, P1-001]
+        outputs:
+          - versionado de contratos de output por tool
+          - bandera de compatibilidad en runtime
+        acceptance:
+          - clientes antiguos siguen funcionando
+          - deprecaciones documentadas
+
+      - id: P2-004
+        title: Runbooks operativos
+        priority: P2
+        effort: S
+        type: docs
+        dependencies: [P2-001]
+        outputs:
+          - runbook de incidentes
+          - runbook de actualizacion de dependencias
+        acceptance:
+          - cualquier desarrollador puede seguirlos paso a paso
+          - checklist final de verificacion

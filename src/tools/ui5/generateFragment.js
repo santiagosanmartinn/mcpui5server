@@ -23,7 +23,7 @@ export const generateUi5FragmentTool = {
       : ["    <Text text=\"Sample fragment content\" />"];
 
     const code = [
-      `<core:FragmentDefinition xmlns=\"sap.m\" xmlns:core=\"sap.ui.core\" core:require="{ formatter: '${toFormatterNamespace(fragmentName)}' }">`,
+      `<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" core:require="{ formatter: '${toFormatterNamespace(fragmentName)}' }">`,
       "  <VBox>",
       ...bodyControls,
       "  </VBox>",

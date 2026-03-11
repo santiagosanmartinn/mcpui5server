@@ -9,7 +9,11 @@
 
 - Iniciar servidor MCP por STDIO: `npm run start`
 - Modo desarrollo (watch): `npm run dev`
-- Verificacion sintactica: `npm run check`
+- Lint del codigo: `npm run lint`
+- Tests unitarios/integracion local: `npm run test`
+- Tests en modo CI: `npm run test:run`
+- Cobertura de pruebas: `npm run coverage`
+- Verificacion de calidad (lint + tests): `npm run check`
 
 ## Como se integra con Codex (MCP)
 
@@ -56,6 +60,138 @@ Ejemplo de configuracion:
 }
 ```
 
+### Previsualizar escritura segura
+
+```json
+{
+  "tool": "write_project_file_preview",
+  "arguments": {
+    "path": "webapp/controller/Main.controller.js",
+    "content": "sap.ui.define([], function () { return {}; });"
+  }
+}
+```
+
+### Aplicar patch y obtener rollback
+
+```json
+{
+  "tool": "apply_project_patch",
+  "arguments": {
+    "reason": "ajuste inicial",
+    "changes": [
+      {
+        "path": "webapp/controller/Main.controller.js",
+        "content": "sap.ui.define([], function () { return {}; });"
+      }
+    ]
+  }
+}
+```
+
+### Revertir patch aplicado
+
+```json
+{
+  "tool": "rollback_project_patch",
+  "arguments": {
+    "patchId": "patch-20260310-170000000-abc12345"
+  }
+}
+```
+
+### Sincronizar manifest (dry-run)
+
+```json
+{
+  "tool": "sync_manifest_json",
+  "arguments": {
+    "dryRun": true,
+    "changes": {
+      "routes": {
+        "upsert": [
+          {
+            "name": "detail",
+            "pattern": "detail/{id}",
+            "target": ["detail"]
+          }
+        ]
+      },
+      "targets": {
+        "upsert": {
+          "detail": {
+            "viewName": "Detail"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Generar feature UI5 end-to-end (dry-run)
+
+```json
+{
+  "tool": "generate_ui5_feature",
+  "arguments": {
+    "featureName": "SalesOrder",
+    "dryRun": true
+  }
+}
+```
+
+### Gestionar i18n (reporte)
+
+```json
+{
+  "tool": "manage_ui5_i18n",
+  "arguments": {
+    "mode": "report"
+  }
+}
+```
+
+### Gestionar i18n (fix con preview)
+
+```json
+{
+  "tool": "manage_ui5_i18n",
+  "arguments": {
+    "mode": "fix",
+    "dryRun": true
+  }
+}
+```
+
+### Analizar rendimiento UI5
+
+```json
+{
+  "tool": "analyze_ui5_performance",
+  "arguments": {
+    "sourceDir": "webapp",
+    "maxFindings": 100
+  }
+}
+```
+
+### Buscar en SDK UI5 con cache y timeout
+
+```json
+{
+  "tool": "search_ui5_sdk",
+  "arguments": {
+    "query": "sap.m.Table",
+    "timeoutMs": 8000,
+    "cache": {
+      "enabled": true,
+      "ttlSeconds": 3600
+    }
+  }
+}
+```
+
 ### Generar controller UI5
 
 ```json
@@ -68,3 +204,15 @@ Ejemplo de configuracion:
 }
 ```
 
+### Validar codigo UI5 (v2)
+
+```json
+{
+  "tool": "validate_ui5_code",
+  "arguments": {
+    "sourceType": "javascript",
+    "expectedControllerName": "MainController",
+    "code": "sap.ui.define([], function () { return {}; });"
+  }
+}
+```

@@ -3,9 +3,14 @@
 ## 1. Primeros pasos
 
 1. Ejecuta `npm install`.
-2. Ejecuta `npm run check`.
-3. Ejecuta `npm run start`.
-4. Conecta un cliente MCP al `src/index.js`.
+2. Ejecuta `npm run lint`.
+3. Ejecuta `npm run test:run`.
+4. Ejecuta `npm run coverage`.
+5. Ejecuta `npm run start`.
+6. Conecta un cliente MCP al `src/index.js`.
+7. Revisa:
+   - `docs/guia-por-niveles.md`
+   - `docs/ejemplos-tools.md`
 
 ## 2. Que revisar primero en el codigo
 
@@ -14,6 +19,8 @@
 3. `src/server/toolRegistry.js` para el flujo de registro y errores.
 4. `src/tools/index.js` para el catalogo completo de tools.
 5. `src/utils/fileSystem.js` para seguridad del acceso a archivos.
+6. `src/utils/validator.js` para reglas UI5 v2.
+7. `src/utils/patchWriter.js` para preview/apply/rollback.
 
 ## 3. Flujo de una llamada de tool
 
@@ -46,11 +53,10 @@
 3. Errores estructurados.
 4. Ejemplo documentado en `docs/referencia-tools.md`.
 5. `npm run check` en verde.
+6. `npm run coverage` con umbrales de cobertura en verde.
 
 ## 7. Mejoras recomendadas (siguientes pasos)
 
-- Agregar tests unitarios por tool.
 - Agregar tests de integracion para respuestas MCP reales.
-- Reforzar parser JS con AST (sin romper simplicidad actual).
+- Reforzar parser XML UI5 con AST/estructura robusta.
 - Versionar salida de tools para compatibilidad futura.
-

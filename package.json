@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "sapui5-mcp-server",
   "version": "1.0.0",
   "description": "Modular MCP server optimized for SAPUI5/Fiori JavaScript development workflows",
@@ -10,7 +10,11 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "check": "node --check src/index.js"
+    "lint": "eslint .",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "coverage": "vitest run --coverage",
+    "check": "npm run lint && npm run test:run"
   },
   "keywords": [
     "mcp",
@@ -20,10 +24,21 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@babel/generator": "^7.29.1",
+    "@babel/parser": "^7.29.0",
+    "@babel/traverse": "^7.29.0",
+    "@babel/types": "^7.29.0",
     "@modelcontextprotocol/sdk": "^1.17.5",
+    "fast-xml-parser": "^5.5.1",
     "zod": "^3.25.76"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -16,6 +16,9 @@ src/
       generateFragment.js
       generateFormatter.js
       generateViewLogic.js
+      generateFeature.js
+      manageI18n.js
+      analyzePerformance.js
       validateUi5Code.js
     javascript/
       generateFunction.js
@@ -27,13 +30,22 @@ src/
       readFile.js
       searchFiles.js
       analyzeCurrentFile.js
+      syncManifest.js
+      writePreview.js
+      applyPatch.js
+      rollbackPatch.js
     documentation/
+      cacheStore.js
       searchUI5SDK.js
       searchMDN.js
     index.js
   utils/
     fileSystem.js
+    manifestSync.js
     parser.js
+    refactor.js
+    patchWriter.js
+    xmlParser.js
     validator.js
     logger.js
     errors.js
@@ -47,16 +59,23 @@ src/
 3. `generate_ui5_fragment`
 4. `generate_ui5_formatter`
 5. `generate_ui5_view_logic`
-6. `read_project_file`
-7. `search_project_files`
-8. `analyze_current_file`
-9. `search_ui5_sdk`
-10. `search_mdn`
-11. `generate_javascript_function`
-12. `refactor_javascript_code`
-13. `lint_javascript_code`
-14. `security_check_javascript`
-15. `validate_ui5_code`
+6. `generate_ui5_feature`
+7. `manage_ui5_i18n`
+8. `analyze_ui5_performance`
+9. `read_project_file`
+10. `search_project_files`
+11. `analyze_current_file`
+12. `sync_manifest_json`
+13. `write_project_file_preview`
+14. `apply_project_patch`
+15. `rollback_project_patch`
+16. `search_ui5_sdk`
+17. `search_mdn`
+18. `generate_javascript_function`
+19. `refactor_javascript_code`
+20. `lint_javascript_code`
+21. `security_check_javascript`
+22. `validate_ui5_code`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

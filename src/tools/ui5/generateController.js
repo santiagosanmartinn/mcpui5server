@@ -34,7 +34,7 @@ export const generateUi5ControllerTool = {
       "], function (Controller) {",
       "  \"use strict\";",
       "",
-      `  return Controller.extend(\"${controllerName}\", {`,
+      `  return Controller.extend("${controllerName}", {`,
       ...allMethods.flatMap((methodName, index) => {
         const block = [
           "    /**",

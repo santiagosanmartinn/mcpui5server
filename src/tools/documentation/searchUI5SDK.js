@@ -1,12 +1,21 @@
 import { z } from "zod";
 import { fetchJson } from "../../utils/http.js";
 import { ToolError } from "../../utils/errors.js";
+import { buildCacheKey, normalizeCacheOptions, readCacheEntry, writeCacheEntry } from "./cacheStore.js";
 
 const SDK_INDEX_URL = "https://ui5.sap.com/test-resources/sap/ui/documentation/sdk/inverted-index.json";
 
+const cacheSchema = z.object({
+  enabled: z.boolean().optional(),
+  ttlSeconds: z.number().int().min(60).max(7 * 24 * 3600).optional(),
+  forceRefresh: z.boolean().optional()
+}).strict().optional();
+
 const inputSchema = z.object({
   query: z.string().min(2),
-  maxResults: z.number().int().min(1).max(20).optional()
+  maxResults: z.number().int().min(1).max(20).optional(),
+  timeoutMs: z.number().int().min(1000).max(60000).optional(),
+  cache: cacheSchema
 }).strict();
 
 const outputSchema = z.object({
@@ -19,7 +28,21 @@ const outputSchema = z.object({
       summary: z.string(),
       example: z.string()
     })
-  )
+  ),
+  trace: z.object({
+    provider: z.literal("sapui5-sdk"),
+    queriedAt: z.string(),
+    fetchedAt: z.string(),
+    timeoutMs: z.number().int().positive(),
+    cache: z.object({
+      enabled: z.boolean(),
+      hit: z.boolean(),
+      forceRefresh: z.boolean(),
+      ttlSeconds: z.number().int().positive(),
+      key: z.string(),
+      path: z.string().nullable()
+    })
+  })
 });
 
 export const searchUi5SdkTool = {
@@ -27,10 +50,48 @@ export const searchUi5SdkTool = {
   description: "Search official SAPUI5 SDK metadata and return API/topic summaries with examples.",
   inputSchema,
   outputSchema,
-  async handler(args) {
-    const { query, maxResults } = inputSchema.parse(args);
+  async handler(args, { context }) {
+    const { query, maxResults, timeoutMs, cache } = inputSchema.parse(args);
+    const root = context.rootDir;
+    const effectiveTimeoutMs = timeoutMs ?? 15000;
+    const cacheOptions = normalizeCacheOptions(cache);
+    const cacheKey = buildCacheKey("ui5-sdk-index", {
+      source: SDK_INDEX_URL
+    });
+    const queriedAt = new Date().toISOString();
+    let cachePath = null;
+    let cacheHit = false;
+    let fetchedAt = queriedAt;
+    let data = null;
+
+    if (cacheOptions.enabled && !cacheOptions.forceRefresh) {
+      const cached = await readCacheEntry({
+        root,
+        cacheKey,
+        ttlSeconds: cacheOptions.ttlSeconds
+      });
+      if (cached) {
+        data = cached.data;
+        fetchedAt = cached.fetchedAt;
+        cachePath = cached.cachePath;
+        cacheHit = true;
+      }
+    }
+
     // Pull SDK index and map it to a stable result contract.
-    const data = await fetchSdkIndex();
+    if (!data) {
+      data = await fetchSdkIndex(effectiveTimeoutMs);
+      if (cacheOptions.enabled) {
+        const written = await writeCacheEntry({
+          root,
+          cacheKey,
+          data
+        });
+        cachePath = written.cachePath;
+        fetchedAt = written.fetchedAt;
+      }
+    }
+
     const allEntries = normalizeSdkEntries(data);
     const matches = filterEntries(allEntries, query).slice(0, maxResults ?? 5);
 
@@ -42,14 +103,29 @@ export const searchUi5SdkTool = {
         url: entry.url,
         summary: entry.summary,
         example: entry.example
-      }))
+      })),
+      trace: {
+        provider: "sapui5-sdk",
+        queriedAt,
+        fetchedAt,
+        timeoutMs: effectiveTimeoutMs,
+        cache: {
+          enabled: cacheOptions.enabled,
+          hit: cacheHit,
+          forceRefresh: cacheOptions.forceRefresh,
+          ttlSeconds: cacheOptions.ttlSeconds,
+          key: cacheKey,
+          path: cachePath
+        }
+      }
     });
   }
 };
 
-async function fetchSdkIndex() {
+async function fetchSdkIndex(timeoutMs) {
   try {
     return await fetchJson(SDK_INDEX_URL, {
+      timeoutMs,
       headers: {
         "User-Agent": "sapui5-mcp-server/1.0.0"
       }

@@ -2,10 +2,17 @@ import { analyzeUi5ProjectTool } from "./project/analyzeProject.js";
 import { readProjectFileTool } from "./project/readFile.js";
 import { searchProjectFilesTool } from "./project/searchFiles.js";
 import { analyzeCurrentFileTool } from "./project/analyzeCurrentFile.js";
+import { syncManifestJsonTool } from "./project/syncManifest.js";
+import { writeProjectFilePreviewTool } from "./project/writePreview.js";
+import { applyProjectPatchTool } from "./project/applyPatch.js";
+import { rollbackProjectPatchTool } from "./project/rollbackPatch.js";
 import { generateUi5ControllerTool } from "./ui5/generateController.js";
 import { generateUi5FragmentTool } from "./ui5/generateFragment.js";
 import { generateUi5FormatterTool } from "./ui5/generateFormatter.js";
 import { generateUi5ViewLogicTool } from "./ui5/generateViewLogic.js";
+import { generateUi5FeatureTool } from "./ui5/generateFeature.js";
+import { manageUi5I18nTool } from "./ui5/manageI18n.js";
+import { analyzeUi5PerformanceTool } from "./ui5/analyzePerformance.js";
 import { validateUi5CodeTool } from "./ui5/validateUi5Code.js";
 import { generateJavaScriptFunctionTool } from "./javascript/generateFunction.js";
 import { refactorJavaScriptCodeTool } from "./javascript/refactorCode.js";
@@ -22,9 +29,16 @@ export const allTools = [
   generateUi5FragmentTool,
   generateUi5FormatterTool,
   generateUi5ViewLogicTool,
+  generateUi5FeatureTool,
+  manageUi5I18nTool,
+  analyzeUi5PerformanceTool,
   readProjectFileTool,
   searchProjectFilesTool,
   analyzeCurrentFileTool,
+  syncManifestJsonTool,
+  writeProjectFilePreviewTool,
+  applyProjectPatchTool,
+  rollbackProjectPatchTool,
   // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,

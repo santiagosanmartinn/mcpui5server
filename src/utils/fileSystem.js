@@ -5,6 +5,7 @@ import { ToolError } from "./errors.js";
 const DEFAULT_IGNORED_DIRS = new Set([
   "node_modules",
   ".git",
+  ".mcp-backups",
   "dist",
   "coverage"
 ]);
