@@ -178,7 +178,8 @@ export const saveAgentPackTool = {
       version: selectedPackVersion,
       projectType: packManifest.project.type,
       fingerprint,
-      path: packPath
+      path: packPath,
+      lifecycle: normalizeLifecycle(existing?.lifecycle)
     });
 
     const plannedWrites = [
@@ -297,6 +298,39 @@ function buildNextCatalog(catalog, nextEntry) {
   return {
     schemaVersion: "1.0.0",
     packs: filtered
+  };
+}
+
+function normalizeLifecycle(input) {
+  const now = new Date().toISOString();
+  const base = {
+    status: "experimental",
+    updatedAt: now,
+    reason: "initial-save",
+    history: [
+      {
+        at: now,
+        from: null,
+        to: "experimental",
+        mode: "system",
+        reason: "initial-save"
+      }
+    ]
+  };
+  if (!input || typeof input !== "object") {
+    return base;
+  }
+
+  const status = typeof input.status === "string" ? input.status : base.status;
+  const updatedAt = typeof input.updatedAt === "string" ? input.updatedAt : base.updatedAt;
+  const reason = typeof input.reason === "string" ? input.reason : base.reason;
+  const history = Array.isArray(input.history) ? input.history : base.history;
+  return {
+    ...input,
+    status,
+    updatedAt,
+    reason,
+    history
   };
 }
 

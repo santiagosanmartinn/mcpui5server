@@ -18,7 +18,9 @@ const outputSchema = z.object({
       version: z.string(),
       projectType: z.string(),
       fingerprint: z.string(),
-      path: z.string()
+      path: z.string(),
+      lifecycleStatus: z.enum(["experimental", "candidate", "recommended", "deprecated"]),
+      lifecycleUpdatedAt: z.string().nullable()
     })
   )
 });
@@ -53,7 +55,9 @@ export const listAgentPacksTool = {
         version: pack.version ?? "1.0.0",
         projectType: pack.projectType ?? "generic",
         fingerprint: pack.fingerprint ?? "",
-        path: pack.path ?? ""
+        path: pack.path ?? "",
+        lifecycleStatus: normalizeStatus(pack?.lifecycle?.status),
+        lifecycleUpdatedAt: typeof pack?.lifecycle?.updatedAt === "string" ? pack.lifecycle.updatedAt : null
       }))
     });
   }
@@ -74,4 +78,10 @@ function enforceManagedSubtree(pathValue, rootPrefix, label) {
       }
     });
   }
+}
+
+function normalizeStatus(value) {
+  return value === "candidate" || value === "recommended" || value === "deprecated"
+    ? value
+    : "experimental";
 }

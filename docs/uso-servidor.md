@@ -1,46 +1,73 @@
 # Guia de uso del servidor
 
-## Requisitos
+Este documento es la version corta y operativa.
+
+Ruta recomendada:
+- [00-conceptos-clave.md](./00-conceptos-clave.md)
+- [01-getting-started.md](./01-getting-started.md)
+- [02-flujos-operativos.md](./02-flujos-operativos.md)
+- [03-operacion-y-policies.md](./03-operacion-y-policies.md)
+- [04-cheatsheet-codex.md](./04-cheatsheet-codex.md)
+
+Para detalle completo:
+- [referencia-tools.md](./referencia-tools.md)
+- [ejemplos-tools.md](./ejemplos-tools.md)
+
+## 1) Requisitos
 
 - Node.js 20 o superior
 - Dependencias instaladas con `npm install`
 
-## Comandos principales
+## 2) Comandos clave
 
-- Iniciar servidor MCP por STDIO: `npm run start`
-- Modo desarrollo (watch): `npm run dev`
-- Lint del codigo: `npm run lint`
-- Tests unitarios/integracion local: `npm run test`
-- Tests en modo CI: `npm run test:run`
-- Cobertura de pruebas: `npm run coverage`
-- Verificacion de calidad (lint + tests): `npm run check`
+- iniciar servidor MCP: `npm run start`
+- desarrollo: `npm run dev`
+- validar calidad: `npm run check`
+- pruebas en CI: `npm run test:run`
 
-## Como se integra con Codex (MCP)
+## 3) Integracion con Codex en VSCode
 
-Ejemplo de configuracion:
+`.vscode/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "sapui5": {
       "command": "node",
-      "args": ["/ruta/absoluta/MCPServerUI5/src/index.js"]
+      "args": ["${workspaceFolder}/src/index.js"]
     }
   }
 }
 ```
 
-## Flujo de ejecucion
+## 4) Flujos minimos por escenario
 
-1. `src/index.js` crea transporte `StdioServerTransport`.
-2. Se instancia el servidor con `createMcpServer()` en `src/server/mcpServer.js`.
-3. Se cargan todas las tools desde `src/tools/index.js`.
-4. Cada tool se registra dinamicamente mediante `ToolRegistry.applyToServer(...)`.
-5. El cliente MCP puede descubrir y ejecutar tools con sus schemas.
+### Escenario A: proyecto nuevo
 
-## Ejemplos de llamadas
+1. `recommend_project_agents`
+2. `materialize_recommended_agents` (`dryRun: true` -> `dryRun: false`)
+3. `run_project_quality_gate`
+4. `npm run check`
 
-### Analizar proyecto UI5
+### Escenario B: proyecto heredado
+
+1. `prepare_legacy_project_for_ai`
+2. revisar `needsUserInput`
+3. `materialize_recommended_agents`
+4. `run_project_quality_gate`
+5. `npm run check`
+
+### Escenario C: cambio puntual seguro
+
+1. `analyze_ui5_project`
+2. `search_project_files`
+3. `write_project_file_preview`
+4. `apply_project_patch`
+5. `run_project_quality_gate`
+
+## 5) Snippets minimos (copiar/pegar)
+
+### Analisis inicial
 
 ```json
 {
@@ -49,18 +76,57 @@ Ejemplo de configuracion:
 }
 ```
 
-### Leer archivo del workspace de forma segura
+### Buscar impacto en codigo
 
 ```json
 {
-  "tool": "read_project_file",
+  "tool": "search_project_files",
   "arguments": {
-    "path": "package.json"
+    "query": "onInit",
+    "extensions": ["js", "xml"],
+    "maxResults": 30
   }
 }
 ```
 
-### Previsualizar escritura segura
+### Preparar proyecto heredado para IA
+
+```json
+{
+  "tool": "prepare_legacy_project_for_ai",
+  "arguments": {
+    "sourceDir": "webapp",
+    "autoApply": true,
+    "runEnsureProjectMcp": true
+  }
+}
+```
+
+### Recomendar agentes
+
+```json
+{
+  "tool": "recommend_project_agents",
+  "arguments": {
+    "sourceDir": "webapp",
+    "maxRecommendations": 6
+  }
+}
+```
+
+### Materializar agentes
+
+```json
+{
+  "tool": "materialize_recommended_agents",
+  "arguments": {
+    "sourceDir": "webapp",
+    "dryRun": true
+  }
+}
+```
+
+### Previsualizar cambio de archivo
 
 ```json
 {
@@ -72,13 +138,13 @@ Ejemplo de configuracion:
 }
 ```
 
-### Aplicar patch y obtener rollback
+### Aplicar patch
 
 ```json
 {
   "tool": "apply_project_patch",
   "arguments": {
-    "reason": "ajuste inicial",
+    "reason": "feature-change",
     "changes": [
       {
         "path": "webapp/controller/Main.controller.js",
@@ -89,7 +155,7 @@ Ejemplo de configuracion:
 }
 ```
 
-### Revertir patch aplicado
+### Rollback si algo falla
 
 ```json
 {
@@ -100,255 +166,31 @@ Ejemplo de configuracion:
 }
 ```
 
-### Sincronizar manifest (dry-run)
-
-```json
-{
-  "tool": "sync_manifest_json",
-  "arguments": {
-    "dryRun": true,
-    "changes": {
-      "routes": {
-        "upsert": [
-          {
-            "name": "detail",
-            "pattern": "detail/{id}",
-            "target": ["detail"]
-          }
-        ]
-      },
-      "targets": {
-        "upsert": {
-          "detail": {
-            "viewName": "Detail"
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-### Generar feature UI5 end-to-end (dry-run)
-
-```json
-{
-  "tool": "generate_ui5_feature",
-  "arguments": {
-    "featureName": "SalesOrder",
-    "dryRun": true
-  }
-}
-```
-
-### Gestionar i18n (reporte)
-
-```json
-{
-  "tool": "manage_ui5_i18n",
-  "arguments": {
-    "mode": "report"
-  }
-}
-```
-
-### Gestionar i18n (fix con preview)
-
-```json
-{
-  "tool": "manage_ui5_i18n",
-  "arguments": {
-    "mode": "fix",
-    "dryRun": true
-  }
-}
-```
-
-### Analizar rendimiento UI5
-
-```json
-{
-  "tool": "analyze_ui5_performance",
-  "arguments": {
-    "sourceDir": "webapp",
-    "maxFindings": 100
-  }
-}
-```
-
-### Buscar en SDK UI5 con cache y timeout
-
-```json
-{
-  "tool": "search_ui5_sdk",
-  "arguments": {
-    "query": "sap.m.Table",
-    "timeoutMs": 8000,
-    "cache": {
-      "enabled": true,
-      "ttlSeconds": 3600
-    }
-  }
-}
-```
-
-### Generar controller UI5
-
-```json
-{
-  "tool": "generate_ui5_controller",
-  "arguments": {
-    "controllerName": "demo.app.controller.Main",
-    "methods": ["onPressSave", "onNavBack"]
-  }
-}
-```
-
-### Validar codigo UI5 (v2)
-
-```json
-{
-  "tool": "validate_ui5_code",
-  "arguments": {
-    "sourceType": "javascript",
-    "expectedControllerName": "MainController",
-    "code": "sap.ui.define([], function () { return {}; });"
-  }
-}
-```
-
-### Validar compatibilidad UI5 por version y componente ideal
-
-```json
-{
-  "tool": "validate_ui5_version_compatibility",
-  "arguments": {
-    "sourceDir": "webapp"
-  }
-}
-```
-
-### Escaneo de seguridad UI5 (XML + JS)
-
-```json
-{
-  "tool": "security_check_ui5_app",
-  "arguments": {
-    "sourceDir": "webapp"
-  }
-}
-```
-
-### Scaffold de agentes de proyecto (dry-run)
-
-```json
-{
-  "tool": "scaffold_project_agents",
-  "arguments": {
-    "dryRun": true,
-    "projectType": "sapui5"
-  }
-}
-```
-
-Layout por defecto:
-- Artefactos de agentes en `.codex/mcp/agents/...`
-- Documentacion contextual en `docs/mcp/...`
-- `.vscode/mcp.json` solo si `includeVscodeMcp: true`
-
-### Validar artefactos de agentes (strict)
-
-```json
-{
-  "tool": "validate_project_agents",
-  "arguments": {
-    "strict": true
-  }
-}
-```
-
-### Refrescar contexto incremental del proyecto
-
-```json
-{
-  "tool": "refresh_project_context_docs",
-  "arguments": {
-    "sourceDir": "webapp",
-    "dryRun": true
-  }
-}
-```
-
-### Ejecutar quality gate consolidado
+### Quality gate consolidado
 
 ```json
 {
   "tool": "run_project_quality_gate",
   "arguments": {
     "sourceDir": "webapp",
-    "refreshDocs": true,
-    "applyDocs": false
+    "respectPolicy": true
   }
 }
 ```
 
-### Recomendar agentes desde analisis del proyecto
+## 6) Automatizaciones de arranque
 
-```json
-{
-  "tool": "recommend_project_agents",
-  "arguments": {
-    "sourceDir": "webapp",
-    "maxRecommendations": 6,
-    "includePackCatalog": true
-  }
-}
-```
+- `MCP_AUTO_ENSURE_PROJECT=false`
+  - desactiva sincronizacion MCP en startup
+- `MCP_AUTO_ENSURE_PROJECT_APPLY=false`
+  - deja sincronizacion MCP en dry-run
+- `MCP_AUTO_PREPARE_CONTEXT=false`
+  - desactiva preparacion de contexto en startup
+- `MCP_AUTO_PREPARE_CONTEXT_APPLY=false`
+  - deja preparacion de contexto en dry-run
 
-### Materializar agentes recomendados automaticamente
+## 7) Regla sencilla de calidad
 
-```json
-{
-  "tool": "materialize_recommended_agents",
-  "arguments": {
-    "sourceDir": "webapp",
-    "dryRun": true,
-    "includePackCatalog": true
-  }
-}
-```
-
-### Guardar agentes actuales como pack reutilizable
-
-```json
-{
-  "tool": "save_agent_pack",
-  "arguments": {
-    "packName": "base-ui5-pack",
-    "packVersion": "1.0.0",
-    "dryRun": false
-  }
-}
-```
-
-### Listar packs disponibles
-
-```json
-{
-  "tool": "list_agent_packs",
-  "arguments": {}
-}
-```
-
-### Aplicar un pack guardado en otro proyecto
-
-```json
-{
-  "tool": "apply_agent_pack",
-  "arguments": {
-    "packSlug": "base-ui5-pack",
-    "dryRun": true,
-    "outputDir": ".codex/mcp/agents"
-  }
-}
-```
+1. primero `dryRun`
+2. luego `apply`
+3. cerrar con `run_project_quality_gate` + `npm run check`

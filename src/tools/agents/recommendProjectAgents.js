@@ -3,7 +3,10 @@ import { promises as fs } from "node:fs";
 import { z } from "zod";
 import { ToolError } from "../../utils/errors.js";
 import { fileExists, readJsonFile } from "../../utils/fileSystem.js";
+import { DEFAULT_AGENT_POLICY_PATH, loadAgentPolicy, normalizePackSlugSet } from "../../utils/agentPolicy.js";
 import { analyzeUi5ProjectTool } from "../project/analyzeProject.js";
+import { rankAgentPacksTool } from "./rankAgentPacks.js";
+import { prepareLegacyProjectForAiTool } from "./prepareLegacyProjectForAi.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
 const DEFAULT_SOURCE_DIR = "webapp";
@@ -17,7 +20,17 @@ const inputSchema = z.object({
   maxFiles: z.number().int().min(50).max(5000).optional(),
   maxRecommendations: z.number().int().min(2).max(20).optional(),
   includePackCatalog: z.boolean().optional(),
-  packCatalogPath: z.string().min(1).optional()
+  packCatalogPath: z.string().min(1).optional(),
+  includePackFeedbackRanking: z.boolean().optional(),
+  feedbackMetricsPath: z.string().min(1).optional(),
+  policyPath: z.string().min(1).optional(),
+  respectPolicy: z.boolean().optional(),
+  autoPrepareProjectContext: z.boolean().optional(),
+  autoPrepareApply: z.boolean().optional(),
+  autoPrepareRefreshBaseline: z.boolean().optional(),
+  autoPrepareRefreshContextIndex: z.boolean().optional(),
+  autoPrepareAskForMissingContext: z.boolean().optional(),
+  autoPrepareRunEnsure: z.boolean().optional()
 }).strict();
 
 const recommendationSchema = z.object({
@@ -42,10 +55,23 @@ const recommendationSchema = z.object({
 });
 
 const outputSchema = z.object({
+  policy: z.object({
+    path: z.string(),
+    loaded: z.boolean(),
+    enforcedSections: z.array(z.enum(["ranking", "recommendation"]))
+  }),
   project: z.object({
     name: z.string(),
     type: z.enum(PROJECT_TYPES),
     namespace: z.string().nullable()
+  }),
+  projectContextSync: z.object({
+    executed: z.boolean(),
+    readyForAutopilot: z.boolean(),
+    needsUserInput: z.boolean(),
+    missingContext: z.array(z.string()),
+    nextActions: z.array(z.string()),
+    error: z.string().nullable()
   }),
   signals: z.object({
     sourceDir: z.string(),
@@ -94,16 +120,92 @@ export const recommendProjectAgentsTool = {
       maxFiles,
       maxRecommendations,
       includePackCatalog,
-      packCatalogPath
+      packCatalogPath,
+      includePackFeedbackRanking,
+      feedbackMetricsPath,
+      policyPath,
+      respectPolicy,
+      autoPrepareProjectContext,
+      autoPrepareApply,
+      autoPrepareRefreshBaseline,
+      autoPrepareRefreshContextIndex,
+      autoPrepareAskForMissingContext,
+      autoPrepareRunEnsure
     } = inputSchema.parse(args);
     const root = context.rootDir;
     const selectedSourceDir = normalizeRelativePath(sourceDir ?? DEFAULT_SOURCE_DIR);
+    const shouldAutoPrepareProjectContext = autoPrepareProjectContext ?? true;
+    const shouldAutoPrepareApply = autoPrepareApply ?? true;
+    let projectContextSync = {
+      executed: false,
+      readyForAutopilot: false,
+      needsUserInput: false,
+      missingContext: [],
+      nextActions: [],
+      error: null
+    };
+
+    if (shouldAutoPrepareProjectContext) {
+      try {
+        const preparation = await prepareLegacyProjectForAiTool.handler(
+          {
+            sourceDir: selectedSourceDir,
+            autoApply: shouldAutoPrepareApply,
+            runEnsureProjectMcp: autoPrepareRunEnsure,
+            askForMissingContext: autoPrepareAskForMissingContext,
+            refreshBaseline: autoPrepareRefreshBaseline,
+            refreshContextIndex: autoPrepareRefreshContextIndex,
+            reason: "recommend_project_agents:auto-prepare"
+          },
+          { context }
+        );
+        projectContextSync = {
+          executed: true,
+          readyForAutopilot: preparation.readyForAutopilot,
+          needsUserInput: preparation.intake.needsUserInput,
+          missingContext: preparation.intake.missingContext,
+          nextActions: preparation.nextActions,
+          error: null
+        };
+      } catch (error) {
+        projectContextSync = {
+          executed: false,
+          readyForAutopilot: false,
+          needsUserInput: false,
+          missingContext: [],
+          nextActions: ["Run prepare_legacy_project_for_ai to generate intake, baseline and context index artifacts."],
+          error: error?.message ?? String(error)
+        };
+      }
+    }
+
+    const selectedPolicyPath = normalizeRelativePath(policyPath ?? DEFAULT_AGENT_POLICY_PATH);
+    const shouldRespectPolicy = respectPolicy ?? true;
+    const policyResolution = shouldRespectPolicy
+      ? await loadAgentPolicy({ root, policyPath: selectedPolicyPath })
+      : {
+        path: selectedPolicyPath,
+        loaded: false,
+        enabled: false,
+        policy: null
+      };
+    const recommendationPolicy = policyResolution.loaded
+      && policyResolution.enabled
+      && (policyResolution.policy?.recommendation?.enabled ?? true)
+      ? (policyResolution.policy?.recommendation ?? {})
+      : null;
+
     const selectedMaxFiles = maxFiles ?? DEFAULT_MAX_FILES;
-    const selectedMaxRecommendations = maxRecommendations ?? DEFAULT_MAX_RECOMMENDATIONS;
-    const useCatalog = includePackCatalog ?? true;
+    const selectedMaxRecommendations = recommendationPolicy?.maxRecommendations ?? maxRecommendations ?? DEFAULT_MAX_RECOMMENDATIONS;
+    const useCatalog = recommendationPolicy?.includePackCatalog ?? includePackCatalog ?? true;
+    const useFeedbackRanking = recommendationPolicy?.includePackFeedbackRanking ?? includePackFeedbackRanking ?? true;
     const selectedCatalogPath = normalizeRelativePath(packCatalogPath ?? DEFAULT_PACK_CATALOG_PATH);
+    const selectedMetricsPath = normalizeRelativePath(feedbackMetricsPath ?? ".codex/mcp/feedback/metrics.json");
     if (useCatalog) {
       enforceManagedSubtree(selectedCatalogPath, ".codex/mcp", "packCatalogPath");
+      if (useFeedbackRanking) {
+        enforceManagedSubtree(selectedMetricsPath, ".codex/mcp", "feedbackMetricsPath");
+      }
     }
 
     const project = await detectProjectProfile(root);
@@ -134,15 +236,22 @@ export const recommendProjectAgentsTool = {
     let packsMatched = 0;
     if (useCatalog) {
       const catalogRecommendations = await buildCatalogRecommendations({
-        root,
+        context,
         catalogPath: selectedCatalogPath,
-        projectType: project.type
+        metricsPath: selectedMetricsPath,
+        projectType: project.type,
+        includeFeedbackRanking: useFeedbackRanking,
+        policyPath: policyResolution.path,
+        respectPolicy: shouldRespectPolicy,
+        recommendationPolicy
       });
       packsMatched = catalogRecommendations.length;
       recommendations = recommendations.concat(catalogRecommendations);
     }
 
-    const selectedRecommendations = normalizeRecommendations(recommendations)
+    const selectedRecommendations = normalizeRecommendations(
+      applyRecommendationFilters(recommendations, recommendationPolicy)
+    )
       .slice(0, selectedMaxRecommendations);
     const agentDefinitions = selectedRecommendations.map((item) => ({
       id: item.agent.id,
@@ -155,11 +264,20 @@ export const recommendProjectAgentsTool = {
       : ["lint_javascript_code", "security_check_javascript"];
 
     return outputSchema.parse({
+      policy: {
+        path: policyResolution.path,
+        loaded: policyResolution.loaded,
+        enforcedSections: [
+          ...(recommendationPolicy ? ["recommendation"] : []),
+          ...(policyResolution.loaded && policyResolution.enabled && (policyResolution.policy?.ranking?.enabled ?? true) ? ["ranking"] : [])
+        ]
+      },
       project: {
         name: project.name,
         type: project.type,
         namespace: project.namespace
       },
+      projectContextSync,
       signals,
       recommendations: selectedRecommendations,
       suggestedMaterializationArgs: {
@@ -301,6 +419,16 @@ function buildHeuristicRecommendations(project, signals) {
             "search_ui5_sdk",
             "search_mdn",
             "refresh_project_context_docs",
+            "rank_agent_packs",
+            "promote_agent_pack",
+            "audit_project_mcp_state",
+            "upgrade_project_mcp",
+            "ensure_project_mcp_current",
+            "collect_legacy_project_intake",
+            "analyze_legacy_project_baseline",
+            "build_ai_context_index",
+            "prepare_legacy_project_for_ai",
+            "record_agent_execution_feedback",
             "validate_project_agents",
             "recommend_project_agents",
             "validate_ui5_version_compatibility"
@@ -332,8 +460,13 @@ function buildHeuristicRecommendations(project, signals) {
             "apply_project_patch",
             "rollback_project_patch",
             "refresh_project_context_docs",
+            "collect_legacy_project_intake",
+            "analyze_legacy_project_baseline",
+            "build_ai_context_index",
+            "prepare_legacy_project_for_ai",
             "materialize_recommended_agents",
-            "save_agent_pack"
+            "save_agent_pack",
+            "record_agent_execution_feedback"
           ])
         }
       }),
@@ -356,6 +489,15 @@ function buildHeuristicRecommendations(project, signals) {
             "lint_javascript_code",
             "security_check_javascript",
             "refresh_project_context_docs",
+            "rank_agent_packs",
+            "audit_project_mcp_state",
+            "upgrade_project_mcp",
+            "ensure_project_mcp_current",
+            "collect_legacy_project_intake",
+            "analyze_legacy_project_baseline",
+            "build_ai_context_index",
+            "prepare_legacy_project_for_ai",
+            "record_agent_execution_feedback",
             "read_project_file",
             "search_project_files",
             "validate_project_agents"
@@ -403,6 +545,16 @@ function buildHeuristicRecommendations(project, signals) {
           "read_project_file",
           "search_mdn",
           "refresh_project_context_docs",
+          "rank_agent_packs",
+          "promote_agent_pack",
+          "audit_project_mcp_state",
+          "upgrade_project_mcp",
+          "ensure_project_mcp_current",
+          "collect_legacy_project_intake",
+          "analyze_legacy_project_baseline",
+          "build_ai_context_index",
+          "prepare_legacy_project_for_ai",
+          "record_agent_execution_feedback",
           "recommend_project_agents",
           "validate_project_agents",
           "run_project_quality_gate"
@@ -428,8 +580,13 @@ function buildHeuristicRecommendations(project, signals) {
           "apply_project_patch",
           "rollback_project_patch",
           "refresh_project_context_docs",
+          "collect_legacy_project_intake",
+          "analyze_legacy_project_baseline",
+          "build_ai_context_index",
+          "prepare_legacy_project_for_ai",
           "materialize_recommended_agents",
-          "save_agent_pack"
+          "save_agent_pack",
+          "record_agent_execution_feedback"
         ])
       }
     }),
@@ -447,6 +604,15 @@ function buildHeuristicRecommendations(project, signals) {
           "lint_javascript_code",
           "security_check_javascript",
           "refresh_project_context_docs",
+          "rank_agent_packs",
+          "audit_project_mcp_state",
+          "upgrade_project_mcp",
+          "ensure_project_mcp_current",
+          "collect_legacy_project_intake",
+          "analyze_legacy_project_baseline",
+          "build_ai_context_index",
+          "prepare_legacy_project_for_ai",
+          "record_agent_execution_feedback",
           "search_project_files",
           "read_project_file",
           "validate_project_agents"
@@ -457,45 +623,81 @@ function buildHeuristicRecommendations(project, signals) {
 }
 
 async function buildCatalogRecommendations(options) {
-  const { root, catalogPath, projectType } = options;
-  if (!(await fileExists(catalogPath, root))) {
+  const {
+    context,
+    catalogPath,
+    metricsPath,
+    projectType,
+    includeFeedbackRanking,
+    policyPath,
+    respectPolicy,
+    recommendationPolicy
+  } = options;
+
+  const ranked = await rankAgentPacksTool.handler(
+    {
+      packCatalogPath: catalogPath,
+      metricsPath,
+      policyPath,
+      respectPolicy,
+      projectType,
+      minExecutions: includeFeedbackRanking ? 1 : 1000,
+      includeUnscored: true,
+      includeDeprecated: false,
+      maxResults: 3
+    },
+    { context }
+  );
+
+  if (!ranked.exists.catalog) {
     return [];
   }
 
-  let catalog;
-  try {
-    catalog = await readJsonFile(catalogPath, root);
-  } catch {
-    return [];
-  }
+  const allowedLifecycleSet = Array.isArray(recommendationPolicy?.allowedLifecycle)
+    ? new Set(recommendationPolicy.allowedLifecycle)
+    : null;
+  const blockedPackSlugs = normalizePackSlugSet(recommendationPolicy?.blockedPackSlugs);
 
-  const packs = Array.isArray(catalog?.packs) ? catalog.packs : [];
-  return packs
-    .filter((pack) => !pack.projectType || pack.projectType === projectType)
-    .slice(0, 3)
+  return ranked.rankedPacks
+    .filter((pack) => {
+      if (blockedPackSlugs.has(String(pack.slug ?? "").trim().toLowerCase())) {
+        return false;
+      }
+      if (allowedLifecycleSet && !allowedLifecycleSet.has(pack.lifecycleStatus)) {
+        return false;
+      }
+      return true;
+    })
     .map((pack, index) => createRecommendation({
-      id: `pack-${pack.slug ?? `saved-${index + 1}`}`,
-      title: `Reuse Pack: ${pack.name ?? pack.slug ?? "saved pack"}`,
+      id: `pack-${pack.slug || `saved-${index + 1}`}`,
+      title: `Reuse Pack: ${pack.name || pack.slug || "saved pack"}`,
       priority: "medium",
-      score: 0.78 - (index * 0.03),
+      score: clamp(pack.score + lifecycleBoost(pack.lifecycleStatus), 0, 1),
       source: "pack",
-      rationale: "Saved pack compatible with detected project type can accelerate bootstrap.",
+      rationale: `Saved pack compatible with detected project type (${pack.status}, lifecycle=${pack.lifecycleStatus}). ${pack.rationale}`,
       agent: {
         id: `packAdvisor${index + 1}`,
         title: `Pack Advisor ${index + 1}`,
-        goal: `Apply and adapt saved pack ${pack.name ?? pack.slug ?? ""} to current project.`,
+        goal: `Apply and adapt saved pack ${pack.name || pack.slug || ""} to current project.`,
         allowedTools: unique([
           "list_agent_packs",
+          "rank_agent_packs",
+          "promote_agent_pack",
+          "audit_project_mcp_state",
+          "upgrade_project_mcp",
+          "ensure_project_mcp_current",
+          "prepare_legacy_project_for_ai",
           "apply_agent_pack",
           "validate_project_agents",
-          "save_agent_pack"
+          "save_agent_pack",
+          "record_agent_execution_feedback"
         ])
       },
       pack: {
-        name: pack.name ?? "Unnamed pack",
-        slug: pack.slug ?? `saved-${index + 1}`,
-        version: pack.version ?? "1.0.0",
-        fingerprint: pack.fingerprint ?? "unknown"
+        name: pack.name || "Unnamed pack",
+        slug: pack.slug || `saved-${index + 1}`,
+        version: pack.version || "1.0.0",
+        fingerprint: pack.fingerprint || "unknown"
       }
     }));
 }
@@ -511,6 +713,28 @@ function normalizeRecommendations(items) {
       seen.add(item.id);
       return true;
     });
+}
+
+function applyRecommendationFilters(recommendations, recommendationPolicy) {
+  if (!recommendationPolicy) {
+    return recommendations;
+  }
+
+  const blockedRecommendationIds = new Set(recommendationPolicy.blockedRecommendationIds ?? []);
+  const blockedPackSlugs = normalizePackSlugSet(recommendationPolicy.blockedPackSlugs);
+
+  return recommendations.filter((item) => {
+    if (blockedRecommendationIds.has(item.id)) {
+      return false;
+    }
+    if (item.source === "pack") {
+      const packSlug = String(item.pack?.slug ?? "").trim().toLowerCase();
+      if (blockedPackSlugs.has(packSlug)) {
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 function createRecommendation(input) {
@@ -536,6 +760,19 @@ function normalizeRelativePath(value) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function lifecycleBoost(status) {
+  if (status === "recommended") {
+    return 0.06;
+  }
+  if (status === "candidate") {
+    return 0.02;
+  }
+  if (status === "deprecated") {
+    return -0.25;
+  }
+  return 0;
 }
 
 async function existsDir(absolutePath) {

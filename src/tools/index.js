@@ -31,6 +31,16 @@ import { saveAgentPackTool } from "./agents/saveAgentPack.js";
 import { listAgentPacksTool } from "./agents/listAgentPacks.js";
 import { applyAgentPackTool } from "./agents/applyAgentPack.js";
 import { refreshProjectContextDocsTool } from "./agents/refreshProjectContextDocs.js";
+import { recordAgentExecutionFeedbackTool } from "./agents/recordAgentExecutionFeedback.js";
+import { rankAgentPacksTool } from "./agents/rankAgentPacks.js";
+import { promoteAgentPackTool } from "./agents/promoteAgentPack.js";
+import { auditProjectMcpStateTool } from "./agents/auditProjectMcpState.js";
+import { upgradeProjectMcpTool } from "./agents/upgradeProjectMcp.js";
+import { ensureProjectMcpCurrentTool } from "./agents/ensureProjectMcpCurrent.js";
+import { collectLegacyProjectIntakeTool } from "./agents/collectLegacyProjectIntake.js";
+import { analyzeLegacyProjectBaselineTool } from "./agents/analyzeLegacyProjectBaseline.js";
+import { buildAiContextIndexTool } from "./agents/buildAiContextIndex.js";
+import { prepareLegacyProjectForAiTool } from "./agents/prepareLegacyProjectForAi.js";
 
 export const allTools = [
   // Project intelligence
@@ -70,5 +80,15 @@ export const allTools = [
   saveAgentPackTool,
   listAgentPacksTool,
   applyAgentPackTool,
-  refreshProjectContextDocsTool
+  refreshProjectContextDocsTool,
+  recordAgentExecutionFeedbackTool,
+  rankAgentPacksTool,
+  promoteAgentPackTool,
+  auditProjectMcpStateTool,
+  upgradeProjectMcpTool,
+  ensureProjectMcpCurrentTool,
+  collectLegacyProjectIntakeTool,
+  analyzeLegacyProjectBaselineTool,
+  buildAiContextIndexTool,
+  prepareLegacyProjectForAiTool
 ];

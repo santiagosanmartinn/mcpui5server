@@ -3,6 +3,8 @@ import { ToolRegistry } from "./toolRegistry.js";
 import { workspaceRoot } from "../utils/fileSystem.js";
 import { createLogger } from "../utils/logger.js";
 import { allTools } from "../tools/index.js";
+import { ensureProjectMcpCurrentTool } from "../tools/agents/ensureProjectMcpCurrent.js";
+import { prepareLegacyProjectForAiTool } from "../tools/agents/prepareLegacyProjectForAi.js";
 
 const logger = createLogger("mcp-server");
 
@@ -30,6 +32,62 @@ export function createMcpServer() {
     toolCount: allTools.length,
     rootDir: context.rootDir
   });
+  runProjectAutoEnsure(context).catch((error) => {
+    logger.warn("Automatic MCP project ensure failed.", {
+      error: error?.message ?? String(error)
+    });
+  });
 
   return server;
+}
+
+async function runProjectAutoEnsure(context) {
+  const enabled = process.env.MCP_AUTO_ENSURE_PROJECT !== "false";
+  if (!enabled) {
+    logger.info("Automatic MCP project ensure disabled by MCP_AUTO_ENSURE_PROJECT=false.");
+    return;
+  }
+
+  const autoApply = process.env.MCP_AUTO_ENSURE_PROJECT_APPLY !== "false";
+  const report = await ensureProjectMcpCurrentTool.handler(
+    {
+      autoApply,
+      runPostValidation: true,
+      failOnValidation: false,
+      runQualityGate: false,
+      reason: "server-startup:auto-ensure"
+    },
+    { context }
+  );
+
+  logger.info("Automatic MCP project ensure finished.", {
+    actionTaken: report.actionTaken,
+    statusBefore: report.statusBefore,
+    statusAfter: report.statusAfter,
+    autoApply
+  });
+
+  const autoPrepareContextEnabled = process.env.MCP_AUTO_PREPARE_CONTEXT !== "false";
+  if (!autoPrepareContextEnabled) {
+    logger.info("Automatic legacy context preparation disabled by MCP_AUTO_PREPARE_CONTEXT=false.");
+    return;
+  }
+
+  const autoPrepareContextApply = process.env.MCP_AUTO_PREPARE_CONTEXT_APPLY !== "false";
+  const prepareReport = await prepareLegacyProjectForAiTool.handler(
+    {
+      autoApply: autoPrepareContextApply,
+      runEnsureProjectMcp: false,
+      reason: "server-startup:auto-prepare-context"
+    },
+    { context }
+  );
+  logger.info("Automatic legacy context preparation finished.", {
+    autoApply: autoPrepareContextApply,
+    readyForAutopilot: prepareReport.readyForAutopilot,
+    needsUserInput: prepareReport.intake.needsUserInput,
+    collectIntake: prepareReport.ran.collectIntake,
+    analyzeBaseline: prepareReport.ran.analyzeBaseline,
+    buildContextIndex: prepareReport.ran.buildContextIndex
+  });
 }

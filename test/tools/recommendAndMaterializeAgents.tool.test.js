@@ -58,9 +58,12 @@ describe("recommend/materialize agent tools", () => {
     );
 
     expect(report.project.type).toBe("sapui5");
+    expect(report.projectContextSync.executed).toBe(true);
     expect(report.recommendations.length).toBeGreaterThanOrEqual(3);
     expect(report.suggestedMaterializationArgs.agentDefinitions.length).toBeGreaterThanOrEqual(2);
     expect(report.signals.hasManifest).toBe(true);
+    const contextIndexPath = path.join(tempRoot, ".codex", "mcp", "context", "context-index.json");
+    await expect(fs.access(contextIndexPath)).resolves.toBeUndefined();
   });
 
   it("materializes recommended agents and produces valid artifacts", async () => {
@@ -75,6 +78,8 @@ describe("recommend/materialize agent tools", () => {
     );
 
     expect(result.source).toBe("auto-recommend");
+    expect(result.projectMcpSync.executed).toBe(true);
+    expect(result.projectContextSync.executed).toBe(true);
     expect(result.scaffoldResult.changed).toBe(true);
     expect(result.scaffoldResult.applyResult?.patchId).toMatch(/^patch-/);
     const blueprintPath = path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json");
@@ -94,5 +99,162 @@ describe("recommend/materialize agent tools", () => {
       }
     );
     expect(validation.valid).toBe(true);
+  });
+
+  it("prioritizes pack recommendations using feedback metrics and excludes deprecated packs", async () => {
+    const catalogPath = path.join(tempRoot, ".codex", "mcp", "packs", "catalog.json");
+    const metricsPath = path.join(tempRoot, ".codex", "mcp", "feedback", "metrics.json");
+    await fs.mkdir(path.dirname(catalogPath), { recursive: true });
+    await fs.mkdir(path.dirname(metricsPath), { recursive: true });
+
+    await fs.writeFile(
+      catalogPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        packs: [
+          {
+            name: "Pack Alpha",
+            slug: "pack-alpha",
+            version: "1.0.0",
+            projectType: "sapui5",
+            fingerprint: "a1",
+            path: ".codex/mcp/packs/pack-alpha-1.0.0",
+            lifecycle: {
+              status: "deprecated",
+              updatedAt: "2026-03-11T08:00:00.000Z",
+              reason: "auto-deprecated"
+            }
+          },
+          {
+            name: "Pack Beta",
+            slug: "pack-beta",
+            version: "1.0.0",
+            projectType: "sapui5",
+            fingerprint: "b1",
+            path: ".codex/mcp/packs/pack-beta-1.0.0",
+            lifecycle: {
+              status: "candidate",
+              updatedAt: "2026-03-11T08:00:00.000Z",
+              reason: "auto-candidate"
+            }
+          }
+        ]
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    await fs.writeFile(
+      metricsPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        generatedAt: "2026-03-11T10:00:00.000Z",
+        totals: {
+          executions: 8,
+          success: 5,
+          partial: 2,
+          failed: 1
+        },
+        packs: {
+          "pack-alpha@1.0.0": {
+            packSlug: "pack-alpha",
+            packVersion: "1.0.0",
+            executions: 5,
+            outcomes: { success: 4, partial: 1, failed: 0 },
+            qualityGatePasses: 4,
+            qualityGateFails: 1,
+            issuesIntroducedTotal: 1,
+            manualEditsNeededTotal: 2,
+            timeSavedMinutesTotal: 60,
+            tokenDeltaEstimateTotal: 800,
+            projectTypes: { sapui5: 5 },
+            lastRecordedAt: "2026-03-11T09:00:00.000Z"
+          },
+          "pack-beta@1.0.0": {
+            packSlug: "pack-beta",
+            packVersion: "1.0.0",
+            executions: 3,
+            outcomes: { success: 1, partial: 1, failed: 1 },
+            qualityGatePasses: 1,
+            qualityGateFails: 2,
+            issuesIntroducedTotal: 4,
+            manualEditsNeededTotal: 7,
+            timeSavedMinutesTotal: 10,
+            tokenDeltaEstimateTotal: 120,
+            projectTypes: { sapui5: 3 },
+            lastRecordedAt: "2026-03-10T09:00:00.000Z"
+          }
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    const report = await recommendProjectAgentsTool.handler(
+      {
+        includePackCatalog: true
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    const packRecommendations = report.recommendations.filter((item) => item.source === "pack");
+    expect(packRecommendations.length).toBeGreaterThanOrEqual(1);
+    expect(packRecommendations.some((item) => item.pack?.slug === "pack-alpha")).toBe(false);
+    expect(packRecommendations[0].pack?.slug).toBe("pack-beta");
+  });
+
+  it("enforces recommendation policy from agent-policy.json", async () => {
+    const catalogPath = path.join(tempRoot, ".codex", "mcp", "packs", "catalog.json");
+    const policyPath = path.join(tempRoot, ".codex", "mcp", "policies", "agent-policy.json");
+    await fs.mkdir(path.dirname(catalogPath), { recursive: true });
+    await fs.mkdir(path.dirname(policyPath), { recursive: true });
+
+    await fs.writeFile(
+      catalogPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        packs: [
+          {
+            name: "Pack Policy Candidate",
+            slug: "pack-policy-candidate",
+            version: "1.0.0",
+            projectType: "sapui5",
+            fingerprint: "pp1",
+            path: ".codex/mcp/packs/pack-policy-candidate-1.0.0"
+          }
+        ]
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    await fs.writeFile(
+      policyPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        enabled: true,
+        recommendation: {
+          enabled: true,
+          includePackCatalog: false,
+          maxRecommendations: 3,
+          blockedRecommendationIds: ["ui5-i18n-curator"]
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    const report = await recommendProjectAgentsTool.handler(
+      {
+        includePackCatalog: true
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(report.policy.loaded).toBe(true);
+    expect(report.policy.enforcedSections).toEqual(expect.arrayContaining(["recommendation"]));
+    expect(report.recommendations.length).toBeLessThanOrEqual(3);
+    expect(report.recommendations.some((item) => item.source === "pack")).toBe(false);
+    expect(report.recommendations.some((item) => item.id === "ui5-i18n-curator")).toBe(false);
   });
 });

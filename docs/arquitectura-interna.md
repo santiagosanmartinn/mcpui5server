@@ -18,6 +18,16 @@ src/
       listAgentPacks.js
       applyAgentPack.js
       refreshProjectContextDocs.js
+      recordAgentExecutionFeedback.js
+      rankAgentPacks.js
+      promoteAgentPack.js
+      auditProjectMcpState.js
+      upgradeProjectMcp.js
+      ensureProjectMcpCurrent.js
+      collectLegacyProjectIntake.js
+      analyzeLegacyProjectBaseline.js
+      buildAiContextIndex.js
+      prepareLegacyProjectForAi.js
     ui5/
       catalogs/
         ui5ComponentFitRules.js
@@ -40,6 +50,8 @@ src/
     manifestSync.js
     parser.js
     patchWriter.js
+    agentPolicy.js
+    mcpProjectLayout.js
     refactor.js
     xmlParser.js
     validator.js
@@ -86,6 +98,8 @@ vitest.config.js
     - `rootDir` del workspace
     - logger
   - Registrar todas las tools definidas en `src/tools/index.js`.
+  - Ejecutar auto-ensure de layout MCP al arranque (configurable por variables de entorno).
+  - Ejecutar auto-preparacion de contexto legacy al arranque (configurable por variables de entorno).
 
 ## 3) Registro dinamico de tools
 
@@ -135,6 +149,12 @@ vitest.config.js
   - Lint JS basico y escaneo de seguridad.
 - `src/utils/http.js`:
   - `fetchJson` con timeout y manejo de errores HTTP.
+- `src/utils/agentPolicy.js`:
+  - Resolucion de `agent-policy.json` por proyecto con schema versionado.
+  - Enforcement declarativo para ranking, recomendacion y quality gate.
+- `src/utils/mcpProjectLayout.js`:
+  - Contrato de layout MCP por proyecto (version actual, artefactos gestionados y rutas legacy).
+  - Base comun para auditoria y upgrade incremental del proyecto.
 
 ## 5) Calidad automatizada
 

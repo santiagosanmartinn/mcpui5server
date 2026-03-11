@@ -20,6 +20,16 @@ src/
       listAgentPacks.js
       applyAgentPack.js
       refreshProjectContextDocs.js
+      recordAgentExecutionFeedback.js
+      rankAgentPacks.js
+      promoteAgentPack.js
+      auditProjectMcpState.js
+      upgradeProjectMcp.js
+      ensureProjectMcpCurrent.js
+      collectLegacyProjectIntake.js
+      analyzeLegacyProjectBaseline.js
+      buildAiContextIndex.js
+      prepareLegacyProjectForAi.js
     ui5/
       catalogs/
         ui5ComponentFitRules.js
@@ -60,6 +70,8 @@ src/
     parser.js
     refactor.js
     patchWriter.js
+    agentPolicy.js
+    mcpProjectLayout.js
     xmlParser.js
     validator.js
     logger.js
@@ -102,6 +114,16 @@ src/
 31. `validate_ui5_version_compatibility`
 32. `security_check_ui5_app`
 33. `run_project_quality_gate`
+34. `record_agent_execution_feedback`
+35. `rank_agent_packs`
+36. `promote_agent_pack`
+37. `audit_project_mcp_state`
+38. `upgrade_project_mcp`
+39. `ensure_project_mcp_current`
+40. `collect_legacy_project_intake`
+41. `analyze_legacy_project_baseline`
+42. `build_ai_context_index`
+43. `prepare_legacy_project_for_ai`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 
@@ -119,6 +141,9 @@ All tools are dynamically discovered through the central registry in `src/tools/
 - Path traversal protection (`..` and out-of-root resolution blocked).
 - Structured error responses with machine-readable `code` and `message`.
 - Centralized logging for tool failures and lifecycle events.
+- Project-level policy enforcement via `.codex/mcp/policies/agent-policy.json` in ranking, recommendation, and quality gate flows.
+- Automatic MCP project ensure on server startup (disable with `MCP_AUTO_ENSURE_PROJECT=false`).
+- Automatic legacy context preparation on startup (disable with `MCP_AUTO_PREPARE_CONTEXT=false`).
 
 ## Run
 

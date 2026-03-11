@@ -133,7 +133,8 @@ export const refreshProjectContextDocsTool = {
       {
         sourceDir: selectedSourceDir,
         maxFiles: selectedMaxFiles,
-        includePackCatalog: false
+        includePackCatalog: false,
+        autoPrepareProjectContext: false
       },
       {
         context

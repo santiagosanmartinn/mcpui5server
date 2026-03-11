@@ -5,8 +5,9 @@ import { applyProjectPatch, previewFileWrite } from "../../utils/patchWriter.js"
 import { fileExists, readJsonFile, readTextFile } from "../../utils/fileSystem.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
-const DEFAULT_OUTPUT_DIR = ".codex/mcp/agents";
-const DEFAULT_DOCS_DIR = "docs/mcp";
+export const DEFAULT_OUTPUT_DIR = ".codex/mcp/agents";
+export const DEFAULT_DOCS_DIR = "docs/mcp";
+export const DEFAULT_POLICY_PATH = ".codex/mcp/policies/agent-policy.json";
 const SAPUI5_MCP_ENTRY = {
   command: "node",
   args: ["${workspaceFolder}/src/index.js"]
@@ -54,7 +55,17 @@ const TOOL_GROUPS = {
     "save_agent_pack",
     "list_agent_packs",
     "apply_agent_pack",
-    "refresh_project_context_docs"
+    "refresh_project_context_docs",
+    "record_agent_execution_feedback",
+    "rank_agent_packs",
+    "promote_agent_pack",
+    "audit_project_mcp_state",
+    "upgrade_project_mcp",
+    "ensure_project_mcp_current",
+    "collect_legacy_project_intake",
+    "analyze_legacy_project_baseline",
+    "build_ai_context_index",
+    "prepare_legacy_project_for_ai"
   ]
 };
 
@@ -83,6 +94,7 @@ const inputSchema = z.object({
   outputDir: z.string().min(1).optional(),
   docsDir: z.string().min(1).optional(),
   generateDocs: z.boolean().optional(),
+  generatePolicy: z.boolean().optional(),
   includeVscodeMcp: z.boolean().optional(),
   dryRun: z.boolean().optional(),
   allowOverwrite: z.boolean().optional(),
@@ -95,7 +107,7 @@ const inputSchema = z.object({
 
 const filePreviewSchema = z.object({
   path: z.string(),
-  role: z.enum(["blueprint", "agents-guide", "bootstrap-prompt", "mcp-config", "context-doc", "flows-doc"]),
+  role: z.enum(["blueprint", "agents-guide", "bootstrap-prompt", "agent-policy", "mcp-config", "context-doc", "flows-doc"]),
   existsBefore: z.boolean(),
   changed: z.boolean(),
   oldHash: z.string().nullable(),
@@ -116,6 +128,7 @@ export const scaffoldProjectAgentsOutputSchema = z.object({
     blueprintPath: z.string(),
     agentsGuidePath: z.string(),
     bootstrapPromptPath: z.string(),
+    policyPath: z.string().nullable(),
     contextDocPath: z.string().nullable(),
     flowsDocPath: z.string().nullable(),
     mcpConfigPath: z.string().nullable()
@@ -157,6 +170,7 @@ export const scaffoldProjectAgentsTool = {
       outputDir,
       docsDir,
       generateDocs,
+      generatePolicy,
       includeVscodeMcp,
       dryRun,
       allowOverwrite,
@@ -172,6 +186,7 @@ export const scaffoldProjectAgentsTool = {
     enforceManagedSubtree(selectedOutputDir, ".codex/mcp", "outputDir");
     enforceManagedSubtree(selectedDocsDir, "docs", "docsDir");
     const shouldGenerateDocs = generateDocs ?? true;
+    const shouldGeneratePolicy = generatePolicy ?? true;
     const shouldIncludeMcp = includeVscodeMcp ?? false;
     const shouldDryRun = dryRun ?? true;
     const shouldAllowOverwrite = allowOverwrite ?? false;
@@ -186,6 +201,7 @@ export const scaffoldProjectAgentsTool = {
       blueprintPath: joinPath(selectedOutputDir, "agent.blueprint.json"),
       agentsGuidePath: joinPath(selectedOutputDir, "AGENTS.generated.md"),
       bootstrapPromptPath: joinPath(selectedOutputDir, "prompts/task-bootstrap.txt"),
+      policyPath: shouldGeneratePolicy ? DEFAULT_POLICY_PATH : null,
       contextDocPath: shouldGenerateDocs ? joinPath(selectedDocsDir, "project-context.md") : null,
       flowsDocPath: shouldGenerateDocs ? joinPath(selectedDocsDir, "agent-flows.md") : null,
       mcpConfigPath: shouldIncludeMcp ? ".vscode/mcp.json" : null
@@ -213,6 +229,13 @@ export const scaffoldProjectAgentsTool = {
         content: renderBootstrapPrompt(projectProfile, files)
       }
     ];
+    if (shouldGeneratePolicy) {
+      plannedWrites.push({
+        path: files.policyPath,
+        role: "agent-policy",
+        content: renderAgentPolicy(projectProfile)
+      });
+    }
 
     if (shouldGenerateDocs) {
       plannedWrites.push({
@@ -298,7 +321,7 @@ export const scaffoldProjectAgentsTool = {
   }
 };
 
-async function resolveProjectProfile(options) {
+export async function resolveProjectProfile(options) {
   const { root, projectName, projectType, namespace } = options;
   let packageJson = null;
   let manifest = null;
@@ -333,7 +356,7 @@ async function resolveProjectProfile(options) {
   };
 }
 
-function buildBlueprint(projectProfile, options = {}) {
+export function buildBlueprint(projectProfile, options = {}) {
   const { agentDefinitions, qualityGates, recommendationMeta } = options;
   const { name, type, namespace } = projectProfile;
   const defaultRequiredTools = type === "sapui5"
@@ -458,7 +481,7 @@ function buildAgentsByProjectType(projectType, projectName) {
   ];
 }
 
-function renderAgentsGuide(projectProfile, files) {
+export function renderAgentsGuide(projectProfile, files) {
   const { name, type } = projectProfile;
   const qualityChecks = type === "sapui5"
     ? [
@@ -510,7 +533,7 @@ function renderAgentsGuide(projectProfile, files) {
   ].join("\n");
 }
 
-function renderBootstrapPrompt(projectProfile, files) {
+export function renderBootstrapPrompt(projectProfile, files) {
   const { name, type } = projectProfile;
   const domainLine = type === "sapui5"
     ? "Prioritize UI5 tools for generation, i18n, validation, and performance."
@@ -520,6 +543,7 @@ function renderBootstrapPrompt(projectProfile, files) {
     `Project: ${name}`,
     `Project type: ${type}`,
     `Blueprint: ${files.blueprintPath}`,
+    `Agent policy: ${files.policyPath ?? "disabled"}`,
     "",
     "Instruction:",
     "Use MCP-first workflow.",
@@ -531,7 +555,41 @@ function renderBootstrapPrompt(projectProfile, files) {
   ].join("\n");
 }
 
-function renderContextDoc(projectProfile, files) {
+export function renderAgentPolicy(projectProfile) {
+  const policy = {
+    schemaVersion: "1.0.0",
+    enabled: true,
+    project: {
+      type: projectProfile.type,
+      namespace: projectProfile.namespace ?? null
+    },
+    ranking: {
+      enabled: true,
+      minExecutions: 1,
+      maxResults: 20,
+      includeUnscored: true,
+      includeDeprecated: false
+    },
+    recommendation: {
+      enabled: true,
+      includePackCatalog: true,
+      includePackFeedbackRanking: true,
+      maxRecommendations: 8
+    },
+    qualityGate: {
+      enabled: true,
+      failOnUnknownSymbols: false,
+      failOnMediumSecurity: false,
+      maxHighPerformanceFindings: 0,
+      refreshDocs: true,
+      applyDocs: false,
+      failOnDocDrift: false
+    }
+  };
+  return `${JSON.stringify(policy, null, 2)}\n`;
+}
+
+export function renderContextDoc(projectProfile, files) {
   return [
     "# Contexto del Proyecto",
     "",
@@ -554,7 +612,7 @@ function renderContextDoc(projectProfile, files) {
   ].join("\n");
 }
 
-function renderFlowsDoc(projectProfile, files) {
+export function renderFlowsDoc(projectProfile, files) {
   return [
     "# Flujos de Agentes",
     "",
@@ -576,7 +634,7 @@ function renderFlowsDoc(projectProfile, files) {
   ].join("\n");
 }
 
-async function resolveMcpConfigWrite(options) {
+export async function resolveMcpConfigWrite(options) {
   const { root, allowOverwrite } = options;
   const targetPath = ".vscode/mcp.json";
   if (!(await fileExists(targetPath, root))) {

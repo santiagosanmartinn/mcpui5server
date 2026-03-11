@@ -43,7 +43,17 @@ const KNOWN_TOOLS = new Set([
   "save_agent_pack",
   "list_agent_packs",
   "apply_agent_pack",
-  "refresh_project_context_docs"
+  "refresh_project_context_docs",
+  "record_agent_execution_feedback",
+  "rank_agent_packs",
+  "promote_agent_pack",
+  "audit_project_mcp_state",
+  "upgrade_project_mcp",
+  "ensure_project_mcp_current",
+  "collect_legacy_project_intake",
+  "analyze_legacy_project_baseline",
+  "build_ai_context_index",
+  "prepare_legacy_project_for_ai"
 ]);
 
 const inputSchema = z.object({

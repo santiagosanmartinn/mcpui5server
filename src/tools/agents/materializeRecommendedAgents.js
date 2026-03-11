@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { scaffoldProjectAgentsOutputSchema, scaffoldProjectAgentsTool } from "./scaffoldProjectAgents.js";
 import { recommendProjectAgentsTool } from "./recommendProjectAgents.js";
+import { ensureProjectMcpCurrentTool } from "./ensureProjectMcpCurrent.js";
+import { prepareLegacyProjectForAiTool } from "./prepareLegacyProjectForAi.js";
 
 const recommendationInputSchema = z.object({
   id: z.string().min(1),
@@ -20,6 +22,13 @@ const inputSchema = z.object({
   maxRecommendations: z.number().int().min(2).max(20).optional(),
   includePackCatalog: z.boolean().optional(),
   packCatalogPath: z.string().min(1).optional(),
+  autoEnsureProjectMcp: z.boolean().optional(),
+  autoEnsureApply: z.boolean().optional(),
+  autoPrepareProjectContext: z.boolean().optional(),
+  autoPrepareApply: z.boolean().optional(),
+  autoPrepareRefreshBaseline: z.boolean().optional(),
+  autoPrepareRefreshContextIndex: z.boolean().optional(),
+  autoPrepareAskForMissingContext: z.boolean().optional(),
   projectName: z.string().min(1).optional(),
   projectType: z.enum(["sapui5", "node", "generic"]).optional(),
   namespace: z.string().min(1).optional(),
@@ -33,6 +42,20 @@ const inputSchema = z.object({
 
 const outputSchema = z.object({
   source: z.enum(["input", "auto-recommend"]),
+  projectMcpSync: z.object({
+    executed: z.boolean(),
+    actionTaken: z.enum(["none", "upgrade-dry-run", "upgrade-applied"]).nullable(),
+    statusBefore: z.enum(["up-to-date", "needs-upgrade", "not-initialized"]).nullable(),
+    statusAfter: z.enum(["up-to-date", "needs-upgrade", "not-initialized"]).nullable()
+  }),
+  projectContextSync: z.object({
+    executed: z.boolean(),
+    readyForAutopilot: z.boolean(),
+    needsUserInput: z.boolean(),
+    missingContext: z.array(z.string()),
+    nextActions: z.array(z.string()),
+    error: z.string().nullable()
+  }),
   usedRecommendations: z.number().int().positive(),
   droppedRecommendations: z.array(z.string()),
   selectedRecommendationIds: z.array(z.string()),
@@ -46,6 +69,83 @@ export const materializeRecommendedAgentsTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const shouldAutoEnsureProjectMcp = parsed.autoEnsureProjectMcp ?? true;
+    const shouldAutoEnsureApply = parsed.autoEnsureApply ?? (parsed.dryRun === false);
+    const shouldAutoPrepareProjectContext = parsed.autoPrepareProjectContext ?? true;
+    const shouldAutoPrepareApply = parsed.autoPrepareApply ?? (parsed.dryRun === false);
+    let projectMcpSync = {
+      executed: false,
+      actionTaken: null,
+      statusBefore: null,
+      statusAfter: null
+    };
+    let projectContextSync = {
+      executed: false,
+      readyForAutopilot: false,
+      needsUserInput: false,
+      missingContext: [],
+      nextActions: [],
+      error: null
+    };
+
+    if (shouldAutoEnsureProjectMcp) {
+      const ensureResult = await ensureProjectMcpCurrentTool.handler(
+        {
+          autoApply: shouldAutoEnsureApply,
+          allowOverwrite: parsed.allowOverwrite,
+          includeVscodeMcp: parsed.includeVscodeMcp,
+          runPostValidation: true,
+          failOnValidation: false,
+          runQualityGate: false,
+          reason: "materialize_recommended_agents:auto-ensure"
+        },
+        { context }
+      );
+      projectMcpSync = {
+        executed: true,
+        actionTaken: ensureResult.actionTaken,
+        statusBefore: ensureResult.statusBefore,
+        statusAfter: ensureResult.statusAfter
+      };
+    }
+    const resolvedAllowOverwrite = parsed.allowOverwrite
+      ?? (projectMcpSync.actionTaken === "upgrade-applied");
+
+    if (shouldAutoPrepareProjectContext) {
+      try {
+        const preparation = await prepareLegacyProjectForAiTool.handler(
+          {
+            sourceDir: parsed.sourceDir,
+            autoApply: shouldAutoPrepareApply,
+            runEnsureProjectMcp: false,
+            askForMissingContext: parsed.autoPrepareAskForMissingContext,
+            refreshBaseline: parsed.autoPrepareRefreshBaseline,
+            refreshContextIndex: parsed.autoPrepareRefreshContextIndex,
+            reason: "materialize_recommended_agents:auto-prepare",
+            maxDiffLines: parsed.maxDiffLines
+          },
+          { context }
+        );
+        projectContextSync = {
+          executed: true,
+          readyForAutopilot: preparation.readyForAutopilot,
+          needsUserInput: preparation.intake.needsUserInput,
+          missingContext: preparation.intake.missingContext,
+          nextActions: preparation.nextActions,
+          error: null
+        };
+      } catch (error) {
+        projectContextSync = {
+          executed: false,
+          readyForAutopilot: false,
+          needsUserInput: false,
+          missingContext: [],
+          nextActions: ["Run prepare_legacy_project_for_ai before materializing agents to stabilize project context."],
+          error: error?.message ?? String(error)
+        };
+      }
+    }
+
     let recommendations = parsed.recommendations ?? [];
     let source = "input";
 
@@ -57,7 +157,8 @@ export const materializeRecommendedAgentsTool = {
           maxFiles: parsed.maxFiles,
           maxRecommendations: parsed.maxRecommendations,
           includePackCatalog: parsed.includePackCatalog,
-          packCatalogPath: parsed.packCatalogPath
+          packCatalogPath: parsed.packCatalogPath,
+          autoPrepareProjectContext: false
         },
         {
           context
@@ -84,7 +185,7 @@ export const materializeRecommendedAgentsTool = {
         outputDir: parsed.outputDir,
         includeVscodeMcp: parsed.includeVscodeMcp,
         dryRun: parsed.dryRun,
-        allowOverwrite: parsed.allowOverwrite,
+        allowOverwrite: resolvedAllowOverwrite,
         reason: parsed.reason ?? "materialize_recommended_agents",
         maxDiffLines: parsed.maxDiffLines,
         agentDefinitions: selection.agentDefinitions,
@@ -100,6 +201,8 @@ export const materializeRecommendedAgentsTool = {
 
     return outputSchema.parse({
       source,
+      projectMcpSync,
+      projectContextSync,
       usedRecommendations: selection.agentDefinitions.length,
       droppedRecommendations: selection.droppedRecommendationIds,
       selectedRecommendationIds: selection.selectedRecommendationIds,

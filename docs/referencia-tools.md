@@ -1,6 +1,17 @@
-# Referencia de tools MCP
+# Referencia de herramientas MCP
 
-Listado de tools actualmente registradas en `src/tools/index.js`.
+Listado de herramientas registradas en `src/tools/index.js`.
+
+Como leer este documento:
+
+1. busca la herramienta por dominio
+2. revisa "Objetivo" y "Entrada destacada"
+3. para payload real, ve a [ejemplos-tools.md](./ejemplos-tools.md)
+
+Ruta recomendada para nuevos usuarios:
+- [00-conceptos-clave.md](./00-conceptos-clave.md)
+- [01-getting-started.md](./01-getting-started.md)
+- [02-flujos-operativos.md](./02-flujos-operativos.md)
 
 ## Dominio project
 
@@ -304,12 +315,14 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - blueprint JSON de agentes
   - guia operativa de agentes
   - prompt bootstrap
+  - politica inicial por proyecto en `.codex/mcp/policies/agent-policy.json`
   - docs de contexto y flujos en `docs/mcp`
   - configuracion opcional MCP en `.vscode/mcp.json` (desactivado por defecto)
 - Entrada destacada:
   - `projectName`, `projectType`, `namespace` (opcionales)
   - `outputDir` (opcional)
   - `docsDir` y `generateDocs` (opcionales)
+  - `generatePolicy` (opcional, por defecto `true`)
   - `includeVscodeMcp` (opcional)
   - `dryRun` (opcional, por defecto `true`)
   - `allowOverwrite` (opcional, por defecto `false`)
@@ -321,7 +334,7 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
 
 ### `validate_project_agents`
 
-- Objetivo: validar blueprint y artefactos de agentes para asegurar consistencia, cobertura de tools y readiness MCP.
+- Objetivo: validar blueprint y artefactos de agentes para asegurar consistencia, cobertura de herramientas y preparacion MCP.
 - Entrada destacada:
   - `blueprintPath`, `agentsGuidePath`, `mcpConfigPath` (opcionales)
   - `requireMcpConfig` (opcional, por defecto `false`)
@@ -329,14 +342,14 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
 - Validaciones principales:
   - schema del blueprint (`schemaVersion`, agentes, gates)
   - unicidad de `agent.id`
-  - tools conocidas vs desconocidas
+  - herramientas conocidas frente a desconocidas
   - cobertura de `qualityGates.requiredTools` en allowlists
-  - presencia de `npm run check` en quality gate
+  - presencia de `npm run check` en la puerta de calidad
   - presencia de modo `MCP-first` en guia
   - entrada `sapui5` en `.vscode/mcp.json` (si `requireMcpConfig=true`)
 - Salida:
   - `valid`
-  - checks detallados, errores y warnings
+  - comprobaciones detalladas, errores y avisos
   - acciones recomendadas
 
 ### `recommend_project_agents`
@@ -346,8 +359,13 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - `sourceDir`, `maxFiles` (opcionales para escaneo)
   - `maxRecommendations` (opcional)
   - `includePackCatalog` y `packCatalogPath` (opcionales)
+  - `includePackFeedbackRanking` y `feedbackMetricsPath` (opcionales para priorizar packs con feedback)
+  - `policyPath` y `respectPolicy` (opcionales) para enforcement declarativo desde `agent-policy.json`
+  - auto-preparacion opcional de contexto (`autoPrepareProjectContext`, `autoPrepareApply`, `autoPrepareRefreshBaseline`, `autoPrepareRefreshContextIndex`)
 - Salida:
+  - `policy` con trazabilidad de carga/enforcement
   - `project` detectado (`name`, `type`, `namespace`)
+  - `projectContextSync` con estado de preparacion automatica de contexto IA
   - `signals` del codebase (js/xml/controllers/views/fragments, routing, i18n, blueprint existente)
   - `recommendations` priorizadas con `score`, `rationale` y `agent`
   - `suggestedMaterializationArgs` para usar directamente en materializacion
@@ -359,8 +377,12 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - `recommendations` (opcional; si no viene, ejecuta recomendacion automatica)
   - `projectName`, `projectType`, `namespace` (opcionales)
   - `dryRun`, `allowOverwrite`, `includeVscodeMcp` (opcionales)
+  - `autoEnsureProjectMcp` y `autoEnsureApply` (opcionales) para sincronizar layout MCP antes de materializar
+  - auto-preparacion de contexto (`autoPrepareProjectContext`, `autoPrepareApply`, `autoPrepareRefreshBaseline`, `autoPrepareRefreshContextIndex`)
 - Salida:
   - fuente de recomendaciones (`input` o `auto-recommend`)
+  - `projectMcpSync` con estado de auto-sincronizacion previa
+  - `projectContextSync` con estado de intake/baseline/context-index
   - recomendaciones usadas/descartadas
   - `scaffoldResult` completo (previews, summary, applyResult)
 
@@ -386,7 +408,7 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - `packCatalogPath` (opcional, por defecto `.codex/mcp/packs/catalog.json`)
 - Salida:
   - existencia de catalogo
-  - listado de packs (`name`, `slug`, `version`, `projectType`, `fingerprint`, `path`)
+  - listado de packs (`name`, `slug`, `version`, `projectType`, `fingerprint`, `path`, `lifecycleStatus`, `lifecycleUpdatedAt`)
 
 ### `apply_agent_pack`
 
@@ -420,6 +442,151 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
     - `.codex/mcp/context-snapshot.json`
   - `applyResult` si `dryRun: false`
 
+### `record_agent_execution_feedback`
+
+- Objetivo: registrar feedback estructurado de ejecuciones de agentes y mantener metricas agregadas por pack.
+- Entrada destacada:
+  - `packSlug`, `packVersion`
+  - `projectType`, `ui5Version` (opcional)
+  - resultado y calidad (`outcome`, `qualityGatePass`, `issuesIntroduced`, `manualEditsNeeded`)
+  - impacto (`timeSavedMinutes`, `tokenDeltaEstimate`)
+  - `feedbackPath` y `metricsPath` bajo `.codex/mcp/...` (opcionales)
+  - `dryRun`, `reason`, `maxDiffLines`
+- Salida:
+  - registro creado (`record.id`, `packKey`, `recordedAt`)
+  - snapshot de metricas globales y del pack
+  - previews + `applyResult` con patch seguro
+
+### `rank_agent_packs`
+
+- Objetivo: priorizar packs reutilizables usando feedback historico para mejorar recomendacion automatica.
+- Entrada destacada:
+  - `packCatalogPath` y `metricsPath` bajo `.codex/mcp/...` (opcionales)
+  - `policyPath` y `respectPolicy` (opcionales)
+  - `projectType` para ranking contextual
+  - `minExecutions`, `maxResults`, `includeUnscored`, `includeDeprecated`
+- Salida:
+  - `policy` con estado de enforcement
+  - listado `rankedPacks` con `score`, `confidence`, `status`, `lifecycleStatus` y rationale
+  - resumen de packs rankeados vs sin feedback
+  - trazabilidad de existencia de catalogo y metricas
+
+### `promote_agent_pack`
+
+- Objetivo: promover/degradar estado de lifecycle del pack (`experimental`, `candidate`, `recommended`, `deprecated`).
+- Modos:
+  - `auto`: aplica reglas sobre score/ejecuciones/fallos/calidad.
+  - `manual`: fija `targetStatus` explicitamente.
+- Entrada destacada:
+  - `packSlug` o `packName` (opcional `packVersion`)
+  - `packCatalogPath`, `metricsPath`
+  - reglas de decision (`recommendedScoreThreshold`, `candidateScoreThreshold`, etc.)
+  - `dryRun`, `reason`, `maxDiffLines`
+- Salida:
+  - estado anterior/nuevo del pack
+  - decision con metricas de soporte (score, failureRate, qualityRate, executions)
+  - preview y `applyResult` de actualizacion de catalogo
+
+### `audit_project_mcp_state`
+
+- Objetivo: auditar el estado MCP del proyecto y detectar brechas frente al layout gestionado actual.
+- Entrada destacada:
+  - `statePath` (opcional, default `.codex/mcp/project/mcp-project-state.json`)
+  - `includeLegacyScan` (opcional, default `true`)
+- Salida:
+  - `status` (`up-to-date`, `needs-upgrade`, `not-initialized`)
+  - inventario de artefactos gestionados y legacy detectados
+  - `migrationPlan` accionable (`create`, `migrate`, `update-state`)
+  - `recommendedActions`
+
+### `upgrade_project_mcp`
+
+- Objetivo: actualizar el proyecto al layout MCP actual con flujo seguro (`dryRun`, preview diff y rollback via patch).
+- Entrada destacada:
+  - `dryRun`, `allowOverwrite`, `preferLegacyArtifacts`
+  - `includeVscodeMcp` (opcional)
+  - `statePath` (opcional)
+  - validacion post-upgrade: `runPostValidation`, `failOnValidation`
+  - quality gate opcional: `runQualityGate`, `failOnQualityGate`
+- Comportamiento:
+  - crea o migra artefactos en `.codex/mcp/...` y `docs/mcp/...`
+  - migra desde rutas legacy conocidas cuando existe fuente
+  - actualiza `mcp-project-state.json` con version de layout
+- Salida:
+  - `statusBefore`/`statusAfter`
+  - acciones de migracion aplicadas u omitidas
+  - previews y `applyResult`
+  - estado de validacion y quality gate (si se ejecutan)
+
+### `ensure_project_mcp_current`
+
+- Objetivo: automatizar en una sola llamada el flujo `audit + upgrade` cuando el proyecto no esta actualizado.
+- Entrada destacada:
+  - `autoApply` (default `true`) para aplicar upgrade automaticamente o solo dry-run.
+  - `force` para ejecutar upgrade incluso si el audit indica `up-to-date`.
+  - parametros de upgrade (`allowOverwrite`, validacion, puerta de calidad, etc.).
+- Salida:
+  - `actionTaken` (`none`, `upgrade-dry-run`, `upgrade-applied`)
+  - `statusBefore`/`statusAfter`
+  - resumen de auditoria y datos de ejecucion del upgrade (si aplica)
+
+### `collect_legacy_project_intake`
+
+- Objetivo: capturar contexto funcional/operativo de un proyecto heredado para mejorar la precision de la IA y reducir repeticion de instrucciones.
+- Entrada destacada:
+  - datos de contexto (`projectGoal`, `criticality`, `allowedRefactorScope`, `ui5RuntimeVersion`, etc.)
+  - `askForMissingContext` para devolver preguntas guiadas cuando falte informacion clave
+  - `intakePath` bajo `.codex/mcp/...`, `dryRun`, `maxDiffLines`
+- Salida:
+  - `needsUserInput`, `missingContext` y `questions`
+  - resumen de cobertura de contexto
+  - previsualizacion y `applyResult` del intake persistido
+
+### `analyze_legacy_project_baseline`
+
+- Objetivo: generar baseline tecnico de un proyecto heredado (inventario, riesgos, hotspots y recomendaciones de integracion IA).
+- Entrada destacada:
+  - `sourceDir`, `intakePath`
+  - salidas en `.codex/mcp/project/legacy-baseline.json` y `docs/mcp/legacy-baseline.md`
+  - `dryRun`, `maxFiles`, `includeExtensions`
+- Salida:
+  - resumen de inventario y arquitectura
+  - `qualityRisks` y `hotspots`
+  - recomendaciones accionables para modernizacion segura
+  - previews y `applyResult`
+
+### `build_ai_context_index`
+
+- Objetivo: construir un indice de contexto por chunks para reducir tokens sin degradar calidad.
+- Entrada destacada:
+  - `sourceDir`, `baselinePath`, `intakePath`
+  - parametros de chunking (`chunkChars`, `maxChunks`, `maxFiles`)
+  - salidas en `.codex/mcp/context/context-index.json` y `docs/mcp/context-index.md`
+- Salida:
+  - `qualityGuards` (paths obligatorios y minimos de contexto critico)
+  - `summary` de files/chunks indexados y truncados
+  - `retrievalProfiles` listos para feature/bugfix/security/refactor
+  - previews y `applyResult`
+
+### `prepare_legacy_project_for_ai`
+
+- Objetivo: orquestar en una sola llamada la preparacion IA de un proyecto existente/heredado.
+- Orquesta:
+  - `ensure_project_mcp_current` (opcional)
+  - `collect_legacy_project_intake` (si falta intake)
+  - `analyze_legacy_project_baseline` (si falta o se fuerza refresh)
+  - `build_ai_context_index` (si falta o se fuerza refresh)
+- Entrada destacada:
+  - `sourceDir`
+  - `autoApply`
+  - `runEnsureProjectMcp`
+  - `refreshBaseline`, `refreshContextIndex`
+- Salida:
+  - `artifactsBefore` y `artifactsAfter`
+  - `ran` (pasos ejecutados)
+  - `intake` (`needsUserInput`, `missingContext`, `questions`)
+  - `readyForAutopilot` y `nextActions`
+
 ## Dominio project (gates)
 
 ### `run_project_quality_gate`
@@ -434,8 +601,10 @@ Listado de tools actualmente registradas en `src/tools/index.js`.
   - `sourceDir`, `ui5Version`, `maxFiles`
   - umbrales y politicas (`failOnUnknownSymbols`, `failOnMediumSecurity`, etc.)
   - `refreshDocs`, `applyDocs`, `failOnDocDrift`
+  - `policyPath` y `respectPolicy` (opcionales)
 - Salida:
   - `pass` global
+  - `policy` aplicado (si existe)
   - `checks` detallados
   - `summary` con metricas clave
   - `reports` por dominio (compatibilidad, seguridad, performance, docs)

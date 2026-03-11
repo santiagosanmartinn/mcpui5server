@@ -4,6 +4,7 @@ import { analyzeUi5PerformanceTool } from "../ui5/analyzePerformance.js";
 import { validateUi5VersionCompatibilityTool } from "../ui5/validateUi5VersionCompatibility.js";
 import { securityCheckUi5AppTool } from "../ui5/securityCheckUi5App.js";
 import { refreshProjectContextDocsTool } from "../agents/refreshProjectContextDocs.js";
+import { DEFAULT_AGENT_POLICY_PATH, loadAgentPolicy } from "../../utils/agentPolicy.js";
 
 const inputSchema = z.object({
   sourceDir: z.string().min(1).optional(),
@@ -16,7 +17,9 @@ const inputSchema = z.object({
   maxHighPerformanceFindings: z.number().int().min(0).max(500).optional(),
   refreshDocs: z.boolean().optional(),
   applyDocs: z.boolean().optional(),
-  failOnDocDrift: z.boolean().optional()
+  failOnDocDrift: z.boolean().optional(),
+  policyPath: z.string().min(1).optional(),
+  respectPolicy: z.boolean().optional()
 }).strict();
 
 const checkSchema = z.object({
@@ -30,6 +33,12 @@ const outputSchema = z.object({
   pass: z.boolean(),
   sourceDir: z.string(),
   ui5Version: z.string().nullable(),
+  policy: z.object({
+    path: z.string(),
+    loaded: z.boolean(),
+    enforced: z.boolean(),
+    section: z.string().nullable()
+  }),
   checks: z.array(checkSchema),
   summary: z.object({
     failedChecks: z.number().int().nonnegative(),
@@ -85,19 +94,49 @@ export const runProjectQualityGateTool = {
       maxHighPerformanceFindings,
       refreshDocs,
       applyDocs,
-      failOnDocDrift
+      failOnDocDrift,
+      policyPath,
+      respectPolicy
     } = inputSchema.parse(args);
     const source = sourceDir ?? "webapp";
-    const shouldFailUnknownSymbols = failOnUnknownSymbols ?? false;
-    const shouldFailMediumSecurity = failOnMediumSecurity ?? false;
-    const allowedHighPerformanceFindings = maxHighPerformanceFindings ?? 0;
-    const shouldRefreshDocs = refreshDocs ?? true;
-    const shouldApplyDocs = applyDocs ?? false;
-    const shouldFailDocDrift = failOnDocDrift ?? false;
+    const selectedPolicyPath = normalizeRelativePath(policyPath ?? DEFAULT_AGENT_POLICY_PATH);
+    const shouldRespectPolicy = respectPolicy ?? true;
+    const policyResolution = shouldRespectPolicy
+      ? await loadAgentPolicy({ root: context.rootDir, policyPath: selectedPolicyPath })
+      : {
+        path: selectedPolicyPath,
+        loaded: false,
+        enabled: false,
+        policy: null
+      };
+    const qualityGatePolicy = policyResolution.loaded
+      && policyResolution.enabled
+      && (policyResolution.policy?.qualityGate?.enabled ?? true)
+      ? (policyResolution.policy?.qualityGate ?? {})
+      : null;
+
+    const shouldFailUnknownSymbols = qualityGatePolicy?.failOnUnknownSymbols ?? failOnUnknownSymbols ?? false;
+    const shouldFailMediumSecurity = qualityGatePolicy?.failOnMediumSecurity ?? failOnMediumSecurity ?? false;
+    const allowedHighPerformanceFindings = qualityGatePolicy?.maxHighPerformanceFindings ?? maxHighPerformanceFindings ?? 0;
+    let shouldRefreshDocs = qualityGatePolicy?.refreshDocs ?? refreshDocs ?? true;
+    const shouldApplyDocs = qualityGatePolicy?.applyDocs ?? applyDocs ?? false;
+    const shouldFailDocDrift = qualityGatePolicy?.failOnDocDrift ?? failOnDocDrift ?? false;
+    const shouldRequireUi5Version = qualityGatePolicy?.requireUi5Version ?? false;
+    if (shouldApplyDocs) {
+      shouldRefreshDocs = true;
+    }
     const checks = [];
 
     const project = await analyzeUi5ProjectTool.handler({}, { context });
     const effectiveUi5Version = ui5Version ?? project.ui5Version ?? null;
+    pushCheck(checks, {
+      id: "ui5_version_declared",
+      pass: shouldRequireUi5Version ? Boolean(effectiveUi5Version) : true,
+      severity: shouldRequireUi5Version ? "error" : "warn",
+      message: effectiveUi5Version
+        ? `UI5 version resolved for gate execution: ${effectiveUi5Version}.`
+        : "UI5 version could not be resolved for this project."
+    });
 
     const compatibility = await validateUi5VersionCompatibilityTool.handler(
       {
@@ -212,6 +251,12 @@ export const runProjectQualityGateTool = {
       pass: errorChecks === 0,
       sourceDir: source,
       ui5Version: effectiveUi5Version,
+      policy: {
+        path: policyResolution.path,
+        loaded: policyResolution.loaded,
+        enforced: Boolean(qualityGatePolicy),
+        section: qualityGatePolicy ? "qualityGate" : null
+      },
       checks,
       summary: {
         failedChecks: failedChecks.length,
@@ -251,4 +296,8 @@ export const runProjectQualityGateTool = {
 
 function pushCheck(checks, check) {
   checks.push(check);
+}
+
+function normalizeRelativePath(value) {
+  return value.replaceAll("\\", "/").replace(/^\.\/+/, "").replace(/\/{2,}/g, "/");
 }

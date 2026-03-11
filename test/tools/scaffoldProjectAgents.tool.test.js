@@ -41,7 +41,7 @@ describe("scaffold_project_agents tool", () => {
     expect(result.project.name).toBe("demo.project");
     expect(result.applyResult).toBeNull();
     expect(result.previews.map((item) => item.role)).toEqual(
-      expect.arrayContaining(["blueprint", "agents-guide", "bootstrap-prompt", "context-doc", "flows-doc"])
+      expect.arrayContaining(["blueprint", "agents-guide", "bootstrap-prompt", "agent-policy", "context-doc", "flows-doc"])
     );
     await expect(fs.access(path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json"))).rejects.toThrow();
     await expect(fs.access(path.join(tempRoot, ".vscode", "mcp.json"))).rejects.toThrow();
@@ -62,12 +62,14 @@ describe("scaffold_project_agents tool", () => {
     const blueprintPath = path.join(tempRoot, ".codex", "mcp", "agents", "agent.blueprint.json");
     const guidePath = path.join(tempRoot, ".codex", "mcp", "agents", "AGENTS.generated.md");
     const promptPath = path.join(tempRoot, ".codex", "mcp", "agents", "prompts", "task-bootstrap.txt");
+    const policyPath = path.join(tempRoot, ".codex", "mcp", "policies", "agent-policy.json");
     const contextPath = path.join(tempRoot, "docs", "mcp", "project-context.md");
     const mcpPath = path.join(tempRoot, ".vscode", "mcp.json");
 
     await expect(fs.access(blueprintPath)).resolves.toBeUndefined();
     await expect(fs.access(guidePath)).resolves.toBeUndefined();
     await expect(fs.access(promptPath)).resolves.toBeUndefined();
+    await expect(fs.access(policyPath)).resolves.toBeUndefined();
     await expect(fs.access(contextPath)).resolves.toBeUndefined();
     await expect(fs.access(mcpPath)).rejects.toThrow();
 
