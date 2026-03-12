@@ -418,6 +418,7 @@ function buildHeuristicRecommendations(project, signals) {
             "read_project_file",
             "search_ui5_sdk",
             "search_mdn",
+            "mcp_health_report",
             "refresh_project_context_docs",
             "rank_agent_packs",
             "promote_agent_pack",
@@ -461,6 +462,7 @@ function buildHeuristicRecommendations(project, signals) {
             "scaffold_ui5_odata_feature",
             "security_check_ui5_app",
             "run_project_quality_gate",
+            "mcp_health_report",
             "sync_manifest_json",
             "write_project_file_preview",
             "apply_project_patch",
@@ -495,6 +497,7 @@ function buildHeuristicRecommendations(project, signals) {
             "scaffold_ui5_odata_feature",
             "security_check_ui5_app",
             "run_project_quality_gate",
+            "mcp_health_report",
             "lint_javascript_code",
             "security_check_javascript",
             "refresh_project_context_docs",
@@ -553,6 +556,7 @@ function buildHeuristicRecommendations(project, signals) {
           "analyze_current_file",
           "read_project_file",
           "search_mdn",
+          "mcp_health_report",
           "refresh_project_context_docs",
           "rank_agent_packs",
           "promote_agent_pack",
@@ -566,7 +570,8 @@ function buildHeuristicRecommendations(project, signals) {
           "record_agent_execution_feedback",
           "recommend_project_agents",
           "validate_project_agents",
-          "run_project_quality_gate"
+          "run_project_quality_gate",
+          "mcp_health_report"
         ])
       }
     }),

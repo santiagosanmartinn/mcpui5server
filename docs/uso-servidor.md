@@ -24,6 +24,7 @@ Para detalle completo:
 - desarrollo: `npm run dev`
 - validar calidad: `npm run check`
 - pruebas en CI: `npm run test:run`
+- actualizar snapshot de contratos: `npm run contracts:snapshot`
 
 ## 3) Integracion con Codex en VSCode
 
@@ -215,6 +216,19 @@ Para detalle completo:
     "respectPolicy": true,
     "checkODataUsage": true,
     "odataMetadataPath": "docs/metadata/service.xml"
+  }
+}
+```
+
+### Salud del servidor MCP
+
+```json
+{
+  "tool": "mcp_health_report",
+  "arguments": {
+    "includeDocChecks": true,
+    "includePolicyStatus": true,
+    "includeContractStatus": true
   }
 }
 ```

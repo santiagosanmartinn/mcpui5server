@@ -43,6 +43,7 @@ src/
     javascript/
     project/
       runProjectQualityGate.js
+      mcpHealthReport.js
     documentation/
       cacheStore.js
       searchUI5SDK.js
@@ -55,6 +56,7 @@ src/
     patchWriter.js
     agentPolicy.js
     mcpProjectLayout.js
+    toolContracts.js
     refactor.js
     xmlParser.js
     validator.js
@@ -158,6 +160,9 @@ vitest.config.js
 - `src/utils/mcpProjectLayout.js`:
   - Contrato de layout MCP por proyecto (version actual, artefactos gestionados y rutas legacy).
   - Base comun para auditoria y upgrade incremental del proyecto.
+- `src/utils/toolContracts.js`:
+  - Snapshot estable de contratos (`inputSchema`/`outputSchema`) por tool.
+  - Hash determinista para detectar breaking changes de contrato.
 
 ## 5) Calidad automatizada
 
@@ -167,6 +172,7 @@ vitest.config.js
 - Comando de control unico:
   - `npm run check` ejecuta lint + tests.
   - `npm run coverage` valida cobertura.
+  - `npm run contracts:snapshot` regenera `docs/contracts/tool-contracts.snapshot.json`.
 
 ## Contrato de una tool
 

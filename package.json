@@ -14,7 +14,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "coverage": "vitest run --coverage",
-    "check": "npm run lint && npm run test:run"
+    "check": "npm run lint && npm run test:run",
+    "contracts:snapshot": "node scripts/update-tool-contracts-snapshot.mjs"
   },
   "keywords": [
     "mcp",

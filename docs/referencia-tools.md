@@ -675,3 +675,17 @@ Ruta recomendada para nuevos usuarios:
   - `checks` detallados
   - `summary` con metricas clave (incluye OData)
   - `reports` por dominio (compatibilidad, OData, seguridad, performance, docs)
+
+### `mcp_health_report`
+
+- Objetivo: diagnosticar salud operativa del servidor MCP y del workspace (tools publicadas, alineacion de docs, estado de policy, snapshot de contratos y artefactos gestionados).
+- Entrada destacada:
+  - `includeToolNames` (opcional)
+  - `includeDocChecks`, `includePolicyStatus`, `includeContractStatus`, `includeManagedArtifacts` (opcionales)
+  - rutas opcionales para `referenceDocPath`, `examplesDocPath`, `policyPath`, `contractSnapshotPath`
+- Salida:
+  - `tools` (conteo, duplicados, nombres opcionales)
+  - `docs` (alineacion de `referencia-tools.md` y `ejemplos-tools.md` contra catálogo runtime)
+  - `policy` (carga/habilitacion de `agent-policy.json`)
+  - `contracts` (sincronizacion de contratos contra `docs/contracts/tool-contracts.snapshot.json`)
+  - `managedArtifacts` (existencia de intake/baseline/context-index/blueprint/guide)

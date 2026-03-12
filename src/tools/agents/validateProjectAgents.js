@@ -20,6 +20,7 @@ const KNOWN_TOOLS = new Set([
   "apply_project_patch",
   "rollback_project_patch",
   "run_project_quality_gate",
+  "mcp_health_report",
   "generate_ui5_controller",
   "generate_ui5_fragment",
   "generate_ui5_formatter",

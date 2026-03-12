@@ -11,15 +11,15 @@ Si eres nuevo, primero usa estos ejemplos:
 3. `write_project_file_preview` (seccion 5)
 4. `apply_project_patch` (seccion 6)
 5. `rollback_project_patch` (seccion 7)
-6. `validate_ui5_version_compatibility` (seccion 31)
-7. `security_check_ui5_app` (seccion 32)
-8. `run_project_quality_gate` (seccion 33)
-9. `recommend_project_agents` (seccion 25)
-10. `materialize_recommended_agents` (seccion 26)
-11. `ensure_project_mcp_current` (seccion 39)
-12. `prepare_legacy_project_for_ai` (seccion 43)
-13. `analyze_odata_metadata` (seccion 44)
-14. `scaffold_ui5_odata_feature` (seccion 46)
+6. `validate_ui5_version_compatibility` (seccion 35)
+7. `security_check_ui5_app` (seccion 36)
+8. `run_project_quality_gate` (seccion 37)
+9. `recommend_project_agents` (seccion 29)
+10. `materialize_recommended_agents` (seccion 30)
+11. `ensure_project_mcp_current` (seccion 43)
+12. `prepare_legacy_project_for_ai` (seccion 47)
+13. `analyze_odata_metadata` (seccion 25)
+14. `scaffold_ui5_odata_feature` (seccion 27)
 
 Rutas de aprendizaje:
 - Inicio rapido: [01-getting-started.md](./01-getting-started.md)
@@ -730,7 +730,75 @@ Salida (ejemplo):
 }
 ```
 
-## 44) `analyze_odata_metadata`
+## 24) `mcp_health_report`
+
+Entrada:
+```json
+{
+  "tool": "mcp_health_report",
+  "arguments": {
+    "includeToolNames": false,
+    "includeDocChecks": true,
+    "includePolicyStatus": true,
+    "includeContractStatus": true,
+    "includeManagedArtifacts": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "generatedAt": "2026-03-12T10:00:00.000Z",
+  "server": {
+    "name": "sapui5-mcp-server",
+    "version": "1.0.0",
+    "autoEnsureProject": true,
+    "autoEnsureProjectApply": true,
+    "autoPrepareContext": true,
+    "autoPrepareContextApply": true
+  },
+  "tools": {
+    "registered": 47,
+    "unique": 47,
+    "duplicates": [],
+    "namesIncluded": false,
+    "names": []
+  },
+  "docs": {
+    "executed": true,
+    "referenceInSync": true,
+    "examplesInSync": true,
+    "missingFromReference": [],
+    "missingFromExamples": []
+  },
+  "policy": {
+    "executed": true,
+    "path": ".codex/mcp/policies/agent-policy.json",
+    "exists": true,
+    "loaded": true,
+    "enabled": true,
+    "error": null
+  },
+  "contracts": {
+    "executed": true,
+    "snapshotPath": "docs/contracts/tool-contracts.snapshot.json",
+    "exists": true,
+    "inSync": true
+  },
+  "managedArtifacts": {
+    "executed": true,
+    "intakeExists": true,
+    "baselineExists": true,
+    "contextIndexExists": true,
+    "policyExists": true,
+    "blueprintExists": true,
+    "agentsGuideExists": true
+  }
+}
+```
+
+## 25) `analyze_odata_metadata`
 
 Entrada:
 ```json
@@ -792,7 +860,7 @@ Salida (ejemplo):
 }
 ```
 
-## 45) `validate_ui5_odata_usage`
+## 26) `validate_ui5_odata_usage`
 
 Entrada:
 ```json
@@ -844,7 +912,7 @@ Salida (ejemplo):
 }
 ```
 
-## 46) `scaffold_ui5_odata_feature`
+## 27) `scaffold_ui5_odata_feature`
 
 Entrada:
 ```json
@@ -916,7 +984,7 @@ Si el intake no esta completo, la tool bloquea la generacion con `ODATA_CONTEXT_
 - `questions`
 - `nextActions`
 
-## 24) `validate_project_agents`
+## 28) `validate_project_agents`
 
 Entrada:
 ```json
@@ -928,7 +996,7 @@ Entrada:
 }
 ```
 
-## 25) `recommend_project_agents`
+## 29) `recommend_project_agents`
 
 Entrada:
 ```json
@@ -977,7 +1045,7 @@ Salida (ejemplo):
 }
 ```
 
-## 26) `materialize_recommended_agents`
+## 30) `materialize_recommended_agents`
 
 Entrada:
 ```json
@@ -1006,7 +1074,7 @@ Salida (ejemplo):
 }
 ```
 
-## 27) `save_agent_pack`
+## 31) `save_agent_pack`
 
 Entrada:
 ```json
@@ -1039,7 +1107,7 @@ Salida (ejemplo):
 }
 ```
 
-## 28) `list_agent_packs`
+## 32) `list_agent_packs`
 
 Entrada:
 ```json
@@ -1065,7 +1133,7 @@ Salida (ejemplo):
 }
 ```
 
-## 29) `apply_agent_pack`
+## 33) `apply_agent_pack`
 
 Entrada:
 ```json
@@ -1079,7 +1147,7 @@ Entrada:
 }
 ```
 
-## 30) `refresh_project_context_docs`
+## 34) `refresh_project_context_docs`
 
 Entrada:
 ```json
@@ -1092,7 +1160,7 @@ Entrada:
 }
 ```
 
-## 31) `validate_ui5_version_compatibility`
+## 35) `validate_ui5_version_compatibility`
 
 Entrada:
 ```json
@@ -1121,7 +1189,7 @@ Salida (ejemplo):
 }
 ```
 
-## 32) `security_check_ui5_app`
+## 36) `security_check_ui5_app`
 
 Entrada:
 ```json
@@ -1148,7 +1216,7 @@ Salida (ejemplo):
 }
 ```
 
-## 33) `run_project_quality_gate`
+## 37) `run_project_quality_gate`
 
 Entrada:
 ```json
@@ -1354,7 +1422,7 @@ Salida (ejemplo):
 }
 ```
 
-## 34) `record_agent_execution_feedback`
+## 38) `record_agent_execution_feedback`
 
 Entrada:
 ```json
@@ -1431,7 +1499,7 @@ Salida (ejemplo):
 }
 ```
 
-## 35) `rank_agent_packs`
+## 39) `rank_agent_packs`
 
 Entrada:
 ```json
@@ -1485,7 +1553,7 @@ Salida (ejemplo):
 }
 ```
 
-## 36) `promote_agent_pack`
+## 40) `promote_agent_pack`
 
 Entrada:
 ```json
@@ -1608,7 +1676,7 @@ Salida (ejemplo):
 
 
 
-## 37) `audit_project_mcp_state`
+## 41) `audit_project_mcp_state`
 
 Entrada:
 ```json
@@ -1647,7 +1715,7 @@ Salida (ejemplo):
 }
 ```
 
-## 38) `upgrade_project_mcp`
+## 42) `upgrade_project_mcp`
 
 Entrada:
 ```json
@@ -1700,7 +1768,7 @@ Salida (ejemplo):
 }
 ```
 
-## 39) `ensure_project_mcp_current`
+## 43) `ensure_project_mcp_current`
 
 Entrada:
 ```json
@@ -1761,7 +1829,7 @@ Salida (ejemplo):
 }
 ```
 
-## 40) `collect_legacy_project_intake`
+## 44) `collect_legacy_project_intake`
 
 Entrada:
 ```json
@@ -1808,7 +1876,7 @@ Salida (ejemplo):
 }
 ```
 
-## 41) `analyze_legacy_project_baseline`
+## 45) `analyze_legacy_project_baseline`
 
 Entrada:
 ```json
@@ -1865,7 +1933,7 @@ Salida (ejemplo):
 }
 ```
 
-## 42) `build_ai_context_index`
+## 46) `build_ai_context_index`
 
 Entrada:
 ```json
@@ -1880,7 +1948,7 @@ Entrada:
 }
 ```
 
-## 43) `prepare_legacy_project_for_ai`
+## 47) `prepare_legacy_project_for_ai`
 
 Entrada:
 ```json

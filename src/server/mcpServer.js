@@ -5,6 +5,7 @@ import { createLogger } from "../utils/logger.js";
 import { allTools } from "../tools/index.js";
 import { ensureProjectMcpCurrentTool } from "../tools/agents/ensureProjectMcpCurrent.js";
 import { prepareLegacyProjectForAiTool } from "../tools/agents/prepareLegacyProjectForAi.js";
+import { calculateToolContractHash, createToolContractSnapshot } from "../utils/toolContracts.js";
 
 const logger = createLogger("mcp-server");
 
@@ -20,10 +21,19 @@ export function createMcpServer() {
   const registry = new ToolRegistry();
   registry.registerMany(allTools);
 
+  const contractSnapshot = createToolContractSnapshot(allTools);
+  const contractHash = calculateToolContractHash(contractSnapshot);
+
   // Shared runtime context injected into every tool handler.
   const context = {
     rootDir: workspaceRoot(),
-    logger
+    logger,
+    serverInfo: {
+      ...SERVER_INFO
+    },
+    registeredToolNames: allTools.map((tool) => tool.name),
+    contractSnapshot,
+    contractHash
   };
 
   // Register tools dynamically so MCP clients can discover them.

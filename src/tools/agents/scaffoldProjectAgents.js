@@ -23,7 +23,8 @@ const TOOL_GROUPS = {
     "write_project_file_preview",
     "apply_project_patch",
     "rollback_project_patch",
-    "run_project_quality_gate"
+    "run_project_quality_gate",
+    "mcp_health_report"
   ],
   ui5: [
     "generate_ui5_controller",

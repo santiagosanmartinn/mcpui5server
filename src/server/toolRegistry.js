@@ -8,10 +8,24 @@ export class ToolRegistry {
   constructor() {
     // List of tool definitions to be registered on server startup.
     this.tools = [];
+    this.toolNames = new Set();
   }
 
   registerTool(definition) {
+    if (!definition || typeof definition !== "object") {
+      throw new Error("Tool definition must be an object.");
+    }
+    if (typeof definition.name !== "string" || definition.name.trim().length === 0) {
+      throw new Error("Tool definition must include a non-empty name.");
+    }
+    if (typeof definition.handler !== "function") {
+      throw new Error(`Tool ${definition.name} must include a handler function.`);
+    }
+    if (this.toolNames.has(definition.name)) {
+      throw new Error(`Duplicate tool name registration is not allowed: ${definition.name}`);
+    }
     this.tools.push(definition);
+    this.toolNames.add(definition.name);
   }
 
   registerMany(definitions) {

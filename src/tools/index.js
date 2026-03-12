@@ -7,6 +7,7 @@ import { writeProjectFilePreviewTool } from "./project/writePreview.js";
 import { applyProjectPatchTool } from "./project/applyPatch.js";
 import { rollbackProjectPatchTool } from "./project/rollbackPatch.js";
 import { runProjectQualityGateTool } from "./project/runProjectQualityGate.js";
+import { mcpHealthReportTool } from "./project/mcpHealthReport.js";
 import { generateUi5ControllerTool } from "./ui5/generateController.js";
 import { generateUi5FragmentTool } from "./ui5/generateFragment.js";
 import { generateUi5FormatterTool } from "./ui5/generateFormatter.js";
@@ -64,6 +65,7 @@ export const allTools = [
   applyProjectPatchTool,
   rollbackProjectPatchTool,
   runProjectQualityGateTool,
+  mcpHealthReportTool,
   // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,
