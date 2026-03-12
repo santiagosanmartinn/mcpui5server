@@ -60,6 +60,25 @@ Resultado esperado:
 4. `record_agent_execution_feedback`
 5. `rank_agent_packs` y `promote_agent_pack`
 
+## Flujo E: implementacion OData con control de calidad
+
+1. Verificar contexto minimo IA:
+   - `prepare_legacy_project_for_ai` (solo si falta intake/contexto)
+   - confirmar `readyForAutopilot=true` o `missingContext=[]`
+2. Analizar servicio:
+   - `analyze_odata_metadata`
+3. Generar base funcional:
+   - `scaffold_ui5_odata_feature` (`dryRun: true` -> `dryRun: false`)
+   - nota: si el intake no esta completo, la tool devuelve `ODATA_CONTEXT_GATE_BLOCKED`
+4. Validar uso en proyecto:
+   - `validate_ui5_odata_usage`
+5. Implementar ajuste funcional:
+   - `write_project_file_preview`
+   - `apply_project_patch`
+6. Validar cierre:
+   - `run_project_quality_gate` (preferible `qualityProfile: "prod"` para cierre final)
+   - `npm run check`
+
 ## Reglas transversales
 
 - Usar `dryRun: true` por defecto en operaciones de escritura.

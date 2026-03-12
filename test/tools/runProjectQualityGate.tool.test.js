@@ -3,6 +3,21 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { runProjectQualityGateTool } from "../../src/tools/project/runProjectQualityGate.js";
 
+const V4_METADATA_XML = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Demo" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="SalesOrder">
+        <Key><PropertyRef Name="ID" /></Key>
+        <Property Name="ID" Type="Edm.String" Nullable="false" />
+      </EntityType>
+      <EntityContainer Name="Container">
+        <EntitySet Name="SalesOrders" EntityType="Demo.SalesOrder" />
+      </EntityContainer>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
 describe("run_project_quality_gate tool", () => {
   let tempRoot;
   let manifestPath;
@@ -157,5 +172,158 @@ describe("run_project_quality_gate tool", () => {
     expect(report.policy.enforced).toBe(true);
     expect(report.summary.mediumSecurityFindings).toBeGreaterThan(0);
     expect(report.pass).toBe(false);
+  });
+
+  it("fails gate when OData usage validation reports errors", async () => {
+    await fs.writeFile(
+      manifestPath,
+      `${JSON.stringify({
+        "sap.app": {
+          id: "demo.quality",
+          dataSources: {
+            mainService: {
+              uri: "/sap/opu/odata/sap/Z_DEMO_SRV/",
+              type: "OData",
+              settings: {
+                odataVersion: "4.0"
+              }
+            }
+          }
+        },
+        "sap.ui5": {
+          dependencies: {
+            minUI5Version: "1.60.0"
+          },
+          models: {
+            "": {
+              type: "sap.ui.model.odata.v2.ODataModel",
+              dataSource: "mainService"
+            }
+          }
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+    await fs.writeFile(
+      viewPath,
+      "<mvc:View xmlns:mvc=\"sap.ui.core.mvc\" xmlns=\"sap.m\"><List items=\"{/UnknownSet}\" /></mvc:View>\n",
+      "utf8"
+    );
+    await fs.writeFile(
+      controllerPath,
+      "sap.ui.define([], function () { return { onInit: function () {} }; });\n",
+      "utf8"
+    );
+
+    const report = await runProjectQualityGateTool.handler(
+      {
+        sourceDir: "webapp",
+        checkODataUsage: true,
+        odataMetadataXml: V4_METADATA_XML,
+        refreshDocs: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(report.reports.odata.executed).toBe(true);
+    expect(report.summary.odataErrors).toBeGreaterThan(0);
+    expect(report.pass).toBe(false);
+  });
+
+  it("applies quality profile dev/prod to OData warning threshold", async () => {
+    const policyPath = path.join(tempRoot, ".codex", "mcp", "policies", "agent-policy.json");
+    await fs.mkdir(path.dirname(policyPath), { recursive: true });
+    await fs.writeFile(
+      policyPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        enabled: true,
+        qualityGate: {
+          enabled: true,
+          defaultProfile: "dev",
+          checkODataUsage: true,
+          failOnODataWarnings: false,
+          refreshDocs: false,
+          profiles: {
+            dev: {
+              failOnODataWarnings: false
+            },
+            prod: {
+              failOnODataWarnings: true
+            }
+          }
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    await fs.writeFile(
+      manifestPath,
+      `${JSON.stringify({
+        "sap.app": {
+          id: "demo.quality",
+          dataSources: {
+            mainService: {
+              uri: "/sap/opu/odata/sap/Z_DEMO_SRV/",
+              type: "OData"
+            }
+          }
+        },
+        "sap.ui5": {
+          dependencies: {
+            minUI5Version: "1.60.0"
+          },
+          models: {
+            "": {
+              type: "sap.ui.model.odata.v2.ODataModel",
+              dataSource: "mainService"
+            }
+          }
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+    await fs.writeFile(
+      viewPath,
+      "<mvc:View xmlns:mvc=\"sap.ui.core.mvc\" xmlns=\"sap.m\"><DatePicker value=\"{orderDate}\" /></mvc:View>\n",
+      "utf8"
+    );
+    await fs.writeFile(
+      controllerPath,
+      "sap.ui.define([], function () { return { onInit: function () {} }; });\n",
+      "utf8"
+    );
+
+    const devReport = await runProjectQualityGateTool.handler(
+      {
+        sourceDir: "webapp",
+        qualityProfile: "dev",
+        refreshDocs: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    const prodReport = await runProjectQualityGateTool.handler(
+      {
+        sourceDir: "webapp",
+        qualityProfile: "prod",
+        refreshDocs: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(devReport.policy.profile).toBe("dev");
+    expect(devReport.summary.odataWarnings).toBeGreaterThan(0);
+    expect(devReport.pass).toBe(true);
+
+    expect(prodReport.policy.profile).toBe("prod");
+    expect(prodReport.summary.odataWarnings).toBeGreaterThan(0);
+    expect(prodReport.pass).toBe(false);
   });
 });

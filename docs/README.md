@@ -9,6 +9,7 @@ Este directorio explica como usar y mantener el servidor MCP con foco en Codex +
 3. [02 - Flujos Operativos](./02-flujos-operativos.md)
 4. [03 - Operacion y Politicas](./03-operacion-y-policies.md)
 5. [04 - Guia Rapida Codex](./04-cheatsheet-codex.md)
+6. [05 - OData: MVP y Fase Avanzada](./05-odata-mvp-y-avanzado.md)
 
 ## Referencia tecnica
 

@@ -3,15 +3,26 @@ import { analyzeUi5ProjectTool } from "./analyzeProject.js";
 import { analyzeUi5PerformanceTool } from "../ui5/analyzePerformance.js";
 import { validateUi5VersionCompatibilityTool } from "../ui5/validateUi5VersionCompatibility.js";
 import { securityCheckUi5AppTool } from "../ui5/securityCheckUi5App.js";
+import { validateUi5ODataUsageTool } from "../ui5/validateUi5ODataUsage.js";
 import { refreshProjectContextDocsTool } from "../agents/refreshProjectContextDocs.js";
 import { DEFAULT_AGENT_POLICY_PATH, loadAgentPolicy } from "../../utils/agentPolicy.js";
+
+const QUALITY_PROFILES = ["dev", "prod"];
 
 const inputSchema = z.object({
   sourceDir: z.string().min(1).optional(),
   ui5Version: z.string().regex(/^\d+\.\d+(\.\d+)?$/).optional(),
+  qualityProfile: z.enum(QUALITY_PROFILES).optional(),
   maxFiles: z.number().int().min(50).max(5000).optional(),
   maxPerformanceFindings: z.number().int().min(10).max(2000).optional(),
   maxSecurityFindings: z.number().int().min(10).max(2000).optional(),
+  checkODataUsage: z.boolean().optional(),
+  failOnODataWarnings: z.boolean().optional(),
+  odataMetadataXml: z.string().min(20).optional(),
+  odataMetadataPath: z.string().min(1).optional(),
+  odataMetadataUrl: z.string().url().optional(),
+  odataServiceUrl: z.string().url().optional(),
+  odataTimeoutMs: z.number().int().min(1000).max(60000).optional(),
   failOnUnknownSymbols: z.boolean().optional(),
   failOnMediumSecurity: z.boolean().optional(),
   maxHighPerformanceFindings: z.number().int().min(0).max(500).optional(),
@@ -20,7 +31,21 @@ const inputSchema = z.object({
   failOnDocDrift: z.boolean().optional(),
   policyPath: z.string().min(1).optional(),
   respectPolicy: z.boolean().optional()
-}).strict();
+}).strict().superRefine((value, ctx) => {
+  const metadataSources = [
+    value.odataMetadataXml,
+    value.odataMetadataPath,
+    value.odataMetadataUrl,
+    value.odataServiceUrl
+  ].filter((item) => item !== undefined);
+
+  if (metadataSources.length > 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Provide only one OData metadata source at a time."
+    });
+  }
+});
 
 const checkSchema = z.object({
   id: z.string(),
@@ -37,7 +62,8 @@ const outputSchema = z.object({
     path: z.string(),
     loaded: z.boolean(),
     enforced: z.boolean(),
-    section: z.string().nullable()
+    section: z.string().nullable(),
+    profile: z.enum(QUALITY_PROFILES)
   }),
   checks: z.array(checkSchema),
   summary: z.object({
@@ -49,6 +75,8 @@ const outputSchema = z.object({
     highSecurityFindings: z.number().int().nonnegative(),
     mediumSecurityFindings: z.number().int().nonnegative(),
     highPerformanceFindings: z.number().int().nonnegative(),
+    odataErrors: z.number().int().nonnegative(),
+    odataWarnings: z.number().int().nonnegative(),
     docsChanged: z.boolean()
   }),
   reports: z.object({
@@ -70,6 +98,15 @@ const outputSchema = z.object({
       medium: z.number().int().nonnegative(),
       low: z.number().int().nonnegative()
     }),
+    odata: z.object({
+      executed: z.boolean(),
+      pass: z.boolean().nullable(),
+      totalFindings: z.number().int().nonnegative(),
+      errors: z.number().int().nonnegative(),
+      warnings: z.number().int().nonnegative(),
+      infos: z.number().int().nonnegative(),
+      metadataProvided: z.boolean()
+    }),
     docs: z.object({
       refreshed: z.boolean(),
       changed: z.boolean()
@@ -79,16 +116,24 @@ const outputSchema = z.object({
 
 export const runProjectQualityGateTool = {
   name: "run_project_quality_gate",
-  description: "Run consolidated quality gate for UI5 projects (version compatibility, security, performance, and context docs freshness).",
+  description: "Run consolidated quality gate for UI5 projects (version compatibility, security, performance, OData usage, and context docs freshness).",
   inputSchema,
   outputSchema,
   async handler(args, { context }) {
     const {
       sourceDir,
       ui5Version,
+      qualityProfile,
       maxFiles,
       maxPerformanceFindings,
       maxSecurityFindings,
+      checkODataUsage,
+      failOnODataWarnings,
+      odataMetadataXml,
+      odataMetadataPath,
+      odataMetadataUrl,
+      odataServiceUrl,
+      odataTimeoutMs,
       failOnUnknownSymbols,
       failOnMediumSecurity,
       maxHighPerformanceFindings,
@@ -114,14 +159,24 @@ export const runProjectQualityGateTool = {
       && (policyResolution.policy?.qualityGate?.enabled ?? true)
       ? (policyResolution.policy?.qualityGate ?? {})
       : null;
+    const selectedQualityProfile = qualityProfile
+      ?? qualityGatePolicy?.defaultProfile
+      ?? (process.env.NODE_ENV === "production" ? "prod" : "dev");
+    const profileOverrides = qualityGatePolicy?.profiles?.[selectedQualityProfile] ?? {};
+    const effectiveQualityPolicy = {
+      ...(qualityGatePolicy ?? {}),
+      ...(profileOverrides ?? {})
+    };
 
-    const shouldFailUnknownSymbols = qualityGatePolicy?.failOnUnknownSymbols ?? failOnUnknownSymbols ?? false;
-    const shouldFailMediumSecurity = qualityGatePolicy?.failOnMediumSecurity ?? failOnMediumSecurity ?? false;
-    const allowedHighPerformanceFindings = qualityGatePolicy?.maxHighPerformanceFindings ?? maxHighPerformanceFindings ?? 0;
-    let shouldRefreshDocs = qualityGatePolicy?.refreshDocs ?? refreshDocs ?? true;
-    const shouldApplyDocs = qualityGatePolicy?.applyDocs ?? applyDocs ?? false;
-    const shouldFailDocDrift = qualityGatePolicy?.failOnDocDrift ?? failOnDocDrift ?? false;
-    const shouldRequireUi5Version = qualityGatePolicy?.requireUi5Version ?? false;
+    const shouldFailUnknownSymbols = effectiveQualityPolicy?.failOnUnknownSymbols ?? failOnUnknownSymbols ?? false;
+    const shouldFailMediumSecurity = effectiveQualityPolicy?.failOnMediumSecurity ?? failOnMediumSecurity ?? false;
+    const shouldCheckODataUsage = effectiveQualityPolicy?.checkODataUsage ?? checkODataUsage ?? true;
+    const shouldFailODataWarnings = effectiveQualityPolicy?.failOnODataWarnings ?? failOnODataWarnings ?? false;
+    const allowedHighPerformanceFindings = effectiveQualityPolicy?.maxHighPerformanceFindings ?? maxHighPerformanceFindings ?? 0;
+    let shouldRefreshDocs = effectiveQualityPolicy?.refreshDocs ?? refreshDocs ?? true;
+    const shouldApplyDocs = effectiveQualityPolicy?.applyDocs ?? applyDocs ?? false;
+    const shouldFailDocDrift = effectiveQualityPolicy?.failOnDocDrift ?? failOnDocDrift ?? false;
+    const shouldRequireUi5Version = effectiveQualityPolicy?.requireUi5Version ?? false;
     if (shouldApplyDocs) {
       shouldRefreshDocs = true;
     }
@@ -136,6 +191,12 @@ export const runProjectQualityGateTool = {
       message: effectiveUi5Version
         ? `UI5 version resolved for gate execution: ${effectiveUi5Version}.`
         : "UI5 version could not be resolved for this project."
+    });
+    pushCheck(checks, {
+      id: "quality_profile_selected",
+      pass: true,
+      severity: "warn",
+      message: `Quality profile selected: ${selectedQualityProfile}.`
     });
 
     const compatibility = await validateUi5VersionCompatibilityTool.handler(
@@ -165,6 +226,40 @@ export const runProjectQualityGateTool = {
       },
       { context }
     );
+
+    let odata = {
+      executed: false,
+      pass: null,
+      totalFindings: 0,
+      errors: 0,
+      warnings: 0,
+      infos: 0,
+      metadataProvided: false
+    };
+    if (shouldCheckODataUsage) {
+      const odataReport = await validateUi5ODataUsageTool.handler(
+        {
+          sourceDir: source,
+          ui5Version: effectiveUi5Version ?? undefined,
+          maxFiles,
+          metadataXml: odataMetadataXml,
+          metadataPath: odataMetadataPath,
+          metadataUrl: odataMetadataUrl,
+          serviceUrl: odataServiceUrl,
+          timeoutMs: odataTimeoutMs
+        },
+        { context }
+      );
+      odata = {
+        executed: true,
+        pass: odataReport.summary.pass,
+        totalFindings: odataReport.summary.totalFindings,
+        errors: odataReport.summary.errors,
+        warnings: odataReport.summary.warnings,
+        infos: odataReport.summary.infos,
+        metadataProvided: odataReport.metadata.provided
+      };
+    }
 
     let docs = {
       refreshed: false,
@@ -197,6 +292,8 @@ export const runProjectQualityGateTool = {
     const highSecurityFindings = security.summary.bySeverity.high;
     const mediumSecurityFindings = security.summary.bySeverity.medium;
     const highPerformanceFindings = performance.summary.bySeverity.high;
+    const odataErrors = odata.errors;
+    const odataWarnings = odata.warnings;
 
     pushCheck(checks, {
       id: "ui5_version_compatibility",
@@ -243,6 +340,26 @@ export const runProjectQualityGateTool = {
         : `${highPerformanceFindings} high-severity performance finding(s) exceed threshold ${allowedHighPerformanceFindings}.`
     });
 
+    if (shouldCheckODataUsage) {
+      pushCheck(checks, {
+        id: "ui5_odata_usage_errors",
+        pass: odataErrors === 0,
+        severity: "error",
+        message: odataErrors === 0
+          ? "No OData usage errors detected."
+          : `${odataErrors} OData usage error(s) detected.`
+      });
+
+      pushCheck(checks, {
+        id: "ui5_odata_usage_warnings",
+        pass: shouldFailODataWarnings ? odataWarnings === 0 : true,
+        severity: shouldFailODataWarnings ? "error" : "warn",
+        message: odataWarnings === 0
+          ? "No OData usage warnings detected."
+          : `${odataWarnings} OData usage warning(s) detected.`
+      });
+    }
+
     const failedChecks = checks.filter((check) => !check.pass);
     const errorChecks = failedChecks.filter((check) => check.severity === "error").length;
     const warningChecks = failedChecks.filter((check) => check.severity === "warn").length;
@@ -255,7 +372,8 @@ export const runProjectQualityGateTool = {
         path: policyResolution.path,
         loaded: policyResolution.loaded,
         enforced: Boolean(qualityGatePolicy),
-        section: qualityGatePolicy ? "qualityGate" : null
+        section: qualityGatePolicy ? "qualityGate" : null,
+        profile: selectedQualityProfile
       },
       checks,
       summary: {
@@ -267,6 +385,8 @@ export const runProjectQualityGateTool = {
         highSecurityFindings,
         mediumSecurityFindings,
         highPerformanceFindings,
+        odataErrors,
+        odataWarnings,
         docsChanged: docs.changed
       },
       reports: {
@@ -288,6 +408,7 @@ export const runProjectQualityGateTool = {
           medium: performance.summary.bySeverity.medium,
           low: performance.summary.bySeverity.low
         },
+        odata,
         docs
       }
     });

@@ -4,6 +4,7 @@ import { fileExists, readJsonFile } from "./fileSystem.js";
 
 export const DEFAULT_AGENT_POLICY_PATH = ".codex/mcp/policies/agent-policy.json";
 export const AGENT_PACK_LIFECYCLE_STATUSES = ["experimental", "candidate", "recommended", "deprecated"];
+export const QUALITY_GATE_PROFILES = ["dev", "prod"];
 
 const rankingPolicySchema = z.object({
   enabled: z.boolean().optional(),
@@ -25,15 +26,34 @@ const recommendationPolicySchema = z.object({
   allowedLifecycle: z.array(z.enum(AGENT_PACK_LIFECYCLE_STATUSES)).min(1).optional()
 }).passthrough();
 
-const qualityGatePolicySchema = z.object({
-  enabled: z.boolean().optional(),
+const qualityGateProfileSchema = z.object({
   failOnUnknownSymbols: z.boolean().optional(),
   failOnMediumSecurity: z.boolean().optional(),
+  checkODataUsage: z.boolean().optional(),
+  failOnODataWarnings: z.boolean().optional(),
   maxHighPerformanceFindings: z.number().int().min(0).max(500).optional(),
   refreshDocs: z.boolean().optional(),
   applyDocs: z.boolean().optional(),
   failOnDocDrift: z.boolean().optional(),
   requireUi5Version: z.boolean().optional()
+}).passthrough();
+
+const qualityGatePolicySchema = z.object({
+  enabled: z.boolean().optional(),
+  failOnUnknownSymbols: z.boolean().optional(),
+  failOnMediumSecurity: z.boolean().optional(),
+  checkODataUsage: z.boolean().optional(),
+  failOnODataWarnings: z.boolean().optional(),
+  maxHighPerformanceFindings: z.number().int().min(0).max(500).optional(),
+  refreshDocs: z.boolean().optional(),
+  applyDocs: z.boolean().optional(),
+  failOnDocDrift: z.boolean().optional(),
+  requireUi5Version: z.boolean().optional(),
+  defaultProfile: z.enum(QUALITY_GATE_PROFILES).optional(),
+  profiles: z.object({
+    dev: qualityGateProfileSchema.optional(),
+    prod: qualityGateProfileSchema.optional()
+  }).optional()
 }).passthrough();
 
 const agentPolicySchema = z.object({

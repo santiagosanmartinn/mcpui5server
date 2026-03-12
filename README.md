@@ -41,6 +41,7 @@ src/
       generateFeature.js
       manageI18n.js
       analyzePerformance.js
+      analyzeODataMetadata.js
       validateUi5Code.js
       validateUi5VersionCompatibility.js
       securityCheckUi5App.js
@@ -124,6 +125,7 @@ src/
 41. `analyze_legacy_project_baseline`
 42. `build_ai_context_index`
 43. `prepare_legacy_project_for_ai`
+44. `analyze_odata_metadata`
 
 All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
 

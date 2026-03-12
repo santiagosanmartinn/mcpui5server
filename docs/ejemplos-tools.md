@@ -2,7 +2,7 @@
 
 Este documento incluye un ejemplo minimo de entrada y salida por cada herramienta registrada.
 
-## Empieza por aqui (top 12)
+## Empieza por aqui (top 14)
 
 Si eres nuevo, primero usa estos ejemplos:
 
@@ -18,6 +18,8 @@ Si eres nuevo, primero usa estos ejemplos:
 10. `materialize_recommended_agents` (seccion 26)
 11. `ensure_project_mcp_current` (seccion 39)
 12. `prepare_legacy_project_for_ai` (seccion 43)
+13. `analyze_odata_metadata` (seccion 44)
+14. `scaffold_ui5_odata_feature` (seccion 46)
 
 Rutas de aprendizaje:
 - Inicio rapido: [01-getting-started.md](./01-getting-started.md)
@@ -728,6 +730,192 @@ Salida (ejemplo):
 }
 ```
 
+## 44) `analyze_odata_metadata`
+
+Entrada:
+```json
+{
+  "tool": "analyze_odata_metadata",
+  "arguments": {
+    "serviceUrl": "https://example.org/sap/opu/odata/sap/Z_SALESORDER_SRV",
+    "timeoutMs": 12000,
+    "maxEntities": 100
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "source": {
+    "mode": "service",
+    "metadataPath": null,
+    "metadataUrl": "https://example.org/sap/opu/odata/sap/Z_SALESORDER_SRV/$metadata"
+  },
+  "protocol": {
+    "edmxVersion": "4.0",
+    "odataVersion": "4.0"
+  },
+  "summary": {
+    "schemas": 1,
+    "entityTypesTotal": 6,
+    "entityTypesReturned": 6,
+    "entitySets": 4,
+    "singletons": 1,
+    "actions": 2,
+    "functions": 1,
+    "actionImports": 2,
+    "functionImports": 1,
+    "diagnostics": 0
+  },
+  "model": {
+    "namespaces": ["Z_SALESORDER_SRV"],
+    "entityTypes": [
+      {
+        "fullName": "Z_SALESORDER_SRV.SalesOrder",
+        "keys": ["SalesOrder"],
+        "properties": [
+          { "name": "SalesOrder", "type": "Edm.String" },
+          { "name": "CreatedAt", "type": "Edm.DateTimeOffset" }
+        ]
+      }
+    ],
+    "entitySets": [
+      {
+        "container": "Container",
+        "name": "SalesOrders",
+        "entityType": "Z_SALESORDER_SRV.SalesOrder"
+      }
+    ]
+  },
+  "diagnostics": []
+}
+```
+
+## 45) `validate_ui5_odata_usage`
+
+Entrada:
+```json
+{
+  "tool": "validate_ui5_odata_usage",
+  "arguments": {
+    "sourceDir": "webapp",
+    "metadataPath": "docs/metadata/service.xml"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "sourceMode": "project",
+  "ui5Version": "1.120.0",
+  "manifest": {
+    "path": "webapp/manifest.json",
+    "exists": true,
+    "odataDataSources": 1,
+    "odataModels": 1,
+    "issues": 0
+  },
+  "metadata": {
+    "provided": true,
+    "sourceMode": "file",
+    "odataVersion": "2.0",
+    "entitySets": 5,
+    "entityTypes": 6,
+    "diagnostics": 0
+  },
+  "summary": {
+    "totalFindings": 2,
+    "errors": 0,
+    "warnings": 2,
+    "infos": 0,
+    "pass": true
+  },
+  "findings": [
+    {
+      "rule": "ODATA_JS_BATCH_DISABLED",
+      "severity": "warn",
+      "category": "request",
+      "file": "webapp/controller/Main.controller.js",
+      "line": 41
+    }
+  ]
+}
+```
+
+## 46) `scaffold_ui5_odata_feature`
+
+Entrada:
+```json
+{
+  "tool": "scaffold_ui5_odata_feature",
+  "arguments": {
+    "entitySet": "SalesOrders",
+    "metadataPath": "docs/metadata/service.xml",
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "contextGate": {
+    "enforced": true,
+    "ready": true,
+    "intakePath": ".codex/mcp/project/intake.json",
+    "intakeExists": true,
+    "missingContext": [],
+    "questions": []
+  },
+  "feature": {
+    "featureName": "SalesOrders",
+    "entitySet": "SalesOrders",
+    "entityType": "Z_SALESORDER_SRV.SalesOrder",
+    "namespace": "demo.app",
+    "modelName": "",
+    "dataSourceName": "mainService",
+    "routeName": "salesOrders",
+    "routePattern": "sales-orders",
+    "targetName": "SalesOrders"
+  },
+  "bindingPlan": {
+    "keyField": "SalesOrder",
+    "titleField": "SalesOrder",
+    "descriptionField": "CustomerName",
+    "numberField": "GrossAmount"
+  },
+  "manifestSummary": {
+    "dataSourceAdded": true,
+    "dataSourceUpdated": false,
+    "dataSourceUnchanged": false,
+    "routesAdded": 1,
+    "targetsAdded": 1
+  },
+  "previews": [
+    {
+      "path": "webapp/controller/SalesOrders.controller.js",
+      "role": "controller",
+      "changed": true
+    },
+    {
+      "path": "webapp/view/SalesOrders.view.xml",
+      "role": "view",
+      "changed": true
+    }
+  ],
+  "applyResult": null
+}
+```
+
+Si el intake no esta completo, la tool bloquea la generacion con `ODATA_CONTEXT_GATE_BLOCKED` e indica:
+- `missingContext`
+- `questions`
+- `nextActions`
+
 ## 24) `validate_project_agents`
 
 Entrada:
@@ -968,6 +1156,9 @@ Entrada:
   "tool": "run_project_quality_gate",
   "arguments": {
     "sourceDir": "webapp",
+    "qualityProfile": "prod",
+    "checkODataUsage": true,
+    "odataMetadataPath": "docs/metadata/service.xml",
     "refreshDocs": true,
     "applyDocs": false,
     "respectPolicy": true
@@ -983,15 +1174,23 @@ Salida (ejemplo):
     "path": ".codex/mcp/policies/agent-policy.json",
     "loaded": true,
     "enforced": true,
-    "section": "qualityGate"
+    "section": "qualityGate",
+    "profile": "prod"
   },
   "summary": {
     "incompatibleSymbols": 1,
-    "highSecurityFindings": 1
+    "highSecurityFindings": 1,
+    "odataErrors": 1,
+    "odataWarnings": 2
   },
   "reports": {
     "compatibility": {
       "isCompatible": false
+    },
+    "odata": {
+      "executed": true,
+      "errors": 1,
+      "warnings": 2
     },
     "security": {
       "safe": false

@@ -35,7 +35,10 @@ const TOOL_GROUPS = {
     "analyze_ui5_performance",
     "validate_ui5_code",
     "validate_ui5_version_compatibility",
-    "security_check_ui5_app"
+    "security_check_ui5_app",
+    "analyze_odata_metadata",
+    "validate_ui5_odata_usage",
+    "scaffold_ui5_odata_feature"
   ],
   javascript: [
     "generate_javascript_function",
@@ -580,10 +583,26 @@ export function renderAgentPolicy(projectProfile) {
       enabled: true,
       failOnUnknownSymbols: false,
       failOnMediumSecurity: false,
+      checkODataUsage: true,
+      failOnODataWarnings: false,
       maxHighPerformanceFindings: 0,
       refreshDocs: true,
       applyDocs: false,
-      failOnDocDrift: false
+      failOnDocDrift: false,
+      defaultProfile: "dev",
+      profiles: {
+        dev: {
+          failOnUnknownSymbols: false,
+          failOnMediumSecurity: false,
+          failOnODataWarnings: false
+        },
+        prod: {
+          failOnUnknownSymbols: true,
+          failOnMediumSecurity: true,
+          failOnODataWarnings: true,
+          requireUi5Version: true
+        }
+      }
     }
   };
   return `${JSON.stringify(policy, null, 2)}\n`;

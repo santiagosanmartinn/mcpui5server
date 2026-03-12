@@ -33,6 +33,9 @@ src/
         ui5ComponentFitRules.js
         ui5SymbolCatalog.js
       analyzePerformance.js
+      analyzeODataMetadata.js
+      scaffoldUi5ODataFeature.js
+      validateUi5ODataUsage.js
       generateFeature.js
       manageI18n.js
       validateUi5VersionCompatibility.js

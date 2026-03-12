@@ -17,6 +17,9 @@ import { analyzeUi5PerformanceTool } from "./ui5/analyzePerformance.js";
 import { validateUi5CodeTool } from "./ui5/validateUi5Code.js";
 import { validateUi5VersionCompatibilityTool } from "./ui5/validateUi5VersionCompatibility.js";
 import { securityCheckUi5AppTool } from "./ui5/securityCheckUi5App.js";
+import { analyzeODataMetadataTool } from "./ui5/analyzeODataMetadata.js";
+import { validateUi5ODataUsageTool } from "./ui5/validateUi5ODataUsage.js";
+import { scaffoldUi5ODataFeatureTool } from "./ui5/scaffoldUi5ODataFeature.js";
 import { generateJavaScriptFunctionTool } from "./javascript/generateFunction.js";
 import { refactorJavaScriptCodeTool } from "./javascript/refactorCode.js";
 import { lintJavaScriptCodeTool } from "./javascript/lintCode.js";
@@ -72,6 +75,9 @@ export const allTools = [
   validateUi5CodeTool,
   validateUi5VersionCompatibilityTool,
   securityCheckUi5AppTool,
+  analyzeODataMetadataTool,
+  validateUi5ODataUsageTool,
+  scaffoldUi5ODataFeatureTool,
   // Agent factory utilities
   scaffoldProjectAgentsTool,
   validateProjectAgentsTool,

@@ -189,6 +189,66 @@ Ruta recomendada para nuevos usuarios:
     - `file` y `line`
   - resumen agregado por severidad y regla
 
+### `analyze_odata_metadata`
+
+- Objetivo: analizar metadata OData V2/V4 desde XML inline, archivo del workspace o endpoint remoto (`metadataUrl` / `serviceUrl`).
+- Entrada destacada:
+  - fuentes excluyentes: `metadataXml` o `metadataPath` o `metadataUrl` o `serviceUrl`
+  - `timeoutMs` para consultas remotas
+  - `maxEntities` para limitar volumen de salida
+- Salida:
+  - `protocol` (`edmxVersion`, `odataVersion`)
+  - `model` con:
+    - `namespaces`
+    - `entityTypes` (keys, properties, navigationProperties)
+    - `entitySets` / `singletons`
+    - `actions` / `functions`
+    - `actionImports` / `functionImports`
+  - `summary` con contadores agregados
+  - `diagnostics` (informacion y avisos)
+
+### `validate_ui5_odata_usage`
+
+- Objetivo: validar uso OData de extremo a extremo en UI5 (manifest, bindings XML/JS, uso de modelo y cruce opcional con metadata).
+- Guia de estado/roadmap OData: [05-odata-mvp-y-avanzado.md](./05-odata-mvp-y-avanzado.md)
+- Entrada destacada:
+  - `code` o `path` o `sourceDir` (si no se indica, usa `webapp`)
+  - `manifestPath` (opcional para rutas no estandar)
+  - metadata opcional excluyente: `metadataXml` o `metadataPath` o `metadataUrl` o `serviceUrl`
+  - `ui5Version` (opcional; si no viene intenta deteccion del proyecto)
+- Cobertura:
+  - revisa coherencia entre `sap.app.dataSources` y `sap.ui5.models`
+  - detecta mezclas odataVersion/tipo de modelo (V2 vs V4)
+  - detecta patrones de riesgo en JS (`setUseBatch(false)`, llamadas HTTP directas a endpoints OData, construccion insegura de `$filter`)
+  - detecta modelos de binding no declarados
+  - cruza entity sets usados en codigo con metadata cuando se aporta
+- Salida:
+  - `summary` con errores/avisos/info y estado `pass`
+  - `findings` por regla con categoria, severidad, archivo y sugerencia
+  - bloque `manifest` y `metadata` para trazabilidad de contexto analizado
+
+### `scaffold_ui5_odata_feature`
+
+- Objetivo: generar base UI5 OData end-to-end (controller, view, manifest e i18n) a partir de metadata.
+- Entrada destacada:
+  - `entitySet` (obligatorio)
+  - metadata obligatoria excluyente: `metadataXml` o `metadataPath` o `metadataUrl` o `serviceUrl`
+  - `enforceIntakeContext` (opcional, por defecto `true`)
+  - `featureName`, `modelName`, `dataSourceName`, `serviceUri` (opcionales)
+  - `dryRun`, `allowOverwrite`, `routing`, `paths`, `i18n` (opcionales)
+- Comportamiento:
+  - aplica hard gate de contexto: exige intake completo (`.codex/mcp/project/intake.json` con `missingContext=[]`) antes de generar
+  - si falta contexto, bloquea con error `ODATA_CONTEXT_GATE_BLOCKED` y devuelve `missingContext` + `questions`
+  - resuelve `EntitySet` + `EntityType` desde metadata
+  - genera binding base para lista + busqueda
+  - sincroniza `dataSource`, `model`, `route` y `target` en `manifest`
+  - actualiza claves i18n de la feature
+- Salida:
+  - `contextGate` (estado de enforcement/contexto)
+  - plan de binding (`keyField`, `titleField`, etc.)
+  - resumen de cambios en manifest/i18n
+  - previews por archivo y `applyResult` si `dryRun: false`
+
 ### `validate_ui5_code`
 
 - Motor v2 de validacion con reglas versionadas y categorias.
@@ -594,17 +654,24 @@ Ruta recomendada para nuevos usuarios:
 - Objetivo: ejecutar una puerta de calidad consolidada para UI5.
 - Orquesta:
   - `validate_ui5_version_compatibility`
+  - `validate_ui5_odata_usage`
   - `security_check_ui5_app`
   - `analyze_ui5_performance`
   - `refresh_project_context_docs` (opcional)
 - Entrada destacada:
   - `sourceDir`, `ui5Version`, `maxFiles`
-  - umbrales y politicas (`failOnUnknownSymbols`, `failOnMediumSecurity`, etc.)
+  - `qualityProfile`: `dev` o `prod` (si no se pasa, usa policy `defaultProfile` y luego fallback por entorno)
+  - umbrales y politicas (`failOnUnknownSymbols`, `failOnMediumSecurity`, `checkODataUsage`, `failOnODataWarnings`, etc.)
+  - metadata OData opcional para gate estricto (`odataMetadataXml|odataMetadataPath|odataMetadataUrl|odataServiceUrl`)
   - `refreshDocs`, `applyDocs`, `failOnDocDrift`
   - `policyPath` y `respectPolicy` (opcionales)
+- Profiles en policy:
+  - `qualityGate.defaultProfile`
+  - `qualityGate.profiles.dev`
+  - `qualityGate.profiles.prod`
 - Salida:
   - `pass` global
   - `policy` aplicado (si existe)
   - `checks` detallados
-  - `summary` con metricas clave
-  - `reports` por dominio (compatibilidad, seguridad, performance, docs)
+  - `summary` con metricas clave (incluye OData)
+  - `reports` por dominio (compatibilidad, OData, seguridad, performance, docs)

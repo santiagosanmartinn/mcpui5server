@@ -28,6 +28,33 @@ Recomendacion:
 - mantener `enabled: true`
 - versionar cambios de politica junto al codigo
 
+Ejemplo para endurecer produccion y mantener desarrollo flexible:
+
+```json
+{
+  "schemaVersion": "1.0.0",
+  "enabled": true,
+  "qualityGate": {
+    "enabled": true,
+    "defaultProfile": "dev",
+    "checkODataUsage": true,
+    "failOnODataWarnings": false,
+    "profiles": {
+      "dev": {
+        "failOnODataWarnings": false,
+        "failOnMediumSecurity": false
+      },
+      "prod": {
+        "failOnODataWarnings": true,
+        "failOnMediumSecurity": true,
+        "failOnUnknownSymbols": true,
+        "requireUi5Version": true
+      }
+    }
+  }
+}
+```
+
 ## 3) Automatizaciones de arranque
 
 Variables de entorno:

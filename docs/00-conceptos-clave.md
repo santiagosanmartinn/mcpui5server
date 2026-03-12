@@ -128,6 +128,18 @@ Este documento explica, en lenguaje sencillo, los terminos tecnicos mas usados e
   - internacionalizacion (textos traducibles).
 - `namespace`:
   - identificador unico del proyecto/modulos UI5.
+- `OData`:
+  - protocolo estandar para exponer y consumir datos de negocio.
+- `metadata ($metadata)`:
+  - descripcion tecnica del servicio OData (entidades, propiedades y operaciones).
+- `EntityType`:
+  - "tipo" de entidad (estructura de datos).
+- `EntitySet`:
+  - coleccion de entidades expuesta por el servicio.
+- `NavigationProperty`:
+  - relacion entre entidades (por ejemplo pedido -> posiciones).
+- `Action` / `Function`:
+  - operaciones del servicio; action suele cambiar estado y function suele consultar.
 
 ## 7) Terminos de operacion MCP en este repo
 

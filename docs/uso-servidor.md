@@ -89,6 +89,44 @@ Para detalle completo:
 }
 ```
 
+### Analizar metadata OData
+
+```json
+{
+  "tool": "analyze_odata_metadata",
+  "arguments": {
+    "serviceUrl": "https://example.org/sap/opu/odata/sap/Z_SRV",
+    "timeoutMs": 12000,
+    "maxEntities": 120
+  }
+}
+```
+
+### Validar uso OData en UI5
+
+```json
+{
+  "tool": "validate_ui5_odata_usage",
+  "arguments": {
+    "sourceDir": "webapp",
+    "metadataPath": "docs/metadata/service.xml"
+  }
+}
+```
+
+### Scaffold OData end-to-end (base)
+
+```json
+{
+  "tool": "scaffold_ui5_odata_feature",
+  "arguments": {
+    "entitySet": "SalesOrders",
+    "metadataPath": "docs/metadata/service.xml",
+    "dryRun": true
+  }
+}
+```
+
 ### Preparar proyecto heredado para IA
 
 ```json
@@ -173,7 +211,10 @@ Para detalle completo:
   "tool": "run_project_quality_gate",
   "arguments": {
     "sourceDir": "webapp",
-    "respectPolicy": true
+    "qualityProfile": "prod",
+    "respectPolicy": true,
+    "checkODataUsage": true,
+    "odataMetadataPath": "docs/metadata/service.xml"
   }
 }
 ```

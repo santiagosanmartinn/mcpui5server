@@ -1,6 +1,16 @@
 import { ToolError } from "./errors.js";
 
 export async function fetchJson(url, options = {}) {
+  const response = await fetchWithTimeout(url, options);
+  return response.json();
+}
+
+export async function fetchText(url, options = {}) {
+  const response = await fetchWithTimeout(url, options);
+  return response.text();
+}
+
+async function fetchWithTimeout(url, options = {}) {
   const {
     timeoutMs = 15000,
     headers = {}
@@ -20,7 +30,7 @@ export async function fetchJson(url, options = {}) {
       throw new ToolError(`HTTP ${response.status} for ${url}`, { code: "HTTP_ERROR" });
     }
 
-    return response.json();
+    return response;
   } catch (error) {
     if (error?.name === "AbortError") {
       throw new ToolError(`Request timed out for ${url}`, { code: "HTTP_TIMEOUT" });
