@@ -1,6 +1,6 @@
-# 03 - Operacion y Politicas
+﻿# 03 - Operacion y Politicas
 
-Documento operativo para mantener calidad, seguridad y comportamiento consistente entre equipos.
+Documento operativo para mantener calidad, seguridad y comportamiento consistente.
 
 ## 1) Modo estricto (que significa)
 
@@ -24,36 +24,59 @@ Controla, entre otros:
 - recomendacion de agentes
 - puerta de calidad consolidada
 
-Recomendacion:
-- mantener `enabled: true`
-- versionar cambios de politica junto al codigo
+Perfiles recomendados:
 
-Ejemplo para endurecer produccion y mantener desarrollo flexible:
+- `starter`
+  - pensado para arranque (skills en cero o poco historial)
+  - `skillSignalMode: "prefer"`
+  - `autoPromoteSkillSignalMode: false`
+  - `qualityGate.defaultProfile: "dev"`
+- `mature`
+  - pensado para proyectos con feedback estable
+  - `skillSignalMode: "prefer"` + autopromocion a `strict` por umbrales
+  - `autoPromoteSkillSignalMode: true`
+  - `qualityGate.defaultProfile: "prod"`
+
+Como generar cada perfil:
 
 ```json
 {
-  "schemaVersion": "1.0.0",
-  "enabled": true,
-  "qualityGate": {
-    "enabled": true,
-    "defaultProfile": "dev",
-    "checkODataUsage": true,
-    "failOnODataWarnings": false,
-    "profiles": {
-      "dev": {
-        "failOnODataWarnings": false,
-        "failOnMediumSecurity": false
-      },
-      "prod": {
-        "failOnODataWarnings": true,
-        "failOnMediumSecurity": true,
-        "failOnUnknownSymbols": true,
-        "requireUi5Version": true
-      }
-    }
+  "tool": "scaffold_project_agents",
+  "arguments": {
+    "dryRun": false,
+    "policyPreset": "starter"
   }
 }
 ```
+
+```json
+{
+  "tool": "scaffold_project_agents",
+  "arguments": {
+    "dryRun": false,
+    "policyPreset": "mature",
+    "allowOverwrite": true
+  }
+}
+```
+
+Como decidir el cambio `starter -> mature`:
+
+1. Ejecuta `mcp_health_report`.
+2. Revisa `policyTransition`.
+3. Si `recommendation` es `promote-to-mature`, aplica el preset `mature`.
+
+Senales principales que usa `policyTransition`:
+
+- volumen de ejecuciones de skills
+- tasa de exito de skills
+- numero de skills cualificadas
+- evidencia de packs (si existe)
+
+Recomendacion:
+
+- mantener `enabled: true`
+- versionar cambios de policy junto al codigo
 
 ## 3) Automatizaciones de arranque
 
@@ -92,3 +115,51 @@ Para cambios sensibles UI5:
 - Cambias flujo o contrato: actualiza `docs/02-flujos-operativos.md`
 - Cambias una herramienta: actualiza `docs/referencia-tools.md`
 - Anades una herramienta: agrega ejemplo en `docs/ejemplos-tools.md`
+
+## 7) Checklist semanal (10-15 min)
+
+Objetivo: revisar salud MCP y decidir si mantener `starter` o pasar a `mature`.
+
+1. Ejecutar health report completo:
+
+```json
+{
+  "tool": "mcp_health_report",
+  "arguments": {
+    "includeDocChecks": true,
+    "includePolicyStatus": true,
+    "includePolicyTransition": true,
+    "includeContractStatus": true,
+    "includeManagedArtifacts": true
+  }
+}
+```
+
+2. Revisar en la salida:
+- `docs.referenceInSync` y `docs.examplesInSync`
+- `contracts.inSync`
+- `policyTransition.recommendation`
+
+3. Si hay desalineaciones:
+- contrato: `npm run contracts:snapshot`
+- docs: actualizar `docs/referencia-tools.md` y `docs/ejemplos-tools.md`
+
+4. Si `policyTransition.recommendation = promote-to-mature`, aplicar:
+
+```json
+{
+  "tool": "scaffold_project_agents",
+  "arguments": {
+    "dryRun": false,
+    "policyPreset": "mature",
+    "allowOverwrite": true
+  }
+}
+```
+
+5. Registrar feedback real de uso durante la semana (si no se esta haciendo):
+- `record_skill_execution_feedback`
+- `record_agent_execution_feedback`
+
+6. Cerrar con validacion tecnica:
+- `npm run check`

@@ -1,0 +1,374 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-03-12T13:13:16.918Z",
+  "sourceDir": ".",
+  "project": {
+    "name": "sapui5-mcp-server",
+    "type": "node",
+    "namespace": "sapui5-mcp-server",
+    "ui5Version": null,
+    "routingDetected": false,
+    "controllerPattern": "Controller.extend"
+  },
+  "intake": {
+    "exists": true,
+    "missingContext": [
+      "projectGoal",
+      "criticality",
+      "allowedRefactorScope"
+    ]
+  },
+  "inventory": {
+    "scannedFiles": 124,
+    "jsFiles": 115,
+    "tsFiles": 0,
+    "xmlFiles": 0,
+    "jsonFiles": 9,
+    "propertiesFiles": 0,
+    "totalLines": 41975,
+    "totalBytes": 1259353
+  },
+  "architecture": {
+    "controllerPattern": "Controller.extend",
+    "hasTests": true,
+    "hasQualityScript": true,
+    "hasMcpState": true
+  },
+  "qualityRisks": [
+    {
+      "id": "LEGACY_PERF_SYNC_IO",
+      "severity": "medium",
+      "file": "src/tools/agents/analyzeLegacyProjectBaseline.js",
+      "message": "Synchronous async:false pattern detected.",
+      "suggestion": "Refactor to asynchronous flow to avoid UI blocking."
+    },
+    {
+      "id": "LEGACY_MAINTENANCE_TODO",
+      "severity": "low",
+      "file": "src/tools/agents/analyzeLegacyProjectBaseline.js",
+      "message": "Pending TODO/FIXME markers detected.",
+      "suggestion": "Track in backlog and close critical items before major refactors."
+    },
+    {
+      "id": "LEGACY_MAINTENANCE_TODO",
+      "severity": "low",
+      "file": "src/tools/documentation/searchUI5SDK.js",
+      "message": "Pending TODO/FIXME markers detected.",
+      "suggestion": "Track in backlog and close critical items before major refactors."
+    },
+    {
+      "id": "LEGACY_PERF_SYNC_IO",
+      "severity": "medium",
+      "file": "src/tools/ui5/analyzePerformance.js",
+      "message": "Synchronous async:false pattern detected.",
+      "suggestion": "Refactor to asynchronous flow to avoid UI blocking."
+    },
+    {
+      "id": "LEGACY_MAINTENANCE_TODO",
+      "severity": "low",
+      "file": "src/tools/ui5/manageI18n.js",
+      "message": "Pending TODO/FIXME markers detected.",
+      "suggestion": "Track in backlog and close critical items before major refactors."
+    },
+    {
+      "id": "LEGACY_SEC_EVAL",
+      "severity": "high",
+      "file": "src/utils/validator.js",
+      "message": "Use of eval detected.",
+      "suggestion": "Replace dynamic execution with deterministic mapping/functions."
+    },
+    {
+      "id": "LEGACY_PERF_SYNC_IO",
+      "severity": "medium",
+      "file": "src/utils/validator.js",
+      "message": "Synchronous async:false pattern detected.",
+      "suggestion": "Refactor to asynchronous flow to avoid UI blocking."
+    },
+    {
+      "id": "LEGACY_SEC_EVAL",
+      "severity": "high",
+      "file": "test/tools/analyzeLegacyProjectBaseline.tool.test.js",
+      "message": "Use of eval detected.",
+      "suggestion": "Replace dynamic execution with deterministic mapping/functions."
+    },
+    {
+      "id": "LEGACY_QUALITY_CONSOLE",
+      "severity": "low",
+      "file": "test/tools/analyzeLegacyProjectBaseline.tool.test.js",
+      "message": "console.log usage detected in source.",
+      "suggestion": "Replace ad-hoc logs with controlled logger or remove debug noise."
+    },
+    {
+      "id": "LEGACY_PERF_SYNC_IO",
+      "severity": "medium",
+      "file": "test/tools/analyzeUi5Performance.tool.test.js",
+      "message": "Synchronous async:false pattern detected.",
+      "suggestion": "Refactor to asynchronous flow to avoid UI blocking."
+    },
+    {
+      "id": "LEGACY_SEC_EVAL",
+      "severity": "high",
+      "file": "test/tools/runProjectQualityGate.tool.test.js",
+      "message": "Use of eval detected.",
+      "suggestion": "Replace dynamic execution with deterministic mapping/functions."
+    },
+    {
+      "id": "LEGACY_SEC_EVAL",
+      "severity": "high",
+      "file": "test/tools/securityCheckUi5App.tool.test.js",
+      "message": "Use of eval detected.",
+      "suggestion": "Replace dynamic execution with deterministic mapping/functions."
+    },
+    {
+      "id": "LEGACY_SEC_HTML_INJECTION",
+      "severity": "high",
+      "file": "test/tools/securityCheckUi5App.tool.test.js",
+      "message": "Potential unsafe HTML injection pattern detected.",
+      "suggestion": "Use escaped text bindings/UI5 controls and sanitize any trusted HTML."
+    },
+    {
+      "id": "LEGACY_QUALITY_CONSOLE",
+      "severity": "low",
+      "file": "test/utils/refactor.test.js",
+      "message": "console.log usage detected in source.",
+      "suggestion": "Replace ad-hoc logs with controlled logger or remove debug noise."
+    },
+    {
+      "id": "LEGACY_SEC_EVAL",
+      "severity": "high",
+      "file": "test/utils/validator.test.js",
+      "message": "Use of eval detected.",
+      "suggestion": "Replace dynamic execution with deterministic mapping/functions."
+    }
+  ],
+  "hotspots": [
+    {
+      "path": "docs/contracts/tool-contracts.snapshot.json",
+      "score": 1,
+      "lines": 11929,
+      "bytes": 321390,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "score": 1,
+      "lines": 3671,
+      "bytes": 126767,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/agents/analyzeLegacyProjectBaseline.js",
+      "score": 0.815,
+      "lines": 682,
+      "bytes": 20653,
+      "reasons": [
+        "large-file",
+        "todo-debt",
+        "medium-risk"
+      ]
+    },
+    {
+      "path": "src/tools/agents/recommendProjectAgents.js",
+      "score": 0.763,
+      "lines": 1144,
+      "bytes": 38150,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/validateUi5ODataUsage.js",
+      "score": 0.718,
+      "lines": 1077,
+      "bytes": 32653,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/scaffoldUi5ODataFeature.js",
+      "score": 0.661,
+      "lines": 991,
+      "bytes": 29967,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/agents/scaffoldProjectAgents.js",
+      "score": 0.605,
+      "lines": 907,
+      "bytes": 25985,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "test/tools/securityCheckUi5App.tool.test.js",
+      "score": 0.592,
+      "lines": 48,
+      "bytes": 1356,
+      "reasons": [
+        "security-risk"
+      ]
+    },
+    {
+      "path": "src/utils/validator.js",
+      "score": 0.564,
+      "lines": 246,
+      "bytes": 7553,
+      "reasons": [
+        "security-risk",
+        "medium-risk"
+      ]
+    },
+    {
+      "path": "src/tools/project/mcpHealthReport.js",
+      "score": 0.503,
+      "lines": 755,
+      "bytes": 23987,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "test/tools/runProjectQualityGate.tool.test.js",
+      "score": 0.5,
+      "lines": 330,
+      "bytes": 9178,
+      "reasons": [
+        "security-risk"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/generateFeature.js",
+      "score": 0.431,
+      "lines": 646,
+      "bytes": 19579,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/analyzeODataMetadata.js",
+      "score": 0.402,
+      "lines": 603,
+      "bytes": 16060,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/agents/buildAiContextIndex.js",
+      "score": 0.393,
+      "lines": 589,
+      "bytes": 18285,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/manageI18n.js",
+      "score": 0.381,
+      "lines": 526,
+      "bytes": 15204,
+      "reasons": [
+        "large-file",
+        "todo-debt"
+      ]
+    },
+    {
+      "path": "src/tools/agents/scaffoldProjectSkills.js",
+      "score": 0.375,
+      "lines": 563,
+      "bytes": 19025,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/agents/materializeRecommendedAgents.js",
+      "score": 0.363,
+      "lines": 544,
+      "bytes": 19226,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/agents/validateProjectAgents.js",
+      "score": 0.353,
+      "lines": 530,
+      "bytes": 15243,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "test/tools/analyzeLegacyProjectBaseline.tool.test.js",
+      "score": 0.346,
+      "lines": 99,
+      "bytes": 3357,
+      "reasons": [
+        "security-risk"
+      ]
+    },
+    {
+      "path": "test/utils/validator.test.js",
+      "score": 0.342,
+      "lines": 93,
+      "bytes": 3220,
+      "reasons": [
+        "security-risk"
+      ]
+    },
+    {
+      "path": "src/tools/agents/upgradeProjectMcp.js",
+      "score": 0.336,
+      "lines": 504,
+      "bytes": 15879,
+      "reasons": [
+        "large-file"
+      ]
+    },
+    {
+      "path": "src/tools/ui5/validateUi5VersionCompatibility.js",
+      "score": 0.324,
+      "lines": 486,
+      "bytes": 14840,
+      "reasons": []
+    },
+    {
+      "path": "src/tools/ui5/analyzePerformance.js",
+      "score": 0.305,
+      "lines": 277,
+      "bytes": 8804,
+      "reasons": [
+        "medium-risk"
+      ]
+    },
+    {
+      "path": "src/tools/agents/promoteAgentPack.js",
+      "score": 0.295,
+      "lines": 442,
+      "bytes": 13487,
+      "reasons": []
+    },
+    {
+      "path": "test/tools/recommendAndMaterializeAgents.tool.test.js",
+      "score": 0.293,
+      "lines": 440,
+      "bytes": 14536,
+      "reasons": []
+    }
+  ],
+  "recommendations": [
+    "Complete collect_legacy_project_intake to capture runtime constraints and reduce ambiguous AI proposals.",
+    "Prioritize remediation of high-severity security patterns before major modernization.",
+    "Use build_ai_context_index after this baseline to focus prompts on hotspot files and mandatory architecture artifacts."
+  ]
+}

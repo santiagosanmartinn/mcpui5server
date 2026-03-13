@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "enabled": true,
+  "project": {
+    "type": "node",
+    "namespace": null
+  },
+  "ranking": {
+    "enabled": true,
+    "minExecutions": 1,
+    "maxResults": 20,
+    "includeUnscored": true,
+    "includeDeprecated": false
+  },
+  "recommendation": {
+    "enabled": true,
+    "includePackCatalog": true,
+    "includePackFeedbackRanking": true,
+    "includeSkillCatalog": true,
+    "includeSkillFeedbackRanking": true,
+    "minSkillExecutions": 1,
+    "maxSkillSignals": 5,
+    "skillSignalMode": "prefer",
+    "skillSignalMinConfidence": 0.35,
+    "skillSignalMinRoleBoost": 0.01,
+    "autoPromoteSkillSignalMode": false,
+    "autoPromoteMinSuccessExecutions": 3,
+    "autoPromoteMinSuccessRate": 0.8,
+    "autoPromoteMinQualifiedSkills": 1,
+    "maxRecommendations": 8
+  },
+  "qualityGate": {
+    "enabled": true,
+    "failOnUnknownSymbols": false,
+    "failOnMediumSecurity": false,
+    "checkODataUsage": true,
+    "failOnODataWarnings": false,
+    "maxHighPerformanceFindings": 0,
+    "refreshDocs": true,
+    "applyDocs": false,
+    "failOnDocDrift": false,
+    "defaultProfile": "dev",
+    "profiles": {
+      "dev": {
+        "failOnUnknownSymbols": false,
+        "failOnMediumSecurity": false,
+        "failOnODataWarnings": false
+      },
+      "prod": {
+        "failOnUnknownSymbols": true,
+        "failOnMediumSecurity": true,
+        "failOnODataWarnings": true,
+        "requireUi5Version": true
+      }
+    }
+  }
+}

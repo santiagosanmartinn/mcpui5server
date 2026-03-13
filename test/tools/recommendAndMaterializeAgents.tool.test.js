@@ -4,6 +4,8 @@ import { promises as fs } from "node:fs";
 import { recommendProjectAgentsTool } from "../../src/tools/agents/recommendProjectAgents.js";
 import { materializeRecommendedAgentsTool } from "../../src/tools/agents/materializeRecommendedAgents.js";
 import { validateProjectAgentsTool } from "../../src/tools/agents/validateProjectAgents.js";
+import { scaffoldProjectSkillsTool } from "../../src/tools/agents/scaffoldProjectSkills.js";
+import { recordSkillExecutionFeedbackTool } from "../../src/tools/agents/recordSkillExecutionFeedback.js";
 
 describe("recommend/materialize agent tools", () => {
   let tempRoot;
@@ -256,5 +258,182 @@ describe("recommend/materialize agent tools", () => {
     expect(report.recommendations.length).toBeLessThanOrEqual(3);
     expect(report.recommendations.some((item) => item.source === "pack")).toBe(false);
     expect(report.recommendations.some((item) => item.id === "ui5-i18n-curator")).toBe(false);
+  });
+
+  it("uses skill ranking signals to enrich recommendation context", async () => {
+    await scaffoldProjectSkillsTool.handler(
+      {
+        includeDefaultSkills: true,
+        dryRun: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    await recordSkillExecutionFeedbackTool.handler(
+      {
+        skillId: "ui5-feature-implementation-safe",
+        outcome: "success",
+        qualityGatePass: true,
+        usefulnessScore: 5,
+        dryRun: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    const report = await recommendProjectAgentsTool.handler(
+      {
+        includeSkillCatalog: true,
+        includeSkillFeedbackRanking: true
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(report.skillSignals.enabled).toBe(true);
+    expect(report.skillSignals.executed).toBe(true);
+    expect(report.skillSignals.summary.returnedSkills).toBeGreaterThan(0);
+    expect(report.skillSignals.summary.influenceApplied).toBe(true);
+    expect(report.skillSignals.topSkills.some((item) => item.id === "ui5-feature-implementation-safe")).toBe(true);
+
+    const implementer = report.recommendations.find((item) => item.id === "ui5-feature-implementer");
+    expect(implementer).toBeDefined();
+    expect(implementer?.rationale).toContain("Skill signals applied");
+  });
+
+  it("does not enforce strict skill filtering when skill confidence is still low", async () => {
+    const result = await materializeRecommendedAgentsTool.handler(
+      {
+        dryRun: true,
+        includePackCatalog: false,
+        skillSignalMode: "strict"
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(result.selectionPolicy.mode).toBe("strict");
+    expect(result.selectionPolicy.signalsReady).toBe(false);
+    expect(result.selectionPolicy.strictApplied).toBe(false);
+    expect(result.selectionPolicy.filteredRecommendationIds).toEqual([]);
+    expect(result.usedRecommendations).toBeGreaterThanOrEqual(2);
+  });
+
+  it("enforces strict skill filtering when confidence and role boost thresholds are met", async () => {
+    await scaffoldProjectSkillsTool.handler(
+      {
+        includeDefaultSkills: true,
+        dryRun: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    await recordSkillExecutionFeedbackTool.handler(
+      {
+        skillId: "ui5-feature-implementation-safe",
+        outcome: "success",
+        qualityGatePass: true,
+        usefulnessScore: 5,
+        dryRun: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    const result = await materializeRecommendedAgentsTool.handler(
+      {
+        dryRun: true,
+        includePackCatalog: false,
+        skillSignalMode: "strict",
+        skillSignalMinConfidence: 0.05,
+        skillSignalMinRoleBoost: 0.02
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(result.selectionPolicy.mode).toBe("strict");
+    expect(result.selectionPolicy.signalsReady).toBe(true);
+    expect(result.selectionPolicy.strictApplied).toBe(true);
+    expect(result.selectionPolicy.filteredRecommendationIds.length).toBeGreaterThan(0);
+    expect(result.selectionPolicy.filteredRecommendationIds).toContain("ui5-i18n-curator");
+    expect(result.selectionPolicy.reweightedRecommendationIds.length).toBeGreaterThan(0);
+  });
+
+  it("auto-promotes skill signal mode from prefer to strict via policy thresholds", async () => {
+    const policyPath = path.join(tempRoot, ".codex", "mcp", "policies", "agent-policy.json");
+    await fs.mkdir(path.dirname(policyPath), { recursive: true });
+    await fs.writeFile(
+      policyPath,
+      `${JSON.stringify({
+        schemaVersion: "1.0.0",
+        enabled: true,
+        recommendation: {
+          enabled: true,
+          includeSkillCatalog: true,
+          includeSkillFeedbackRanking: true,
+          skillSignalMode: "prefer",
+          skillSignalMinConfidence: 0.2,
+          skillSignalMinRoleBoost: 0.01,
+          autoPromoteSkillSignalMode: true,
+          autoPromoteMinSuccessExecutions: 3,
+          autoPromoteMinSuccessRate: 0.8,
+          autoPromoteMinQualifiedSkills: 1
+        }
+      }, null, 2)}\n`,
+      "utf8"
+    );
+
+    await scaffoldProjectSkillsTool.handler(
+      {
+        includeDefaultSkills: true,
+        dryRun: false
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    for (let index = 0; index < 3; index += 1) {
+      await recordSkillExecutionFeedbackTool.handler(
+        {
+          skillId: "ui5-feature-implementation-safe",
+          outcome: "success",
+          qualityGatePass: true,
+          usefulnessScore: 5,
+          dryRun: false
+        },
+        {
+          context: { rootDir: tempRoot }
+        }
+      );
+    }
+
+    const result = await materializeRecommendedAgentsTool.handler(
+      {
+        dryRun: true,
+        includePackCatalog: false,
+        allowOverwrite: true,
+        respectPolicy: true
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(result.policy.loaded).toBe(true);
+    expect(result.selectionPolicy.mode).toBe("strict");
+    expect(result.selectionPolicy.autoPromotedToStrict).toBe(true);
+    expect(result.selectionPolicy.promotionReason).toContain("auto-promoted-to-strict");
+    expect(result.selectionPolicy.strictApplied).toBe(true);
   });
 });

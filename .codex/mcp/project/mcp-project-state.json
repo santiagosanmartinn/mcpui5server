@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "layoutVersion": "2026.03.11",
+  "toolVersion": "1.0.0",
+  "updatedBy": "upgrade_project_mcp",
+  "lastAuditAt": "2026-03-12T13:13:16.837Z",
+  "lastUpgradedAt": "2026-03-12T13:13:16.837Z",
+  "project": {
+    "name": "sapui5-mcp-server",
+    "type": "node",
+    "namespace": null
+  },
+  "summary": {
+    "statusBefore": "not-initialized",
+    "managedMissingBefore": 7,
+    "legacyDetectedBefore": 0
+  },
+  "managedArtifacts": [
+    ".codex/mcp/agents/agent.blueprint.json",
+    ".codex/mcp/agents/AGENTS.generated.md",
+    ".codex/mcp/agents/prompts/task-bootstrap.txt",
+    ".codex/mcp/policies/agent-policy.json",
+    "docs/mcp/project-context.md",
+    "docs/mcp/agent-flows.md",
+    ".codex/mcp/project/mcp-project-state.json"
+  ]
+}

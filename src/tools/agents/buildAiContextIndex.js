@@ -16,7 +16,8 @@ const DEFAULT_INDEX_DOC_PATH = "docs/mcp/context-index.md";
 const DEFAULT_EXTENSIONS = [".js", ".ts", ".xml", ".json", ".properties", ".md", ".yaml", ".yml"];
 const DEFAULT_MAX_FILES = 2000;
 const DEFAULT_CHUNK_CHARS = 1200;
-const DEFAULT_MAX_CHUNKS = 5000;
+const DEFAULT_MAX_CHUNKS = 1200;
+const DEFAULT_MAX_ARTIFACT_BYTES = 2_500_000;
 const IGNORED_DIRS = new Set(["node_modules", ".git", ".mcp-backups", ".mcp-cache", "dist", "coverage", ".next"]);
 
 const inputSchema = z.object({
@@ -29,6 +30,7 @@ const inputSchema = z.object({
   maxFiles: z.number().int().min(100).max(20000).optional(),
   chunkChars: z.number().int().min(400).max(4000).optional(),
   maxChunks: z.number().int().min(100).max(20000).optional(),
+  maxArtifactBytes: z.number().int().min(250000).max(10000000).optional(),
   dryRun: z.boolean().optional(),
   reason: z.string().max(200).optional(),
   maxDiffLines: z.number().int().min(10).max(400).optional()
@@ -127,6 +129,7 @@ export const buildAiContextIndexTool = {
       maxFiles,
       chunkChars,
       maxChunks,
+      maxArtifactBytes,
       dryRun,
       reason,
       maxDiffLines
@@ -142,6 +145,7 @@ export const buildAiContextIndexTool = {
     const selectedMaxFiles = maxFiles ?? DEFAULT_MAX_FILES;
     const selectedChunkChars = chunkChars ?? DEFAULT_CHUNK_CHARS;
     const selectedMaxChunks = maxChunks ?? DEFAULT_MAX_CHUNKS;
+    const selectedMaxArtifactBytes = maxArtifactBytes ?? DEFAULT_MAX_ARTIFACT_BYTES;
     const shouldDryRun = dryRun ?? true;
 
     enforceManagedSubtree(selectedBaselinePath, ".codex/mcp", "baselinePath");
@@ -215,6 +219,7 @@ export const buildAiContextIndexTool = {
     for (const write of plannedWrites) {
       const preview = await previewFileWrite(write.path, write.content, {
         root,
+        maxBytes: selectedMaxArtifactBytes,
         maxDiffLines
       });
       previews.push({
@@ -243,6 +248,7 @@ export const buildAiContextIndexTool = {
         }),
         {
           root,
+          maxBytes: selectedMaxArtifactBytes,
           reason: reason ?? "build_ai_context_index"
         }
       );

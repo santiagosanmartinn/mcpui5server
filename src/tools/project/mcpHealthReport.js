@@ -11,17 +11,31 @@ const DEFAULT_BASELINE_PATH = ".codex/mcp/project/legacy-baseline.json";
 const DEFAULT_CONTEXT_INDEX_PATH = ".codex/mcp/context/context-index.json";
 const DEFAULT_BLUEPRINT_PATH = ".codex/mcp/agents/agent.blueprint.json";
 const DEFAULT_AGENTS_GUIDE_PATH = ".codex/mcp/agents/AGENTS.generated.md";
+const DEFAULT_SKILL_METRICS_PATH = ".codex/mcp/skills/feedback/metrics.json";
+const DEFAULT_PACK_METRICS_PATH = ".codex/mcp/feedback/metrics.json";
+const DEFAULT_TRANSITION_THRESHOLDS = {
+  minSkillExecutions: 10,
+  minSkillSuccessRate: 0.75,
+  minQualifiedSkills: 1,
+  minSkillExecutionsPerQualifiedSkill: 3,
+  minQualifiedSkillSuccessRate: 0.8,
+  minPackExecutions: 6,
+  minPackSuccessRate: 0.7
+};
 
 const inputSchema = z.object({
   includeToolNames: z.boolean().optional(),
   includeDocChecks: z.boolean().optional(),
   includePolicyStatus: z.boolean().optional(),
+  includePolicyTransition: z.boolean().optional(),
   includeContractStatus: z.boolean().optional(),
   includeManagedArtifacts: z.boolean().optional(),
   referenceDocPath: z.string().min(1).optional(),
   examplesDocPath: z.string().min(1).optional(),
   policyPath: z.string().min(1).optional(),
-  contractSnapshotPath: z.string().min(1).optional()
+  contractSnapshotPath: z.string().min(1).optional(),
+  skillMetricsPath: z.string().min(1).optional(),
+  packMetricsPath: z.string().min(1).optional()
 }).strict();
 
 const outputSchema = z.object({
@@ -75,6 +89,34 @@ const outputSchema = z.object({
     snapshotHash: z.string().nullable(),
     error: z.string().nullable()
   }),
+  policyTransition: z.object({
+    executed: z.boolean(),
+    policyPath: z.string(),
+    currentPreset: z.enum(["starter", "mature", "custom", "unknown"]),
+    recommendation: z.enum(["promote-to-mature", "keep-starter", "keep-mature", "review-manual"]),
+    readyForMature: z.boolean(),
+    confidence: z.number().min(0).max(1),
+    thresholds: z.object({
+      minSkillExecutions: z.number().int().nonnegative(),
+      minSkillSuccessRate: z.number().min(0).max(1),
+      minQualifiedSkills: z.number().int().positive(),
+      minSkillExecutionsPerQualifiedSkill: z.number().int().positive(),
+      minQualifiedSkillSuccessRate: z.number().min(0).max(1),
+      minPackExecutions: z.number().int().nonnegative(),
+      minPackSuccessRate: z.number().min(0).max(1)
+    }),
+    signals: z.object({
+      skillExecutions: z.number().int().nonnegative(),
+      skillSuccessRate: z.number().min(0).max(1),
+      qualifiedSkills: z.number().int().nonnegative(),
+      packExecutions: z.number().int().nonnegative(),
+      packSuccessRate: z.number().min(0).max(1),
+      packEvidencePresent: z.boolean()
+    }),
+    reasons: z.array(z.string()),
+    nextAction: z.string().nullable(),
+    error: z.string().nullable()
+  }),
   managedArtifacts: z.object({
     executed: z.boolean(),
     intakeExists: z.boolean(),
@@ -96,12 +138,15 @@ export const mcpHealthReportTool = {
       includeToolNames,
       includeDocChecks,
       includePolicyStatus,
+      includePolicyTransition,
       includeContractStatus,
       includeManagedArtifacts,
       referenceDocPath,
       examplesDocPath,
       policyPath,
-      contractSnapshotPath
+      contractSnapshotPath,
+      skillMetricsPath,
+      packMetricsPath
     } = inputSchema.parse(args);
 
     const root = context.rootDir;
@@ -115,12 +160,15 @@ export const mcpHealthReportTool = {
     const namesIncluded = includeToolNames ?? false;
     const shouldCheckDocs = includeDocChecks ?? true;
     const shouldCheckPolicy = includePolicyStatus ?? true;
+    const shouldCheckPolicyTransition = includePolicyTransition ?? true;
     const shouldCheckContracts = includeContractStatus ?? true;
     const shouldCheckArtifacts = includeManagedArtifacts ?? true;
     const selectedReferenceDocPath = normalizeRelativePath(referenceDocPath ?? DEFAULT_REFERENCE_DOC_PATH);
     const selectedExamplesDocPath = normalizeRelativePath(examplesDocPath ?? DEFAULT_EXAMPLES_DOC_PATH);
     const selectedPolicyPath = normalizeRelativePath(policyPath ?? DEFAULT_AGENT_POLICY_PATH);
     const selectedContractSnapshotPath = normalizeRelativePath(contractSnapshotPath ?? DEFAULT_CONTRACT_SNAPSHOT_PATH);
+    const selectedSkillMetricsPath = normalizeRelativePath(skillMetricsPath ?? DEFAULT_SKILL_METRICS_PATH);
+    const selectedPackMetricsPath = normalizeRelativePath(packMetricsPath ?? DEFAULT_PACK_METRICS_PATH);
 
     const duplicates = findDuplicates(toolNames);
 
@@ -177,6 +225,34 @@ export const mcpHealthReportTool = {
         error: null
       };
 
+    const policyTransition = shouldCheckPolicyTransition
+      ? await evaluatePolicyTransition({
+        root,
+        policyPath: selectedPolicyPath,
+        skillMetricsPath: selectedSkillMetricsPath,
+        packMetricsPath: selectedPackMetricsPath
+      })
+      : {
+        executed: false,
+        policyPath: selectedPolicyPath,
+        currentPreset: "unknown",
+        recommendation: "review-manual",
+        readyForMature: false,
+        confidence: 0,
+        thresholds: DEFAULT_TRANSITION_THRESHOLDS,
+        signals: {
+          skillExecutions: 0,
+          skillSuccessRate: 0,
+          qualifiedSkills: 0,
+          packExecutions: 0,
+          packSuccessRate: 0,
+          packEvidencePresent: false
+        },
+        reasons: [],
+        nextAction: null,
+        error: null
+      };
+
     const managedArtifacts = shouldCheckArtifacts
       ? await evaluateManagedArtifacts(root)
       : {
@@ -212,6 +288,7 @@ export const mcpHealthReportTool = {
       docs,
       policy,
       contracts,
+      policyTransition,
       managedArtifacts
     });
   }
@@ -362,6 +439,285 @@ async function evaluateManagedArtifacts(root) {
   };
 }
 
+async function evaluatePolicyTransition(options) {
+  const { root, policyPath, skillMetricsPath, packMetricsPath } = options;
+  const thresholds = { ...DEFAULT_TRANSITION_THRESHOLDS };
+  try {
+    const resolution = await loadAgentPolicy({
+      root,
+      policyPath
+    });
+    const currentPreset = detectPolicyPreset(resolution.policy);
+    const skillMetrics = await readSkillMetricsSummary({
+      root,
+      metricsPath: skillMetricsPath,
+      thresholds
+    });
+    const packMetrics = await readPackMetricsSummary({
+      root,
+      metricsPath: packMetricsPath
+    });
+    const evaluation = computeMaturityEvaluation({
+      currentPreset,
+      skillMetrics,
+      packMetrics,
+      thresholds
+    });
+
+    return {
+      executed: true,
+      policyPath: resolution.path,
+      currentPreset,
+      recommendation: evaluation.recommendation,
+      readyForMature: evaluation.readyForMature,
+      confidence: evaluation.confidence,
+      thresholds,
+      signals: {
+        skillExecutions: skillMetrics.executions,
+        skillSuccessRate: skillMetrics.successRate,
+        qualifiedSkills: skillMetrics.qualifiedSkills,
+        packExecutions: packMetrics.executions,
+        packSuccessRate: packMetrics.successRate,
+        packEvidencePresent: packMetrics.evidencePresent
+      },
+      reasons: evaluation.reasons,
+      nextAction: evaluation.nextAction,
+      error: null
+    };
+  } catch (error) {
+    return {
+      executed: true,
+      policyPath,
+      currentPreset: "unknown",
+      recommendation: "review-manual",
+      readyForMature: false,
+      confidence: 0,
+      thresholds,
+      signals: {
+        skillExecutions: 0,
+        skillSuccessRate: 0,
+        qualifiedSkills: 0,
+        packExecutions: 0,
+        packSuccessRate: 0,
+        packEvidencePresent: false
+      },
+      reasons: ["Unable to evaluate policy transition due to policy/metrics read error."],
+      nextAction: "Validate policy and metrics files, then rerun mcp_health_report.",
+      error: error.message
+    };
+  }
+}
+
+async function readSkillMetricsSummary(options) {
+  const { root, metricsPath, thresholds } = options;
+  const exists = await fileExists(metricsPath, root);
+  if (!exists) {
+    return {
+      executions: 0,
+      successRate: 0,
+      qualifiedSkills: 0
+    };
+  }
+
+  const payload = await readJsonFile(metricsPath, root).catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return {
+      executions: 0,
+      successRate: 0,
+      qualifiedSkills: 0
+    };
+  }
+
+  const totals = payload.totals ?? {};
+  const executions = toInt(totals.executions);
+  const success = toInt(totals.success);
+  const partial = toInt(totals.partial);
+  const successRate = executions > 0
+    ? round((success + (partial * 0.5)) / executions)
+    : 0;
+
+  const skillEntries = payload.skills && typeof payload.skills === "object"
+    ? Object.values(payload.skills)
+    : [];
+  let qualifiedSkills = 0;
+  for (const entry of skillEntries) {
+    const skillExecutions = toInt(entry?.executions);
+    const skillSuccess = toInt(entry?.outcomes?.success);
+    const skillPartial = toInt(entry?.outcomes?.partial);
+    const skillSuccessRate = skillExecutions > 0
+      ? (skillSuccess + (skillPartial * 0.5)) / skillExecutions
+      : 0;
+    if (
+      skillExecutions >= thresholds.minSkillExecutionsPerQualifiedSkill
+      && skillSuccessRate >= thresholds.minQualifiedSkillSuccessRate
+    ) {
+      qualifiedSkills += 1;
+    }
+  }
+
+  return {
+    executions,
+    successRate,
+    qualifiedSkills
+  };
+}
+
+async function readPackMetricsSummary(options) {
+  const { root, metricsPath } = options;
+  const exists = await fileExists(metricsPath, root);
+  if (!exists) {
+    return {
+      evidencePresent: false,
+      executions: 0,
+      successRate: 0
+    };
+  }
+
+  const payload = await readJsonFile(metricsPath, root).catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return {
+      evidencePresent: false,
+      executions: 0,
+      successRate: 0
+    };
+  }
+
+  const totals = payload.totals ?? {};
+  const executions = toInt(totals.executions);
+  const success = toInt(totals.success);
+  const partial = toInt(totals.partial);
+  const successRate = executions > 0
+    ? round((success + (partial * 0.5)) / executions)
+    : 0;
+
+  return {
+    evidencePresent: executions > 0,
+    executions,
+    successRate
+  };
+}
+
+function computeMaturityEvaluation(input) {
+  const { currentPreset, skillMetrics, packMetrics, thresholds } = input;
+  const reasons = [];
+  const skillExecutionsReady = skillMetrics.executions >= thresholds.minSkillExecutions;
+  const skillSuccessReady = skillMetrics.successRate >= thresholds.minSkillSuccessRate;
+  const qualifiedSkillsReady = skillMetrics.qualifiedSkills >= thresholds.minQualifiedSkills;
+  const packReady = !packMetrics.evidencePresent || (
+    packMetrics.executions >= thresholds.minPackExecutions
+    && packMetrics.successRate >= thresholds.minPackSuccessRate
+  );
+
+  if (!skillExecutionsReady) {
+    reasons.push(`Need >= ${thresholds.minSkillExecutions} skill executions (current: ${skillMetrics.executions}).`);
+  }
+  if (!skillSuccessReady) {
+    reasons.push(`Need skill success rate >= ${thresholds.minSkillSuccessRate} (current: ${skillMetrics.successRate}).`);
+  }
+  if (!qualifiedSkillsReady) {
+    reasons.push(`Need >= ${thresholds.minQualifiedSkills} qualified skills (current: ${skillMetrics.qualifiedSkills}).`);
+  }
+  if (packMetrics.evidencePresent && !packReady) {
+    reasons.push(`Pack evidence below threshold (${packMetrics.executions} exec, successRate=${packMetrics.successRate}).`);
+  }
+
+  const readyForMature = skillExecutionsReady && skillSuccessReady && qualifiedSkillsReady && packReady;
+  if (readyForMature) {
+    reasons.push("Evidence is stable: transition to mature preset is safe.");
+  }
+
+  const confidence = computeTransitionConfidence({
+    skillMetrics,
+    packMetrics,
+    thresholds
+  });
+  const recommendation = recommendTransition({
+    currentPreset,
+    readyForMature
+  });
+  const nextAction = buildTransitionAction({
+    recommendation,
+    currentPreset
+  });
+
+  return {
+    readyForMature,
+    recommendation,
+    confidence,
+    reasons,
+    nextAction
+  };
+}
+
+function computeTransitionConfidence(options) {
+  const { skillMetrics, packMetrics, thresholds } = options;
+  const scoreSkillExec = clamp(skillMetrics.executions / thresholds.minSkillExecutions, 0, 1);
+  const scoreSkillRate = clamp(skillMetrics.successRate / thresholds.minSkillSuccessRate, 0, 1);
+  const scoreQualified = clamp(skillMetrics.qualifiedSkills / thresholds.minQualifiedSkills, 0, 1);
+  const scorePack = !packMetrics.evidencePresent
+    ? 0.6
+    : (
+      clamp(packMetrics.executions / thresholds.minPackExecutions, 0, 1) * 0.5
+      + clamp(packMetrics.successRate / thresholds.minPackSuccessRate, 0, 1) * 0.5
+    );
+  return round(
+    (scoreSkillExec * 0.3)
+    + (scoreSkillRate * 0.3)
+    + (scoreQualified * 0.2)
+    + (scorePack * 0.2)
+  );
+}
+
+function recommendTransition(options) {
+  const { currentPreset, readyForMature } = options;
+  if (currentPreset === "starter") {
+    return readyForMature ? "promote-to-mature" : "keep-starter";
+  }
+  if (currentPreset === "mature") {
+    return "keep-mature";
+  }
+  return "review-manual";
+}
+
+function buildTransitionAction(options) {
+  const { recommendation, currentPreset } = options;
+  if (recommendation === "promote-to-mature") {
+    return "Run scaffold_project_agents with policyPreset=\"mature\" and allowOverwrite=true.";
+  }
+  if (recommendation === "keep-starter") {
+    return "Keep starter preset and continue recording skill/pack feedback.";
+  }
+  if (recommendation === "keep-mature") {
+    return currentPreset === "mature"
+      ? "Keep mature preset and monitor strict-mode filter results."
+      : "Monitor metrics and maintain current preset.";
+  }
+  return "Review agent-policy.json manually and align it to starter/mature preset.";
+}
+
+function detectPolicyPreset(policy) {
+  if (!policy || typeof policy !== "object") {
+    return "unknown";
+  }
+  const recommendation = policy.recommendation ?? {};
+  const qualityGate = policy.qualityGate ?? {};
+  if (
+    recommendation.skillSignalMode === "prefer"
+    && recommendation.autoPromoteSkillSignalMode === false
+    && qualityGate.defaultProfile === "dev"
+  ) {
+    return "starter";
+  }
+  if (
+    recommendation.skillSignalMode === "prefer"
+    && recommendation.autoPromoteSkillSignalMode === true
+    && qualityGate.defaultProfile === "prod"
+  ) {
+    return "mature";
+  }
+  return "custom";
+}
+
 function findDuplicates(values) {
   const duplicates = [];
   const seen = new Set();
@@ -384,3 +740,15 @@ function normalizeRelativePath(value) {
   return value.replaceAll("\\", "/").replace(/^\.\/+/, "").replace(/\/{2,}/g, "/");
 }
 
+function toInt(value) {
+  const parsed = Number.parseInt(String(value ?? 0), 10);
+  return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function round(value) {
+  return Math.round(value * 1000) / 1000;
+}

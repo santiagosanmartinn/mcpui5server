@@ -57,6 +57,14 @@ Este documento explica que hace cada parte del servidor MCP actual para facilita
 - Busqueda en MDN.
 - Cache local opcional con trazabilidad de consulta y timeout configurable.
 
+### `src/tools/agents/*`
+
+- Onboarding de proyectos heredados para IA (`collect`, `baseline`, `context-index`, `prepare`).
+- Recomendacion, materializacion y validacion de agentes por proyecto.
+- Ciclo de feedback y ranking de packs/agentes con politicas de promocion.
+- Soporte de skills de proyecto (scaffold, validacion, ranking y feedback).
+- Herramientas de mantenimiento MCP (`upgrade`, `ensure current`, `audit`, `health report`).
+
 ## Utilidades compartidas
 
 ### `src/utils/fileSystem.js`
@@ -103,6 +111,13 @@ Este documento explica que hace cada parte del servidor MCP actual para facilita
 ### `src/utils/logger.js`
 
 - Logging estructurado por scope.
+
+## Gobierno operativo (MCP + agentes)
+
+- Policy por proyecto en `.codex/mcp/policies/agent-policy.json`.
+- Transicion asistida `starter -> mature` mediante `mcp_health_report.policyTransition`.
+- Puerta de calidad consolidada con `run_project_quality_gate`.
+- Sincronizacion de contratos/documentacion para evitar deriva entre herramientas y guia de uso.
 
 ## Limites actuales identificados
 

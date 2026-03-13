@@ -10,6 +10,8 @@ Este directorio explica como usar y mantener el servidor MCP con foco en Codex +
 4. [03 - Operacion y Politicas](./03-operacion-y-policies.md)
 5. [04 - Guia Rapida Codex](./04-cheatsheet-codex.md)
 6. [05 - OData: MVP y Fase Avanzada](./05-odata-mvp-y-avanzado.md)
+7. [06 - Piloto: Medicion y Evaluacion](./06-piloto-medicion-y-evaluacion.md)
+8. [07 - Casos de Prueba por Complejidad](./07-casos-prueba-por-complejidad.md)
 
 ## Referencia tecnica
 

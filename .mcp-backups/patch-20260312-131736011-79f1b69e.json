@@ -1,0 +1,22 @@
+{
+  "patchId": "patch-20260312-131736011-79f1b69e",
+  "createdAt": "2026-03-12T13:17:36.011Z",
+  "reason": "server-startup:auto-prepare-context",
+  "rolledBackAt": null,
+  "files": [
+    {
+      "path": ".codex/mcp/context/context-index.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "341650ab0951fee3451d2bc9932b70db2dcd04d60bb350d7052acb94a53e237b"
+    },
+    {
+      "path": "docs/mcp/context-index.md",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "ce4b5946e52f48e0deaff3f64e6f4f7a36abde03b58c0d2b3e32da46acee44e9"
+    }
+  ]
+}

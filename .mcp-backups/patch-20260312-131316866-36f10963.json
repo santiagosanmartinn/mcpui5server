@@ -1,0 +1,15 @@
+{
+  "patchId": "patch-20260312-131316866-36f10963",
+  "createdAt": "2026-03-12T13:13:16.866Z",
+  "reason": "server-startup:auto-prepare-context",
+  "rolledBackAt": null,
+  "files": [
+    {
+      "path": ".codex/mcp/project/intake.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "5359a4d2b59a799516b29fff8cec76e19706d2945f490be9afaf867f6e638aad"
+    }
+  ]
+}

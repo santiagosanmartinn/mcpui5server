@@ -5,6 +5,7 @@ import { applyProjectPatch, previewFileWrite } from "../../utils/patchWriter.js"
 import { fileExists, readJsonFile, readTextFile } from "../../utils/fileSystem.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
+const POLICY_PRESETS = ["starter", "mature"];
 export const DEFAULT_OUTPUT_DIR = ".codex/mcp/agents";
 export const DEFAULT_DOCS_DIR = "docs/mcp";
 export const DEFAULT_POLICY_PATH = ".codex/mcp/policies/agent-policy.json";
@@ -69,7 +70,11 @@ const TOOL_GROUPS = {
     "collect_legacy_project_intake",
     "analyze_legacy_project_baseline",
     "build_ai_context_index",
-    "prepare_legacy_project_for_ai"
+    "prepare_legacy_project_for_ai",
+    "scaffold_project_skills",
+    "validate_project_skills",
+    "record_skill_execution_feedback",
+    "rank_project_skills"
   ]
 };
 
@@ -99,6 +104,7 @@ const inputSchema = z.object({
   docsDir: z.string().min(1).optional(),
   generateDocs: z.boolean().optional(),
   generatePolicy: z.boolean().optional(),
+  policyPreset: z.enum(POLICY_PRESETS).optional(),
   includeVscodeMcp: z.boolean().optional(),
   dryRun: z.boolean().optional(),
   allowOverwrite: z.boolean().optional(),
@@ -128,6 +134,7 @@ export const scaffoldProjectAgentsOutputSchema = z.object({
     type: z.enum(PROJECT_TYPES),
     namespace: z.string().nullable()
   }),
+  policyPreset: z.enum(POLICY_PRESETS).nullable(),
   files: z.object({
     blueprintPath: z.string(),
     agentsGuidePath: z.string(),
@@ -175,6 +182,7 @@ export const scaffoldProjectAgentsTool = {
       docsDir,
       generateDocs,
       generatePolicy,
+      policyPreset,
       includeVscodeMcp,
       dryRun,
       allowOverwrite,
@@ -191,6 +199,7 @@ export const scaffoldProjectAgentsTool = {
     enforceManagedSubtree(selectedDocsDir, "docs", "docsDir");
     const shouldGenerateDocs = generateDocs ?? true;
     const shouldGeneratePolicy = generatePolicy ?? true;
+    const selectedPolicyPreset = policyPreset ?? "starter";
     const shouldIncludeMcp = includeVscodeMcp ?? false;
     const shouldDryRun = dryRun ?? true;
     const shouldAllowOverwrite = allowOverwrite ?? false;
@@ -237,7 +246,9 @@ export const scaffoldProjectAgentsTool = {
       plannedWrites.push({
         path: files.policyPath,
         role: "agent-policy",
-        content: renderAgentPolicy(projectProfile)
+        content: renderAgentPolicy(projectProfile, {
+          preset: selectedPolicyPreset
+        })
       });
     }
 
@@ -317,6 +328,7 @@ export const scaffoldProjectAgentsTool = {
       dryRun: shouldDryRun,
       changed,
       project: projectProfile,
+      policyPreset: shouldGeneratePolicy ? selectedPolicyPreset : null,
       files,
       fileSummary: summarizeFiles(previews),
       previews,
@@ -559,7 +571,11 @@ export function renderBootstrapPrompt(projectProfile, files) {
   ].join("\n");
 }
 
-export function renderAgentPolicy(projectProfile) {
+export function renderAgentPolicy(projectProfile, options = {}) {
+  const preset = options.preset ?? "starter";
+  const recommendationPolicy = buildRecommendationPolicyPreset(preset);
+  const qualityGatePolicy = buildQualityGatePolicyPreset(preset);
+  const rankingPolicy = buildRankingPolicyPreset(preset);
   const policy = {
     schemaVersion: "1.0.0",
     enabled: true,
@@ -567,30 +583,85 @@ export function renderAgentPolicy(projectProfile) {
       type: projectProfile.type,
       namespace: projectProfile.namespace ?? null
     },
-    ranking: {
+    ranking: rankingPolicy,
+    recommendation: recommendationPolicy,
+    qualityGate: qualityGatePolicy
+  };
+  return `${JSON.stringify(policy, null, 2)}\n`;
+}
+
+function buildRankingPolicyPreset(preset) {
+  if (preset === "mature") {
+    return {
       enabled: true,
-      minExecutions: 1,
+      minExecutions: 2,
       maxResults: 20,
-      includeUnscored: true,
+      includeUnscored: false,
       includeDeprecated: false
-    },
-    recommendation: {
+    };
+  }
+  return {
+    enabled: true,
+    minExecutions: 1,
+    maxResults: 20,
+    includeUnscored: true,
+    includeDeprecated: false
+  };
+}
+
+function buildRecommendationPolicyPreset(preset) {
+  if (preset === "mature") {
+    return {
       enabled: true,
       includePackCatalog: true,
       includePackFeedbackRanking: true,
-      maxRecommendations: 8
-    },
-    qualityGate: {
+      includeSkillCatalog: true,
+      includeSkillFeedbackRanking: true,
+      minSkillExecutions: 2,
+      maxSkillSignals: 8,
+      skillSignalMode: "prefer",
+      skillSignalMinConfidence: 0.45,
+      skillSignalMinRoleBoost: 0.02,
+      autoPromoteSkillSignalMode: true,
+      autoPromoteMinSuccessExecutions: 3,
+      autoPromoteMinSuccessRate: 0.8,
+      autoPromoteMinQualifiedSkills: 1,
+      maxRecommendations: 6
+    };
+  }
+
+  return {
+    enabled: true,
+    includePackCatalog: true,
+    includePackFeedbackRanking: true,
+    includeSkillCatalog: true,
+    includeSkillFeedbackRanking: true,
+    minSkillExecutions: 1,
+    maxSkillSignals: 5,
+    skillSignalMode: "prefer",
+    skillSignalMinConfidence: 0.35,
+    skillSignalMinRoleBoost: 0.01,
+    autoPromoteSkillSignalMode: false,
+    autoPromoteMinSuccessExecutions: 3,
+    autoPromoteMinSuccessRate: 0.8,
+    autoPromoteMinQualifiedSkills: 1,
+    maxRecommendations: 8
+  };
+}
+
+function buildQualityGatePolicyPreset(preset) {
+  if (preset === "mature") {
+    return {
       enabled: true,
-      failOnUnknownSymbols: false,
-      failOnMediumSecurity: false,
+      failOnUnknownSymbols: true,
+      failOnMediumSecurity: true,
       checkODataUsage: true,
-      failOnODataWarnings: false,
+      failOnODataWarnings: true,
       maxHighPerformanceFindings: 0,
       refreshDocs: true,
       applyDocs: false,
       failOnDocDrift: false,
-      defaultProfile: "dev",
+      defaultProfile: "prod",
       profiles: {
         dev: {
           failOnUnknownSymbols: false,
@@ -604,9 +675,34 @@ export function renderAgentPolicy(projectProfile) {
           requireUi5Version: true
         }
       }
+    };
+  }
+
+  return {
+    enabled: true,
+    failOnUnknownSymbols: false,
+    failOnMediumSecurity: false,
+    checkODataUsage: true,
+    failOnODataWarnings: false,
+    maxHighPerformanceFindings: 0,
+    refreshDocs: true,
+    applyDocs: false,
+    failOnDocDrift: false,
+    defaultProfile: "dev",
+    profiles: {
+      dev: {
+        failOnUnknownSymbols: false,
+        failOnMediumSecurity: false,
+        failOnODataWarnings: false
+      },
+      prod: {
+        failOnUnknownSymbols: true,
+        failOnMediumSecurity: true,
+        failOnODataWarnings: true,
+        requireUi5Version: true
+      }
     }
   };
-  return `${JSON.stringify(policy, null, 2)}\n`;
 }
 
 export function renderContextDoc(projectProfile, files) {

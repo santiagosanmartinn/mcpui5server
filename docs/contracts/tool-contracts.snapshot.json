@@ -1400,6 +1400,16 @@
                 },
                 "catchall": null
               },
+              "policyPreset": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "enum",
+                  "values": [
+                    "starter",
+                    "mature"
+                  ]
+                }
+              },
               "previews": {
                 "kind": "array",
                 "item": {
@@ -1836,6 +1846,12 @@
             "kind": "optional",
             "inner": {
               "kind": "string"
+            }
+          },
+          "maxArtifactBytes": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
             }
           },
           "maxChunks": {
@@ -3876,6 +3892,18 @@
               "kind": "boolean"
             }
           },
+          "includeSkillCatalog": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeSkillFeedbackRanking": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
           "includeVscodeMcp": {
             "kind": "optional",
             "inner": {
@@ -3900,6 +3928,18 @@
               "kind": "number"
             }
           },
+          "maxSkillSignals": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "minSkillExecutions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
           "namespace": {
             "kind": "optional",
             "inner": {
@@ -3913,6 +3953,12 @@
             }
           },
           "packCatalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "policyPath": {
             "kind": "optional",
             "inner": {
               "kind": "string"
@@ -3982,6 +4028,56 @@
               }
             }
           },
+          "requiredSkillTags": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "respectPolicy": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "skillCatalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillMetricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillSignalMinConfidence": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "skillSignalMinRoleBoost": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "skillSignalMode": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "off",
+                "prefer",
+                "strict"
+              ]
+            }
+          },
           "sourceDir": {
             "kind": "optional",
             "inner": {
@@ -4000,6 +4096,28 @@
             "item": {
               "kind": "string"
             }
+          },
+          "policy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "enforcedSections": {
+                "kind": "array",
+                "item": {
+                  "kind": "enum",
+                  "values": [
+                    "recommendation"
+                  ]
+                }
+              },
+              "loaded": {
+                "kind": "boolean"
+              },
+              "path": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
           },
           "projectContextSync": {
             "kind": "object",
@@ -4206,6 +4324,16 @@
                 },
                 "catchall": null
               },
+              "policyPreset": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "enum",
+                  "values": [
+                    "starter",
+                    "mature"
+                  ]
+                }
+              },
               "previews": {
                 "kind": "array",
                 "item": {
@@ -4285,6 +4413,61 @@
               "kind": "string"
             }
           },
+          "selectionPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "autoPromotedToStrict": {
+                "kind": "boolean"
+              },
+              "filteredRecommendationIds": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "minConfidence": {
+                "kind": "number"
+              },
+              "minRoleBoost": {
+                "kind": "number"
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "off",
+                  "prefer",
+                  "strict"
+                ]
+              },
+              "promotionReason": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "reweightedRecommendationIds": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "signalsReady": {
+                "kind": "boolean"
+              },
+              "source": {
+                "kind": "enum",
+                "values": [
+                  "none",
+                  "auto-recommend"
+                ]
+              },
+              "strictApplied": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
           "source": {
             "kind": "enum",
             "values": [
@@ -4343,10 +4526,22 @@
               "kind": "boolean"
             }
           },
+          "includePolicyTransition": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
           "includeToolNames": {
             "kind": "optional",
             "inner": {
               "kind": "boolean"
+            }
+          },
+          "packMetricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
             }
           },
           "policyPath": {
@@ -4356,6 +4551,12 @@
             }
           },
           "referenceDocPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillMetricsPath": {
             "kind": "optional",
             "inner": {
               "kind": "string"
@@ -4518,6 +4719,114 @@
               },
               "path": {
                 "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "policyTransition": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "confidence": {
+                "kind": "number"
+              },
+              "currentPreset": {
+                "kind": "enum",
+                "values": [
+                  "starter",
+                  "mature",
+                  "custom",
+                  "unknown"
+                ]
+              },
+              "error": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "executed": {
+                "kind": "boolean"
+              },
+              "nextAction": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "policyPath": {
+                "kind": "string"
+              },
+              "readyForMature": {
+                "kind": "boolean"
+              },
+              "reasons": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "recommendation": {
+                "kind": "enum",
+                "values": [
+                  "promote-to-mature",
+                  "keep-starter",
+                  "keep-mature",
+                  "review-manual"
+                ]
+              },
+              "signals": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "packEvidencePresent": {
+                    "kind": "boolean"
+                  },
+                  "packExecutions": {
+                    "kind": "number"
+                  },
+                  "packSuccessRate": {
+                    "kind": "number"
+                  },
+                  "qualifiedSkills": {
+                    "kind": "number"
+                  },
+                  "skillExecutions": {
+                    "kind": "number"
+                  },
+                  "skillSuccessRate": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "thresholds": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "minPackExecutions": {
+                    "kind": "number"
+                  },
+                  "minPackSuccessRate": {
+                    "kind": "number"
+                  },
+                  "minQualifiedSkillSuccessRate": {
+                    "kind": "number"
+                  },
+                  "minQualifiedSkills": {
+                    "kind": "number"
+                  },
+                  "minSkillExecutions": {
+                    "kind": "number"
+                  },
+                  "minSkillExecutionsPerQualifiedSkill": {
+                    "kind": "number"
+                  },
+                  "minSkillSuccessRate": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
               }
             },
             "catchall": null
@@ -5396,6 +5705,208 @@
       }
     },
     {
+      "name": "rank_project_skills",
+      "title": null,
+      "description": "Rank project skills using local feedback metrics to prioritize reliable skills in future recommendations.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "allowedStatuses": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "enum",
+                "values": [
+                  "experimental",
+                  "candidate",
+                  "recommended",
+                  "deprecated"
+                ]
+              }
+            }
+          },
+          "catalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "includeDeprecated": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeUnscored": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxResults": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "metricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "minExecutions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "requiredTags": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "catalogPath": {
+            "kind": "string"
+          },
+          "exists": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "catalog": {
+                "kind": "boolean"
+              },
+              "metrics": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "metricsPath": {
+            "kind": "string"
+          },
+          "rankedSkills": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "confidence": {
+                  "kind": "number"
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "metrics": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "executions": {
+                      "kind": "number"
+                    },
+                    "failureRate": {
+                      "kind": "number"
+                    },
+                    "lastRecordedAt": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "qualityRate": {
+                      "kind": "number"
+                    },
+                    "successExecutions": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "usefulnessAverage": {
+                      "kind": "number"
+                    }
+                  },
+                  "catchall": null
+                },
+                "rankStatus": {
+                  "kind": "enum",
+                  "values": [
+                    "ranked",
+                    "insufficient-data",
+                    "no-feedback"
+                  ]
+                },
+                "rationale": {
+                  "kind": "string"
+                },
+                "score": {
+                  "kind": "number"
+                },
+                "status": {
+                  "kind": "enum",
+                  "values": [
+                    "experimental",
+                    "candidate",
+                    "recommended",
+                    "deprecated"
+                  ]
+                },
+                "tags": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "version": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "minExecutions": {
+                "kind": "number"
+              },
+              "noFeedbackSkills": {
+                "kind": "number"
+              },
+              "rankedSkills": {
+                "kind": "number"
+              },
+              "returnedSkills": {
+                "kind": "number"
+              },
+              "totalCatalogSkills": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "read_project_file",
       "title": null,
       "description": "Read a workspace file safely with project-root sandboxing.",
@@ -5494,6 +6005,18 @@
               "kind": "boolean"
             }
           },
+          "includeSkillCatalog": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeSkillFeedbackRanking": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
           "maxFiles": {
             "kind": "optional",
             "inner": {
@@ -5501,6 +6024,18 @@
             }
           },
           "maxRecommendations": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxSkillSignals": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "minSkillExecutions": {
             "kind": "optional",
             "inner": {
               "kind": "number"
@@ -5518,10 +6053,31 @@
               "kind": "string"
             }
           },
+          "requiredSkillTags": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
           "respectPolicy": {
             "kind": "optional",
             "inner": {
               "kind": "boolean"
+            }
+          },
+          "skillCatalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillMetricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
             }
           },
           "sourceDir": {
@@ -5738,6 +6294,139 @@
               },
               "xmlFiles": {
                 "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "skillSignals": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "catalogPath": {
+                "kind": "string"
+              },
+              "enabled": {
+                "kind": "boolean"
+              },
+              "error": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "executed": {
+                "kind": "boolean"
+              },
+              "exists": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "catalog": {
+                    "kind": "boolean"
+                  },
+                  "metrics": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              },
+              "influence": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "architectBoost": {
+                    "kind": "number"
+                  },
+                  "i18nBoost": {
+                    "kind": "number"
+                  },
+                  "implementerBoost": {
+                    "kind": "number"
+                  },
+                  "reviewerBoost": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "metricsPath": {
+                "kind": "string"
+              },
+              "summary": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "influenceApplied": {
+                    "kind": "boolean"
+                  },
+                  "minExecutions": {
+                    "kind": "number"
+                  },
+                  "noFeedbackSkills": {
+                    "kind": "number"
+                  },
+                  "rankedSkills": {
+                    "kind": "number"
+                  },
+                  "returnedSkills": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "topSkills": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "confidence": {
+                      "kind": "number"
+                    },
+                    "executions": {
+                      "kind": "number"
+                    },
+                    "id": {
+                      "kind": "string"
+                    },
+                    "rankStatus": {
+                      "kind": "enum",
+                      "values": [
+                        "ranked",
+                        "insufficient-data",
+                        "no-feedback"
+                      ]
+                    },
+                    "score": {
+                      "kind": "number"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "experimental",
+                        "candidate",
+                        "recommended",
+                        "deprecated"
+                      ]
+                    },
+                    "successExecutions": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "tags": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
               }
             },
             "catchall": null
@@ -6166,6 +6855,342 @@
                 "kind": "string"
               },
               "recordedAt": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "record_skill_execution_feedback",
+      "title": null,
+      "description": "Record structured execution feedback for project skills and update aggregate metrics for future ranking.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "catalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "dryRun": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "feedbackPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "maxDiffLines": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "metricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "outcome": {
+            "kind": "enum",
+            "values": [
+              "success",
+              "partial",
+              "failed"
+            ]
+          },
+          "qualityGatePass": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "reason": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "recordedAt": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "rootCause": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillId": {
+            "kind": "string"
+          },
+          "tags": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "timeSavedMinutes": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "tokenDeltaEstimate": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "usefulnessScore": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "whatFailed": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "whatWorked": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "applyResult": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "appliedAt": {
+                  "kind": "string"
+                },
+                "changedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "bytesAfter": {
+                        "kind": "number"
+                      },
+                      "bytesBefore": {
+                        "kind": "number"
+                      },
+                      "changed": {
+                        "kind": "boolean"
+                      },
+                      "newHash": {
+                        "kind": "string"
+                      },
+                      "oldHash": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "path": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "patchId": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "reason": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "skippedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "changed": {
+            "kind": "boolean"
+          },
+          "dryRun": {
+            "kind": "boolean"
+          },
+          "files": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "feedbackPath": {
+                "kind": "string"
+              },
+              "metricsPath": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "metrics": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "skill": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "executions": {
+                    "kind": "number"
+                  },
+                  "outcomes": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "failed": {
+                        "kind": "number"
+                      },
+                      "partial": {
+                        "kind": "number"
+                      },
+                      "success": {
+                        "kind": "number"
+                      }
+                    },
+                    "catchall": null
+                  },
+                  "qualityGateFails": {
+                    "kind": "number"
+                  },
+                  "qualityGatePasses": {
+                    "kind": "number"
+                  },
+                  "timeSavedMinutesTotal": {
+                    "kind": "number"
+                  },
+                  "tokenDeltaEstimateTotal": {
+                    "kind": "number"
+                  },
+                  "usefulnessAverage": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "totalExecutions": {
+                "kind": "number"
+              },
+              "totals": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "failed": {
+                    "kind": "number"
+                  },
+                  "partial": {
+                    "kind": "number"
+                  },
+                  "success": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "previews": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "changed": {
+                  "kind": "boolean"
+                },
+                "diffPreview": {
+                  "kind": "string"
+                },
+                "diffTruncated": {
+                  "kind": "boolean"
+                },
+                "existsBefore": {
+                  "kind": "boolean"
+                },
+                "newHash": {
+                  "kind": "string"
+                },
+                "oldHash": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "role": {
+                  "kind": "enum",
+                  "values": [
+                    "skill-feedback-log",
+                    "skill-feedback-metrics"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "record": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "id": {
+                "kind": "string"
+              },
+              "outcome": {
+                "kind": "enum",
+                "values": [
+                  "success",
+                  "partial",
+                  "failed"
+                ]
+              },
+              "recordedAt": {
+                "kind": "string"
+              },
+              "skillId": {
                 "kind": "string"
               }
             },
@@ -7194,6 +8219,16 @@
               "kind": "string"
             }
           },
+          "policyPreset": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "starter",
+                "mature"
+              ]
+            }
+          },
           "projectName": {
             "kind": "optional",
             "inner": {
@@ -7404,6 +8439,16 @@
             },
             "catchall": null
           },
+          "policyPreset": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "starter",
+                "mature"
+              ]
+            }
+          },
           "previews": {
             "kind": "array",
             "item": {
@@ -7470,6 +8515,348 @@
                   "node",
                   "generic"
                 ]
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "scaffold_project_skills",
+      "title": null,
+      "description": "Scaffold and manage project skills catalog with official references, safe preview/apply flow, and growth-ready feedback artifacts.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "allowOverwrite": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "catalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "customSkills": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "object",
+                "unknownKeys": "strict",
+                "keys": {
+                  "goal": {
+                    "kind": "string"
+                  },
+                  "id": {
+                    "kind": "string"
+                  },
+                  "officialReferences": {
+                    "kind": "array",
+                    "item": {
+                      "kind": "effects",
+                      "effectType": "refinement",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "status": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "enum",
+                      "values": [
+                        "experimental",
+                        "candidate",
+                        "recommended",
+                        "deprecated"
+                      ]
+                    }
+                  },
+                  "tags": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "title": {
+                    "kind": "string"
+                  },
+                  "version": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "string"
+                    }
+                  },
+                  "whenToUse": {
+                    "kind": "string"
+                  },
+                  "workflowSteps": {
+                    "kind": "array",
+                    "item": {
+                      "kind": "string"
+                    }
+                  }
+                },
+                "catchall": null
+              }
+            }
+          },
+          "docsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "dryRun": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "feedbackPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "generateDocs": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeDefaultSkills": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxDiffLines": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "metricsPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "reason": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "skillsRootDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "applyResult": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "appliedAt": {
+                  "kind": "string"
+                },
+                "changedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "bytesAfter": {
+                        "kind": "number"
+                      },
+                      "bytesBefore": {
+                        "kind": "number"
+                      },
+                      "changed": {
+                        "kind": "boolean"
+                      },
+                      "newHash": {
+                        "kind": "string"
+                      },
+                      "oldHash": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "path": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "patchId": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "reason": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "skippedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "changed": {
+            "kind": "boolean"
+          },
+          "dryRun": {
+            "kind": "boolean"
+          },
+          "files": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "catalogPath": {
+                "kind": "string"
+              },
+              "docsPath": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "feedbackPath": {
+                "kind": "string"
+              },
+              "metricsPath": {
+                "kind": "string"
+              },
+              "skillsRootDir": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "previews": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "changed": {
+                  "kind": "boolean"
+                },
+                "diffPreview": {
+                  "kind": "string"
+                },
+                "diffTruncated": {
+                  "kind": "boolean"
+                },
+                "existsBefore": {
+                  "kind": "boolean"
+                },
+                "newHash": {
+                  "kind": "string"
+                },
+                "oldHash": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "role": {
+                  "kind": "enum",
+                  "values": [
+                    "skills-catalog",
+                    "skill-doc",
+                    "skills-doc",
+                    "skills-feedback-log",
+                    "skills-feedback-metrics"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "project": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "name": {
+                "kind": "string"
+              },
+              "namespace": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "type": {
+                "kind": "enum",
+                "values": [
+                  "sapui5",
+                  "node",
+                  "generic"
+                ]
+              },
+              "ui5Version": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "skillSummary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "created": {
+                "kind": "number"
+              },
+              "incoming": {
+                "kind": "number"
+              },
+              "total": {
+                "kind": "number"
+              },
+              "unchanged": {
+                "kind": "number"
+              },
+              "updated": {
+                "kind": "number"
               }
             },
             "catchall": null
@@ -9518,6 +10905,112 @@
                 "kind": "number"
               },
               "errorCount": {
+                "kind": "number"
+              },
+              "warningCount": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "valid": {
+            "kind": "boolean"
+          },
+          "warnings": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "validate_project_skills",
+      "title": null,
+      "description": "Validate project skill catalog integrity, official references, and file layout consistency.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "catalogPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "strict": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "catalogPath": {
+            "kind": "string"
+          },
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "ok": {
+                  "kind": "boolean"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "error",
+                    "warn"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "errors": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "recommendedActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "strict": {
+            "kind": "boolean"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "checksFailed": {
+                "kind": "number"
+              },
+              "checksPassed": {
+                "kind": "number"
+              },
+              "errorCount": {
+                "kind": "number"
+              },
+              "skillCount": {
                 "kind": "number"
               },
               "warningCount": {

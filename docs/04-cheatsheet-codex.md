@@ -60,3 +60,12 @@ Registra feedback de ejecucion y re-rankea packs.
 - "Quiero crear agentes ya": `materialize_recommended_agents`
 - "Solo quiero corregir algo": `write_project_file_preview -> apply_project_patch -> run_project_quality_gate`
 - "Quiero asegurar calidad": `run_project_quality_gate` + `npm run check`
+
+## 7) Instruccion para revision semanal
+
+```text
+Ejecuta mcp_health_report con includePolicyTransition=true.
+Resume: docs sync, contracts sync, policyTransition.recommendation.
+Si recomienda promote-to-mature, propon aplicar scaffold_project_agents con policyPreset="mature" y allowOverwrite=true.
+Si no, mantener starter y registrar feedback semanal de skills/agentes.
+```

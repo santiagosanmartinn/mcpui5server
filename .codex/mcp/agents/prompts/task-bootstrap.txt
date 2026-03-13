@@ -1,0 +1,11 @@
+Project: sapui5-mcp-server
+Project type: node
+Blueprint: .codex/mcp/agents/agent.blueprint.json
+Agent policy: .codex/mcp/policies/agent-policy.json
+
+Instruction:
+Use MCP-first workflow.
+Start with discovery tools, then plan minimal edits.
+Before applying writes, generate previews.
+Apply via apply_project_patch, validate with required tools, and finish with npm run check.
+Prioritize JavaScript quality and security tools for each modified module.

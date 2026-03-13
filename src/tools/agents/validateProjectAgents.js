@@ -57,7 +57,11 @@ const KNOWN_TOOLS = new Set([
   "collect_legacy_project_intake",
   "analyze_legacy_project_baseline",
   "build_ai_context_index",
-  "prepare_legacy_project_for_ai"
+  "prepare_legacy_project_for_ai",
+  "scaffold_project_skills",
+  "validate_project_skills",
+  "record_skill_execution_feedback",
+  "rank_project_skills"
 ]);
 
 const inputSchema = z.object({

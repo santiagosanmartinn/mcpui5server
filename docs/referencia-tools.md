@@ -383,6 +383,7 @@ Ruta recomendada para nuevos usuarios:
   - `outputDir` (opcional)
   - `docsDir` y `generateDocs` (opcionales)
   - `generatePolicy` (opcional, por defecto `true`)
+  - `policyPreset` (opcional): `starter` | `mature` (por defecto `starter`)
   - `includeVscodeMcp` (opcional)
   - `dryRun` (opcional, por defecto `true`)
   - `allowOverwrite` (opcional, por defecto `false`)
@@ -420,12 +421,15 @@ Ruta recomendada para nuevos usuarios:
   - `maxRecommendations` (opcional)
   - `includePackCatalog` y `packCatalogPath` (opcionales)
   - `includePackFeedbackRanking` y `feedbackMetricsPath` (opcionales para priorizar packs con feedback)
+  - `includeSkillCatalog`, `skillCatalogPath`, `includeSkillFeedbackRanking`, `skillMetricsPath` (opcionales para influir recomendaciones con historial de skills)
+  - `minSkillExecutions`, `maxSkillSignals`, `requiredSkillTags` (opcionales para control fino de skill-ranking)
   - `policyPath` y `respectPolicy` (opcionales) para enforcement declarativo desde `agent-policy.json`
   - auto-preparacion opcional de contexto (`autoPrepareProjectContext`, `autoPrepareApply`, `autoPrepareRefreshBaseline`, `autoPrepareRefreshContextIndex`)
 - Salida:
   - `policy` con trazabilidad de carga/enforcement
   - `project` detectado (`name`, `type`, `namespace`)
   - `projectContextSync` con estado de preparacion automatica de contexto IA
+  - `skillSignals` con skills usadas para influir score/rationale (`topSkills`, `influence`, estado de ejecucion y errores)
   - `signals` del codebase (js/xml/controllers/views/fragments, routing, i18n, blueprint existente)
   - `recommendations` priorizadas con `score`, `rationale` y `agent`
   - `suggestedMaterializationArgs` para usar directamente en materializacion
@@ -437,10 +441,18 @@ Ruta recomendada para nuevos usuarios:
   - `recommendations` (opcional; si no viene, ejecuta recomendacion automatica)
   - `projectName`, `projectType`, `namespace` (opcionales)
   - `dryRun`, `allowOverwrite`, `includeVscodeMcp` (opcionales)
+  - control de seleccion por skills (opcionales):
+    - `includeSkillCatalog`, `skillCatalogPath`, `includeSkillFeedbackRanking`, `skillMetricsPath`
+    - `skillSignalMode`: `off` | `prefer` | `strict`
+    - `skillSignalMinConfidence`, `skillSignalMinRoleBoost`
+  - `policyPath` y `respectPolicy` (opcionales) para usar defaults/politicas de recomendacion
   - `autoEnsureProjectMcp` y `autoEnsureApply` (opcionales) para sincronizar layout MCP antes de materializar
   - auto-preparacion de contexto (`autoPrepareProjectContext`, `autoPrepareApply`, `autoPrepareRefreshBaseline`, `autoPrepareRefreshContextIndex`)
 - Salida:
   - fuente de recomendaciones (`input` o `auto-recommend`)
+  - `policy` con trazabilidad de carga de `agent-policy.json`
+  - `selectionPolicy` con trazabilidad de como influyeron (o no) las señales de skills en la seleccion final
+  - incluye autopromocion controlada `prefer -> strict` cuando policy lo habilita y se alcanzan umbrales de exito
   - `projectMcpSync` con estado de auto-sincronizacion previa
   - `projectContextSync` con estado de intake/baseline/context-index
   - recomendaciones usadas/descartadas
@@ -647,6 +659,80 @@ Ruta recomendada para nuevos usuarios:
   - `intake` (`needsUserInput`, `missingContext`, `questions`)
   - `readyForAutopilot` y `nextActions`
 
+### `scaffold_project_skills`
+
+- Objetivo: crear y mantener el catalogo de skills del proyecto con layout gestionado, referencias oficiales y flujo seguro (`dryRun` + preview + apply).
+- Layout gestionado por defecto:
+  - `.codex/mcp/skills/catalog.json`
+  - `.codex/mcp/skills/<skillId>/SKILL.md`
+  - `.codex/mcp/skills/feedback/executions.jsonl`
+  - `.codex/mcp/skills/feedback/metrics.json`
+  - `docs/mcp/skills.md` (opcional)
+- Entrada destacada:
+  - `includeDefaultSkills` y `customSkills` para definir skills iniciales
+  - `skillsRootDir`, `catalogPath`, `feedbackPath`, `metricsPath`, `docsPath` (opcionales)
+  - `generateDocs`, `dryRun`, `allowOverwrite`, `maxDiffLines`
+- Guardrails:
+  - valida referencias oficiales (SAP/UI5/MDN/ECMAScript)
+  - bloquea sobrescrituras de artefactos gestionados si `allowOverwrite=false`
+- Salida:
+  - resumen de proyecto detectado (`name`, `type`, `namespace`, `ui5Version`)
+  - rutas finales de artefactos
+  - `skillSummary` (`created/updated/unchanged`)
+  - `previews` y `applyResult`
+
+### `validate_project_skills`
+
+- Objetivo: validar integridad del catalogo de skills y consistencia de layout/referencias.
+- Entrada destacada:
+  - `catalogPath` (opcional)
+  - `strict` (opcional, por defecto `true`)
+- Validaciones principales:
+  - existencia y schema del catalogo
+  - unicidad de `skill.id`
+  - referencias solo oficiales
+  - existencia de `SKILL.md` por skill
+  - rutas de skills dentro de `.codex/mcp/skills/...`
+- Salida:
+  - `valid`
+  - `summary` (`checksPassed`, `checksFailed`, `errorCount`, `warningCount`)
+  - `checks` detallados + `errors`/`warnings`
+  - `recommendedActions`
+
+### `record_skill_execution_feedback`
+
+- Objetivo: registrar feedback estructurado de ejecuciones de skills y actualizar metricas agregadas para ranking.
+- Entrada destacada:
+  - `skillId`, `outcome` (`success|partial|failed`)
+  - calidad/impacto opcional (`qualityGatePass`, `usefulnessScore`, `timeSavedMinutes`, `tokenDeltaEstimate`)
+  - contexto opcional (`whatWorked`, `whatFailed`, `rootCause`, `tags`)
+  - rutas opcionales (`catalogPath`, `feedbackPath`, `metricsPath`) bajo `.codex/mcp/...`
+  - `dryRun`, `reason`, `maxDiffLines`
+- Comportamiento:
+  - exige que `skillId` exista en el catalogo antes de registrar feedback
+  - persiste evento JSONL y recalcula metricas acumuladas por skill
+- Salida:
+  - `record` creado (`id`, `skillId`, `recordedAt`, `outcome`)
+  - snapshot de metricas globales y de la skill
+  - `previews` y `applyResult`
+
+### `rank_project_skills`
+
+- Objetivo: rankear skills del proyecto usando feedback local para priorizar skills mas fiables en recomendaciones futuras.
+- Entrada destacada:
+  - `catalogPath`, `metricsPath` (opcionales)
+  - `minExecutions`, `maxResults`
+  - `includeUnscored`, `includeDeprecated`
+  - filtros opcionales: `allowedStatuses`, `requiredTags`
+- Salida:
+  - trazabilidad de existencia de catalogo/metricas
+  - `summary` de skills rankeadas y sin feedback
+  - `rankedSkills` con:
+    - `score` y `confidence`
+    - `rankStatus` (`ranked`, `insufficient-data`, `no-feedback`)
+    - rationale y metricas normalizadas
+    - tags y estado de ciclo de vida
+
 ## Dominio project (gates)
 
 ### `run_project_quality_gate`
@@ -681,11 +767,15 @@ Ruta recomendada para nuevos usuarios:
 - Objetivo: diagnosticar salud operativa del servidor MCP y del workspace (tools publicadas, alineacion de docs, estado de policy, snapshot de contratos y artefactos gestionados).
 - Entrada destacada:
   - `includeToolNames` (opcional)
-  - `includeDocChecks`, `includePolicyStatus`, `includeContractStatus`, `includeManagedArtifacts` (opcionales)
-  - rutas opcionales para `referenceDocPath`, `examplesDocPath`, `policyPath`, `contractSnapshotPath`
+  - `includeDocChecks`, `includePolicyStatus`, `includePolicyTransition`, `includeContractStatus`, `includeManagedArtifacts` (opcionales)
+  - rutas opcionales para `referenceDocPath`, `examplesDocPath`, `policyPath`, `contractSnapshotPath`, `skillMetricsPath`, `packMetricsPath`
 - Salida:
   - `tools` (conteo, duplicados, nombres opcionales)
   - `docs` (alineacion de `referencia-tools.md` y `ejemplos-tools.md` contra catálogo runtime)
   - `policy` (carga/habilitacion de `agent-policy.json`)
+  - `policyTransition`:
+    - deteccion de preset actual (`starter`, `mature`, `custom`, `unknown`)
+    - recomendacion accionable (`promote-to-mature`, `keep-starter`, `keep-mature`, `review-manual`)
+    - señales y umbrales usados (skills/packs) + `nextAction`
   - `contracts` (sincronizacion de contratos contra `docs/contracts/tool-contracts.snapshot.json`)
   - `managedArtifacts` (existencia de intake/baseline/context-index/blueprint/guide)

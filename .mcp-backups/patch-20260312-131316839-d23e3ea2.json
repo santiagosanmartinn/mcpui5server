@@ -1,0 +1,57 @@
+{
+  "patchId": "patch-20260312-131316839-d23e3ea2",
+  "createdAt": "2026-03-12T13:13:16.839Z",
+  "reason": "server-startup:auto-ensure",
+  "rolledBackAt": null,
+  "files": [
+    {
+      "path": ".codex/mcp/agents/agent.blueprint.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "ee1275fa79babc68c1bf2bad98e2bfd1844c168d95313913faedd46b5735515a"
+    },
+    {
+      "path": ".codex/mcp/agents/AGENTS.generated.md",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "dd8e3caa24557bb717083a3f5e009ca69a62454c30e1e8da570f896e74bf2f26"
+    },
+    {
+      "path": ".codex/mcp/agents/prompts/task-bootstrap.txt",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "9dd1c96a3e2d55588c85850084dbbc656daf9dba96d2c440170b49506bc7284e"
+    },
+    {
+      "path": ".codex/mcp/policies/agent-policy.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "77db8f8719d7f32c98f01878a84577af1ba3f5a4764ecf90caa2990b86ab85e1"
+    },
+    {
+      "path": "docs/mcp/project-context.md",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "d0c81ceea6bf1ab5db2bd72993f4c263ac623907c4090053a92885fd8205942d"
+    },
+    {
+      "path": "docs/mcp/agent-flows.md",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "0d4ef5649b4c6ca6f1b16c1bd38c1c1ac0906c4c767cef8bf2144d9f18602920"
+    },
+    {
+      "path": ".codex/mcp/project/mcp-project-state.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "14599919b0466d9b9d7e04869d6dbbae703ca5b2667773ef41140ae0556e8657"
+    }
+  ]
+}

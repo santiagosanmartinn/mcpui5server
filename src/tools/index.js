@@ -45,6 +45,10 @@ import { collectLegacyProjectIntakeTool } from "./agents/collectLegacyProjectInt
 import { analyzeLegacyProjectBaselineTool } from "./agents/analyzeLegacyProjectBaseline.js";
 import { buildAiContextIndexTool } from "./agents/buildAiContextIndex.js";
 import { prepareLegacyProjectForAiTool } from "./agents/prepareLegacyProjectForAi.js";
+import { scaffoldProjectSkillsTool } from "./agents/scaffoldProjectSkills.js";
+import { validateProjectSkillsTool } from "./agents/validateProjectSkills.js";
+import { recordSkillExecutionFeedbackTool } from "./agents/recordSkillExecutionFeedback.js";
+import { rankProjectSkillsTool } from "./agents/rankProjectSkills.js";
 
 export const allTools = [
   // Project intelligence
@@ -98,5 +102,9 @@ export const allTools = [
   collectLegacyProjectIntakeTool,
   analyzeLegacyProjectBaselineTool,
   buildAiContextIndexTool,
-  prepareLegacyProjectForAiTool
+  prepareLegacyProjectForAiTool,
+  scaffoldProjectSkillsTool,
+  validateProjectSkillsTool,
+  recordSkillExecutionFeedbackTool,
+  rankProjectSkillsTool
 ];

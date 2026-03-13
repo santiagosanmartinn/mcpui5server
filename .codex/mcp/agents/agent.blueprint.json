@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0.0",
+  "project": {
+    "name": "sapui5-mcp-server",
+    "type": "node",
+    "namespace": null
+  },
+  "policies": {
+    "strategy": "mcp-first",
+    "requireDryRunByDefault": true,
+    "requirePatchPreview": true,
+    "requireRollbackPlan": true
+  },
+  "qualityGates": {
+    "requiredTools": [
+      "lint_javascript_code",
+      "security_check_javascript"
+    ],
+    "requiredCommands": [
+      "npm run check"
+    ],
+    "minimumReviewAgents": 1
+  },
+  "agents": [
+    {
+      "id": "architect",
+      "title": "sapui5-mcp-server Architect",
+      "goal": "Plan implementation scope from concrete project signals.",
+      "allowedTools": [
+        "analyze_ui5_project",
+        "read_project_file",
+        "search_project_files",
+        "analyze_current_file",
+        "sync_manifest_json",
+        "write_project_file_preview",
+        "apply_project_patch",
+        "rollback_project_patch",
+        "run_project_quality_gate",
+        "mcp_health_report",
+        "search_ui5_sdk",
+        "search_mdn",
+        "validate_project_agents"
+      ]
+    },
+    {
+      "id": "implementer",
+      "title": "sapui5-mcp-server Implementer",
+      "goal": "Implement isolated code changes with preview/apply patch workflow.",
+      "allowedTools": [
+        "analyze_ui5_project",
+        "read_project_file",
+        "search_project_files",
+        "analyze_current_file",
+        "sync_manifest_json",
+        "write_project_file_preview",
+        "apply_project_patch",
+        "rollback_project_patch",
+        "run_project_quality_gate",
+        "mcp_health_report",
+        "generate_javascript_function",
+        "refactor_javascript_code",
+        "lint_javascript_code",
+        "security_check_javascript",
+        "scaffold_project_agents"
+      ]
+    },
+    {
+      "id": "reviewer",
+      "title": "sapui5-mcp-server Reviewer",
+      "goal": "Run lint/security validation and verify quality gates.",
+      "allowedTools": [
+        "analyze_ui5_project",
+        "read_project_file",
+        "search_project_files",
+        "analyze_current_file",
+        "sync_manifest_json",
+        "write_project_file_preview",
+        "apply_project_patch",
+        "rollback_project_patch",
+        "run_project_quality_gate",
+        "mcp_health_report",
+        "lint_javascript_code",
+        "security_check_javascript",
+        "validate_project_agents"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "patchId": "patch-20260312-131316919-38b361a4",
+  "createdAt": "2026-03-12T13:13:16.919Z",
+  "reason": "server-startup:auto-prepare-context",
+  "rolledBackAt": null,
+  "files": [
+    {
+      "path": ".codex/mcp/project/legacy-baseline.json",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "3eb89fd34bb0cc1f4248f0531fa6db9bc398c003db05f27c43aa16368d05b87a"
+    },
+    {
+      "path": "docs/mcp/legacy-baseline.md",
+      "existedBefore": false,
+      "previousContent": "",
+      "oldHash": null,
+      "newHash": "235225cf56608750f30cd7b4e65a59418129972f7db16d515b0b95ffb61d5ad3"
+    }
+  ]
+}

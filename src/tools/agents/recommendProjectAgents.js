@@ -6,6 +6,7 @@ import { fileExists, readJsonFile } from "../../utils/fileSystem.js";
 import { DEFAULT_AGENT_POLICY_PATH, loadAgentPolicy, normalizePackSlugSet } from "../../utils/agentPolicy.js";
 import { analyzeUi5ProjectTool } from "../project/analyzeProject.js";
 import { rankAgentPacksTool } from "./rankAgentPacks.js";
+import { rankProjectSkillsTool } from "./rankProjectSkills.js";
 import { prepareLegacyProjectForAiTool } from "./prepareLegacyProjectForAi.js";
 
 const PROJECT_TYPES = ["sapui5", "node", "generic"];
@@ -13,6 +14,9 @@ const DEFAULT_SOURCE_DIR = "webapp";
 const DEFAULT_MAX_FILES = 1200;
 const DEFAULT_MAX_RECOMMENDATIONS = 8;
 const DEFAULT_PACK_CATALOG_PATH = ".codex/mcp/packs/catalog.json";
+const DEFAULT_SKILL_CATALOG_PATH = ".codex/mcp/skills/catalog.json";
+const DEFAULT_SKILL_METRICS_PATH = ".codex/mcp/skills/feedback/metrics.json";
+const DEFAULT_MAX_SKILL_SIGNALS = 5;
 const IGNORED_DIRS = new Set(["node_modules", ".git", ".mcp-backups", ".mcp-cache", "dist", "coverage"]);
 
 const inputSchema = z.object({
@@ -23,6 +27,13 @@ const inputSchema = z.object({
   packCatalogPath: z.string().min(1).optional(),
   includePackFeedbackRanking: z.boolean().optional(),
   feedbackMetricsPath: z.string().min(1).optional(),
+  includeSkillCatalog: z.boolean().optional(),
+  skillCatalogPath: z.string().min(1).optional(),
+  includeSkillFeedbackRanking: z.boolean().optional(),
+  skillMetricsPath: z.string().min(1).optional(),
+  minSkillExecutions: z.number().int().min(0).max(1000).optional(),
+  maxSkillSignals: z.number().int().min(1).max(20).optional(),
+  requiredSkillTags: z.array(z.string().min(1)).max(20).optional(),
   policyPath: z.string().min(1).optional(),
   respectPolicy: z.boolean().optional(),
   autoPrepareProjectContext: z.boolean().optional(),
@@ -71,6 +82,42 @@ const outputSchema = z.object({
     needsUserInput: z.boolean(),
     missingContext: z.array(z.string()),
     nextActions: z.array(z.string()),
+    error: z.string().nullable()
+  }),
+  skillSignals: z.object({
+    executed: z.boolean(),
+    enabled: z.boolean(),
+    catalogPath: z.string(),
+    metricsPath: z.string(),
+    exists: z.object({
+      catalog: z.boolean(),
+      metrics: z.boolean()
+    }),
+    summary: z.object({
+      returnedSkills: z.number().int().nonnegative(),
+      rankedSkills: z.number().int().nonnegative(),
+      noFeedbackSkills: z.number().int().nonnegative(),
+      minExecutions: z.number().int().nonnegative(),
+      influenceApplied: z.boolean()
+    }),
+    influence: z.object({
+      architectBoost: z.number().min(0).max(0.2),
+      implementerBoost: z.number().min(0).max(0.2),
+      reviewerBoost: z.number().min(0).max(0.2),
+      i18nBoost: z.number().min(0).max(0.2)
+    }),
+    topSkills: z.array(z.object({
+      id: z.string(),
+      title: z.string(),
+      status: z.enum(["experimental", "candidate", "recommended", "deprecated"]),
+      score: z.number().min(0).max(1),
+      confidence: z.number().min(0).max(1),
+      rankStatus: z.enum(["ranked", "insufficient-data", "no-feedback"]),
+      executions: z.number().int().nonnegative(),
+      successExecutions: z.number().int().nonnegative(),
+      successRate: z.number().min(0).max(1),
+      tags: z.array(z.string())
+    })),
     error: z.string().nullable()
   }),
   signals: z.object({
@@ -123,6 +170,13 @@ export const recommendProjectAgentsTool = {
       packCatalogPath,
       includePackFeedbackRanking,
       feedbackMetricsPath,
+      includeSkillCatalog,
+      skillCatalogPath,
+      includeSkillFeedbackRanking,
+      skillMetricsPath,
+      minSkillExecutions,
+      maxSkillSignals,
+      requiredSkillTags,
       policyPath,
       respectPolicy,
       autoPrepareProjectContext,
@@ -199,13 +253,24 @@ export const recommendProjectAgentsTool = {
     const selectedMaxRecommendations = recommendationPolicy?.maxRecommendations ?? maxRecommendations ?? DEFAULT_MAX_RECOMMENDATIONS;
     const useCatalog = recommendationPolicy?.includePackCatalog ?? includePackCatalog ?? true;
     const useFeedbackRanking = recommendationPolicy?.includePackFeedbackRanking ?? includePackFeedbackRanking ?? true;
+    const useSkillCatalog = recommendationPolicy?.includeSkillCatalog ?? includeSkillCatalog ?? true;
+    const useSkillFeedbackRanking = recommendationPolicy?.includeSkillFeedbackRanking ?? includeSkillFeedbackRanking ?? true;
     const selectedCatalogPath = normalizeRelativePath(packCatalogPath ?? DEFAULT_PACK_CATALOG_PATH);
     const selectedMetricsPath = normalizeRelativePath(feedbackMetricsPath ?? ".codex/mcp/feedback/metrics.json");
+    const selectedSkillCatalogPath = normalizeRelativePath(skillCatalogPath ?? DEFAULT_SKILL_CATALOG_PATH);
+    const selectedSkillMetricsPath = normalizeRelativePath(skillMetricsPath ?? DEFAULT_SKILL_METRICS_PATH);
+    const selectedMinSkillExecutions = recommendationPolicy?.minSkillExecutions ?? minSkillExecutions ?? 1;
+    const selectedMaxSkillSignals = recommendationPolicy?.maxSkillSignals ?? maxSkillSignals ?? DEFAULT_MAX_SKILL_SIGNALS;
+    const selectedRequiredSkillTags = recommendationPolicy?.requiredSkillTags ?? requiredSkillTags ?? undefined;
     if (useCatalog) {
       enforceManagedSubtree(selectedCatalogPath, ".codex/mcp", "packCatalogPath");
       if (useFeedbackRanking) {
         enforceManagedSubtree(selectedMetricsPath, ".codex/mcp", "feedbackMetricsPath");
       }
+    }
+    if (useSkillCatalog) {
+      enforceManagedSubtree(selectedSkillCatalogPath, ".codex/mcp", "skillCatalogPath");
+      enforceManagedSubtree(selectedSkillMetricsPath, ".codex/mcp", "skillMetricsPath");
     }
 
     const project = await detectProjectProfile(root);
@@ -232,7 +297,47 @@ export const recommendProjectAgentsTool = {
       routingDetected: project.routingDetected
     };
 
-    let recommendations = buildHeuristicRecommendations(project, signals);
+    let skillSignals = createEmptySkillSignals({
+      enabled: useSkillCatalog,
+      catalogPath: selectedSkillCatalogPath,
+      metricsPath: selectedSkillMetricsPath,
+      minExecutions: selectedMinSkillExecutions
+    });
+    let skillInfluence = createEmptySkillInfluence();
+    if (useSkillCatalog) {
+      try {
+        const skillRanking = await rankProjectSkillsTool.handler(
+          {
+            catalogPath: selectedSkillCatalogPath,
+            metricsPath: selectedSkillMetricsPath,
+            minExecutions: useSkillFeedbackRanking ? selectedMinSkillExecutions : 1000,
+            maxResults: selectedMaxSkillSignals,
+            includeUnscored: true,
+            includeDeprecated: false,
+            requiredTags: selectedRequiredSkillTags
+          },
+          { context }
+        );
+        skillInfluence = buildSkillInfluenceProfile(skillRanking.rankedSkills, {
+          feedbackWeighted: useSkillFeedbackRanking
+        });
+        skillSignals = buildSkillSignalsReport({
+          ranking: skillRanking,
+          influence: skillInfluence,
+          enabled: useSkillCatalog,
+          catalogPath: selectedSkillCatalogPath,
+          metricsPath: selectedSkillMetricsPath
+        });
+      } catch (error) {
+        skillSignals = {
+          ...skillSignals,
+          executed: false,
+          error: error?.message ?? String(error)
+        };
+      }
+    }
+
+    let recommendations = buildHeuristicRecommendations(project, signals, skillInfluence);
     let packsMatched = 0;
     if (useCatalog) {
       const catalogRecommendations = await buildCatalogRecommendations({
@@ -278,6 +383,7 @@ export const recommendProjectAgentsTool = {
         namespace: project.namespace
       },
       projectContextSync,
+      skillSignals,
       signals,
       recommendations: selectedRecommendations,
       suggestedMaterializationArgs: {
@@ -398,15 +504,18 @@ async function scanSourceFiles(options) {
   }
 }
 
-function buildHeuristicRecommendations(project, signals) {
+function buildHeuristicRecommendations(project, signals, skillInfluence = createEmptySkillInfluence()) {
   if (project.type === "sapui5") {
     return [
       createRecommendation({
         id: "ui5-architect",
         title: "UI5 Architecture Agent",
         priority: "high",
-        score: 0.98,
-        rationale: "UI5 project detected with structured routing/config signals.",
+        score: clamp(0.98 + skillInfluence.architectBoost, 0, 1),
+        rationale: appendSkillRationale(
+          "UI5 project detected with structured routing/config signals.",
+          skillInfluence.reasons.architect
+        ),
         agent: {
           id: "architect",
           title: `${project.name} Architect`,
@@ -430,6 +539,10 @@ function buildHeuristicRecommendations(project, signals) {
             "build_ai_context_index",
             "prepare_legacy_project_for_ai",
             "record_agent_execution_feedback",
+            "scaffold_project_skills",
+            "validate_project_skills",
+            "record_skill_execution_feedback",
+            "rank_project_skills",
             "validate_project_agents",
             "recommend_project_agents",
             "validate_ui5_version_compatibility",
@@ -443,8 +556,11 @@ function buildHeuristicRecommendations(project, signals) {
         id: "ui5-feature-implementer",
         title: "UI5 Feature Implementer",
         priority: "high",
-        score: clamp(0.92 + (signals.controllerFiles > 2 ? 0.03 : 0), 0, 1),
-        rationale: "Project has UI5 source files suitable for scaffold-driven feature delivery.",
+        score: clamp(0.92 + (signals.controllerFiles > 2 ? 0.03 : 0) + skillInfluence.implementerBoost, 0, 1),
+        rationale: appendSkillRationale(
+          "Project has UI5 source files suitable for scaffold-driven feature delivery.",
+          skillInfluence.reasons.implementer
+        ),
         agent: {
           id: "implementer",
           title: `${project.name} Implementer`,
@@ -474,7 +590,11 @@ function buildHeuristicRecommendations(project, signals) {
             "prepare_legacy_project_for_ai",
             "materialize_recommended_agents",
             "save_agent_pack",
-            "record_agent_execution_feedback"
+            "record_agent_execution_feedback",
+            "scaffold_project_skills",
+            "validate_project_skills",
+            "record_skill_execution_feedback",
+            "rank_project_skills"
           ])
         }
       }),
@@ -482,8 +602,11 @@ function buildHeuristicRecommendations(project, signals) {
         id: "ui5-quality-reviewer",
         title: "UI5 Quality Reviewer",
         priority: "high",
-        score: clamp(0.9 + (signals.jsFiles > 20 || signals.xmlFiles > 10 ? 0.05 : 0), 0, 1),
-        rationale: "UI5 codebase size suggests dedicated validation and performance review role.",
+        score: clamp(0.9 + (signals.jsFiles > 20 || signals.xmlFiles > 10 ? 0.05 : 0) + skillInfluence.reviewerBoost, 0, 1),
+        rationale: appendSkillRationale(
+          "UI5 codebase size suggests dedicated validation and performance review role.",
+          skillInfluence.reasons.reviewer
+        ),
         agent: {
           id: "reviewer",
           title: `${project.name} Reviewer`,
@@ -510,6 +633,10 @@ function buildHeuristicRecommendations(project, signals) {
             "build_ai_context_index",
             "prepare_legacy_project_for_ai",
             "record_agent_execution_feedback",
+            "scaffold_project_skills",
+            "validate_project_skills",
+            "record_skill_execution_feedback",
+            "rank_project_skills",
             "read_project_file",
             "search_project_files",
             "validate_project_agents"
@@ -520,10 +647,11 @@ function buildHeuristicRecommendations(project, signals) {
         id: "ui5-i18n-curator",
         title: "I18n Curator",
         priority: signals.hasI18n ? "medium" : "low",
-        score: signals.hasI18n ? 0.8 : 0.55,
-        rationale: signals.hasI18n
+        score: clamp((signals.hasI18n ? 0.8 : 0.55) + skillInfluence.i18nBoost, 0, 1),
+        rationale: appendSkillRationale(signals.hasI18n
           ? "i18n bundle detected; maintain localization quality proactively."
           : "No i18n bundle detected yet, but localization automation is recommended.",
+        skillInfluence.reasons.i18n),
         agent: {
           id: "i18nCurator",
           title: `${project.name} I18n Curator`,
@@ -533,7 +661,9 @@ function buildHeuristicRecommendations(project, signals) {
             "search_project_files",
             "read_project_file",
             "write_project_file_preview",
-            "apply_project_patch"
+            "apply_project_patch",
+            "validate_project_skills",
+            "record_skill_execution_feedback"
           ])
         }
       })
@@ -541,16 +671,19 @@ function buildHeuristicRecommendations(project, signals) {
   }
 
   return [
-    createRecommendation({
-      id: "js-architect",
-      title: "JavaScript Architect",
-      priority: "high",
-      score: 0.9,
-      rationale: "Non-UI5 project detected; architecture role should focus on JS delivery flow.",
-      agent: {
-        id: "architect",
-        title: `${project.name} Architect`,
-        goal: "Plan incremental implementation paths and maintain project consistency.",
+      createRecommendation({
+        id: "js-architect",
+        title: "JavaScript Architect",
+        priority: "high",
+        score: clamp(0.9 + skillInfluence.architectBoost, 0, 1),
+        rationale: appendSkillRationale(
+          "Non-UI5 project detected; architecture role should focus on JS delivery flow.",
+          skillInfluence.reasons.architect
+        ),
+        agent: {
+          id: "architect",
+          title: `${project.name} Architect`,
+          goal: "Plan incremental implementation paths and maintain project consistency.",
         allowedTools: unique([
           "search_project_files",
           "analyze_current_file",
@@ -568,6 +701,10 @@ function buildHeuristicRecommendations(project, signals) {
           "build_ai_context_index",
           "prepare_legacy_project_for_ai",
           "record_agent_execution_feedback",
+          "scaffold_project_skills",
+          "validate_project_skills",
+          "record_skill_execution_feedback",
+          "rank_project_skills",
           "recommend_project_agents",
           "validate_project_agents",
           "run_project_quality_gate",
@@ -579,8 +716,11 @@ function buildHeuristicRecommendations(project, signals) {
       id: "js-implementer",
       title: "JavaScript Implementer",
       priority: "high",
-      score: 0.88,
-      rationale: "Source analysis indicates JavaScript-centric implementation workflow.",
+      score: clamp(0.88 + skillInfluence.implementerBoost, 0, 1),
+      rationale: appendSkillRationale(
+        "Source analysis indicates JavaScript-centric implementation workflow.",
+        skillInfluence.reasons.implementer
+      ),
       agent: {
         id: "implementer",
         title: `${project.name} Implementer`,
@@ -600,7 +740,11 @@ function buildHeuristicRecommendations(project, signals) {
           "prepare_legacy_project_for_ai",
           "materialize_recommended_agents",
           "save_agent_pack",
-          "record_agent_execution_feedback"
+          "record_agent_execution_feedback",
+          "scaffold_project_skills",
+          "validate_project_skills",
+          "record_skill_execution_feedback",
+          "rank_project_skills"
         ])
       }
     }),
@@ -608,8 +752,11 @@ function buildHeuristicRecommendations(project, signals) {
       id: "js-reviewer",
       title: "JavaScript Reviewer",
       priority: "high",
-      score: 0.9,
-      rationale: "Quality and security checks should be isolated as a dedicated reviewer role.",
+      score: clamp(0.9 + skillInfluence.reviewerBoost, 0, 1),
+      rationale: appendSkillRationale(
+        "Quality and security checks should be isolated as a dedicated reviewer role.",
+        skillInfluence.reasons.reviewer
+      ),
       agent: {
         id: "reviewer",
         title: `${project.name} Reviewer`,
@@ -627,6 +774,10 @@ function buildHeuristicRecommendations(project, signals) {
           "build_ai_context_index",
           "prepare_legacy_project_for_ai",
           "record_agent_execution_feedback",
+          "scaffold_project_skills",
+          "validate_project_skills",
+          "record_skill_execution_feedback",
+          "rank_project_skills",
           "search_project_files",
           "read_project_file",
           "validate_project_agents"
@@ -697,6 +848,9 @@ async function buildCatalogRecommendations(options) {
           "list_agent_packs",
           "rank_agent_packs",
           "promote_agent_pack",
+          "rank_project_skills",
+          "validate_project_skills",
+          "record_skill_execution_feedback",
           "audit_project_mcp_state",
           "upgrade_project_mcp",
           "ensure_project_mcp_current",
@@ -714,6 +868,179 @@ async function buildCatalogRecommendations(options) {
         fingerprint: pack.fingerprint || "unknown"
       }
     }));
+}
+
+function createEmptySkillSignals(options) {
+  const { enabled, catalogPath, metricsPath, minExecutions } = options;
+  return {
+    executed: false,
+    enabled,
+    catalogPath,
+    metricsPath,
+    exists: {
+      catalog: false,
+      metrics: false
+    },
+    summary: {
+      returnedSkills: 0,
+      rankedSkills: 0,
+      noFeedbackSkills: 0,
+      minExecutions,
+      influenceApplied: false
+    },
+    influence: {
+      architectBoost: 0,
+      implementerBoost: 0,
+      reviewerBoost: 0,
+      i18nBoost: 0
+    },
+    topSkills: [],
+    error: null
+  };
+}
+
+function createEmptySkillInfluence() {
+  return {
+    architectBoost: 0,
+    implementerBoost: 0,
+    reviewerBoost: 0,
+    i18nBoost: 0,
+    reasons: {
+      architect: [],
+      implementer: [],
+      reviewer: [],
+      i18n: []
+    }
+  };
+}
+
+function buildSkillSignalsReport(options) {
+  const {
+    ranking,
+    influence,
+    enabled,
+    catalogPath,
+    metricsPath
+  } = options;
+  return {
+    executed: true,
+    enabled,
+    catalogPath,
+    metricsPath,
+    exists: ranking.exists,
+    summary: {
+      returnedSkills: ranking.summary.returnedSkills,
+      rankedSkills: ranking.summary.rankedSkills,
+      noFeedbackSkills: ranking.summary.noFeedbackSkills,
+      minExecutions: ranking.summary.minExecutions,
+      influenceApplied: hasSkillInfluence(influence)
+    },
+    influence: {
+      architectBoost: influence.architectBoost,
+      implementerBoost: influence.implementerBoost,
+      reviewerBoost: influence.reviewerBoost,
+      i18nBoost: influence.i18nBoost
+    },
+    topSkills: ranking.rankedSkills.map((item) => ({
+      id: item.id,
+      title: item.title,
+      status: item.status,
+      score: item.score,
+      confidence: item.confidence,
+      rankStatus: item.rankStatus,
+      executions: item.metrics.executions,
+      successExecutions: item.metrics.successExecutions,
+      successRate: item.metrics.successRate,
+      tags: item.tags
+    })),
+    error: null
+  };
+}
+
+function buildSkillInfluenceProfile(rankedSkills, options) {
+  const { feedbackWeighted } = options;
+  const profile = createEmptySkillInfluence();
+  for (const skill of rankedSkills.slice(0, 5)) {
+    const tags = new Set((skill.tags ?? []).map((tag) => String(tag).toLowerCase()));
+    const weighted = feedbackWeighted
+      ? (skill.score * 0.7) + (skill.confidence * 0.3)
+      : statusInfluenceWeight(skill.status, skill.rankStatus);
+    const confidenceFactor = skill.rankStatus === "ranked" ? 1 : 0.5;
+    const boostUnit = clamp(weighted * confidenceFactor * 0.06, 0, 0.06);
+
+    if (hasAnyTag(tags, ["architecture", "planning", "governance", "official-docs"])) {
+      profile.architectBoost = clamp(profile.architectBoost + boostUnit, 0, 0.12);
+      pushReason(profile.reasons.architect, skill.id);
+    }
+    if (hasAnyTag(tags, ["implementation", "feature", "odata", "integration", "safe-editing"])) {
+      profile.implementerBoost = clamp(profile.implementerBoost + boostUnit, 0, 0.12);
+      pushReason(profile.reasons.implementer, skill.id);
+    }
+    if (hasAnyTag(tags, ["quality", "security", "review", "testing", "maintainability"])) {
+      profile.reviewerBoost = clamp(profile.reviewerBoost + boostUnit, 0, 0.12);
+      pushReason(profile.reasons.reviewer, skill.id);
+    }
+    if (hasAnyTag(tags, ["i18n", "localization", "l10n"])) {
+      profile.i18nBoost = clamp(profile.i18nBoost + boostUnit, 0, 0.12);
+      pushReason(profile.reasons.i18n, skill.id);
+    }
+  }
+
+  return {
+    ...profile,
+    architectBoost: round(profile.architectBoost),
+    implementerBoost: round(profile.implementerBoost),
+    reviewerBoost: round(profile.reviewerBoost),
+    i18nBoost: round(profile.i18nBoost)
+  };
+}
+
+function statusInfluenceWeight(status, rankStatus) {
+  if (status === "deprecated") {
+    return 0;
+  }
+  const base = status === "recommended"
+    ? 0.9
+    : status === "candidate"
+      ? 0.7
+      : 0.55;
+  if (rankStatus === "ranked") {
+    return base;
+  }
+  if (rankStatus === "insufficient-data") {
+    return base * 0.75;
+  }
+  return base * 0.6;
+}
+
+function appendSkillRationale(base, reasons) {
+  if (!Array.isArray(reasons) || reasons.length === 0) {
+    return base;
+  }
+  const sourceList = reasons.slice(0, 2).join(", ");
+  return `${base} Skill signals applied from: ${sourceList}.`;
+}
+
+function hasAnyTag(tagSet, candidates) {
+  for (const candidate of candidates) {
+    if (tagSet.has(candidate)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function pushReason(target, value) {
+  if (!target.includes(value)) {
+    target.push(value);
+  }
+}
+
+function hasSkillInfluence(influence) {
+  return influence.architectBoost > 0
+    || influence.implementerBoost > 0
+    || influence.reviewerBoost > 0
+    || influence.i18nBoost > 0;
 }
 
 function normalizeRecommendations(items) {
@@ -762,6 +1089,10 @@ function createRecommendation(input) {
     agent: input.agent,
     pack: input.pack ?? null
   };
+}
+
+function round(value) {
+  return Math.round(value * 1000) / 1000;
 }
 
 function unique(values) {

@@ -697,6 +697,7 @@ Entrada:
   "arguments": {
     "projectName": "ProyectoX",
     "projectType": "sapui5",
+    "policyPreset": "starter",
     "dryRun": true
   }
 }
@@ -740,8 +741,11 @@ Entrada:
     "includeToolNames": false,
     "includeDocChecks": true,
     "includePolicyStatus": true,
+    "includePolicyTransition": true,
     "includeContractStatus": true,
-    "includeManagedArtifacts": true
+    "includeManagedArtifacts": true,
+    "skillMetricsPath": ".codex/mcp/skills/feedback/metrics.json",
+    "packMetricsPath": ".codex/mcp/feedback/metrics.json"
   }
 }
 ```
@@ -779,6 +783,23 @@ Salida (ejemplo):
     "loaded": true,
     "enabled": true,
     "error": null
+  },
+  "policyTransition": {
+    "executed": true,
+    "policyPath": ".codex/mcp/policies/agent-policy.json",
+    "currentPreset": "starter",
+    "recommendation": "promote-to-mature",
+    "readyForMature": true,
+    "confidence": 0.91,
+    "signals": {
+      "skillExecutions": 12,
+      "skillSuccessRate": 0.875,
+      "qualifiedSkills": 1,
+      "packExecutions": 6,
+      "packSuccessRate": 0.75,
+      "packEvidencePresent": true
+    },
+    "nextAction": "Run scaffold_project_agents with policyPreset=\"mature\" and allowOverwrite=true."
   },
   "contracts": {
     "executed": true,
@@ -1005,7 +1026,10 @@ Entrada:
   "arguments": {
     "sourceDir": "webapp",
     "maxRecommendations": 6,
-    "includePackCatalog": true
+    "includePackCatalog": true,
+    "includeSkillCatalog": true,
+    "includeSkillFeedbackRanking": true,
+    "minSkillExecutions": 1
   }
 }
 ```
@@ -1022,6 +1046,22 @@ Salida (ejemplo):
     "name": "demo.app",
     "type": "sapui5",
     "namespace": "demo.app"
+  },
+  "skillSignals": {
+    "executed": true,
+    "enabled": true,
+    "summary": {
+      "returnedSkills": 4,
+      "rankedSkills": 2,
+      "influenceApplied": true
+    },
+    "topSkills": [
+      {
+        "id": "ui5-feature-implementation-safe",
+        "score": 0.91,
+        "rankStatus": "ranked"
+      }
+    ]
   },
   "signals": {
     "jsFiles": 12,
@@ -1053,7 +1093,11 @@ Entrada:
   "tool": "materialize_recommended_agents",
   "arguments": {
     "dryRun": true,
-    "includePackCatalog": true
+    "includePackCatalog": true,
+    "includeSkillCatalog": true,
+    "includeSkillFeedbackRanking": true,
+    "skillSignalMode": "prefer",
+    "respectPolicy": true
   }
 }
 ```
@@ -1062,7 +1106,22 @@ Salida (ejemplo):
 ```json
 {
   "source": "auto-recommend",
+  "policy": {
+    "path": ".codex/mcp/policies/agent-policy.json",
+    "loaded": true,
+    "enforcedSections": ["recommendation"]
+  },
   "usedRecommendations": 4,
+  "selectionPolicy": {
+    "source": "auto-recommend",
+    "mode": "strict",
+    "signalsReady": true,
+    "strictApplied": true,
+    "autoPromotedToStrict": true,
+    "promotionReason": "auto-promoted-to-strict qualifiedSkills=1 minSuccessExecutions=3 minSuccessRate=0.8",
+    "filteredRecommendationIds": [],
+    "reweightedRecommendationIds": ["ui5-feature-implementer"]
+  },
   "selectedRecommendationIds": [
     "ui5-architect",
     "ui5-feature-implementer"
@@ -1959,6 +2018,176 @@ Entrada:
     "autoApply": true,
     "runEnsureProjectMcp": true
   }
+}
+```
+
+## 48) `scaffold_project_skills`
+
+Entrada:
+```json
+{
+  "tool": "scaffold_project_skills",
+  "arguments": {
+    "includeDefaultSkills": true,
+    "generateDocs": true,
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "project": {
+    "name": "demo.app",
+    "type": "sapui5",
+    "namespace": "demo.app",
+    "ui5Version": "1.120.0"
+  },
+  "files": {
+    "skillsRootDir": ".codex/mcp/skills",
+    "catalogPath": ".codex/mcp/skills/catalog.json",
+    "feedbackPath": ".codex/mcp/skills/feedback/executions.jsonl",
+    "metricsPath": ".codex/mcp/skills/feedback/metrics.json",
+    "docsPath": "docs/mcp/skills.md"
+  },
+  "skillSummary": {
+    "total": 5,
+    "incoming": 5,
+    "created": 5,
+    "updated": 0,
+    "unchanged": 0
+  },
+  "applyResult": null
+}
+```
+
+## 49) `validate_project_skills`
+
+Entrada:
+```json
+{
+  "tool": "validate_project_skills",
+  "arguments": {
+    "strict": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "catalogPath": ".codex/mcp/skills/catalog.json",
+  "strict": true,
+  "valid": true,
+  "summary": {
+    "skillCount": 5,
+    "checksPassed": 6,
+    "checksFailed": 0,
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  "errors": [],
+  "warnings": [],
+  "recommendedActions": []
+}
+```
+
+## 50) `record_skill_execution_feedback`
+
+Entrada:
+```json
+{
+  "tool": "record_skill_execution_feedback",
+  "arguments": {
+    "skillId": "ui5-feature-implementation-safe",
+    "outcome": "success",
+    "qualityGatePass": true,
+    "usefulnessScore": 5,
+    "timeSavedMinutes": 18,
+    "tokenDeltaEstimate": 260,
+    "tags": ["ui5", "feature", "quality"],
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "record": {
+    "id": "f18de6a3c4dd91af",
+    "skillId": "ui5-feature-implementation-safe",
+    "recordedAt": "2026-03-12T10:30:00.000Z",
+    "outcome": "success"
+  },
+  "files": {
+    "feedbackPath": ".codex/mcp/skills/feedback/executions.jsonl",
+    "metricsPath": ".codex/mcp/skills/feedback/metrics.json"
+  },
+  "metrics": {
+    "totalExecutions": 14,
+    "totals": {
+      "success": 11,
+      "partial": 2,
+      "failed": 1
+    },
+    "skill": {
+      "executions": 4,
+      "qualityGatePasses": 4,
+      "qualityGateFails": 0,
+      "usefulnessAverage": 4.75,
+      "timeSavedMinutesTotal": 67,
+      "tokenDeltaEstimateTotal": 940
+    }
+  },
+  "applyResult": null
+}
+```
+
+## 51) `rank_project_skills`
+
+Entrada:
+```json
+{
+  "tool": "rank_project_skills",
+  "arguments": {
+    "minExecutions": 1,
+    "maxResults": 5,
+    "includeUnscored": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "catalogPath": ".codex/mcp/skills/catalog.json",
+  "metricsPath": ".codex/mcp/skills/feedback/metrics.json",
+  "exists": {
+    "catalog": true,
+    "metrics": true
+  },
+  "summary": {
+    "totalCatalogSkills": 5,
+    "returnedSkills": 5,
+    "rankedSkills": 3,
+    "noFeedbackSkills": 2,
+    "minExecutions": 1
+  },
+  "rankedSkills": [
+    {
+      "id": "ui5-feature-implementation-safe",
+      "status": "recommended",
+      "score": 0.91,
+      "confidence": 0.8,
+      "rankStatus": "ranked"
+    }
+  ]
 }
 ```
 

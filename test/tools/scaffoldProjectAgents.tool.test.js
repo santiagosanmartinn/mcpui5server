@@ -133,4 +133,41 @@ describe("scaffold_project_agents tool", () => {
       )
     ).rejects.toMatchObject({ code: "MCP_SERVER_CONFLICT" });
   });
+
+  it("supports starter and mature policy presets", async () => {
+    const starter = await scaffoldProjectAgentsTool.handler(
+      {
+        dryRun: false,
+        policyPreset: "starter"
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(starter.policyPreset).toBe("starter");
+    const policyPath = path.join(tempRoot, ".codex", "mcp", "policies", "agent-policy.json");
+    let policy = JSON.parse(await fs.readFile(policyPath, "utf8"));
+    expect(policy.recommendation.skillSignalMode).toBe("prefer");
+    expect(policy.recommendation.autoPromoteSkillSignalMode).toBe(false);
+    expect(policy.qualityGate.defaultProfile).toBe("dev");
+
+    const mature = await scaffoldProjectAgentsTool.handler(
+      {
+        dryRun: false,
+        policyPreset: "mature",
+        allowOverwrite: true
+      },
+      {
+        context: { rootDir: tempRoot }
+      }
+    );
+
+    expect(mature.policyPreset).toBe("mature");
+    policy = JSON.parse(await fs.readFile(policyPath, "utf8"));
+    expect(policy.recommendation.autoPromoteSkillSignalMode).toBe(true);
+    expect(policy.recommendation.maxRecommendations).toBe(6);
+    expect(policy.qualityGate.defaultProfile).toBe("prod");
+    expect(policy.ranking.includeUnscored).toBe(false);
+  });
 });

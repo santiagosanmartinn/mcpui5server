@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-03-12T13:13:16.865Z",
+  "qualityPriority": true,
+  "project": {
+    "name": "sapui5-mcp-server",
+    "type": "node",
+    "namespace": "sapui5-mcp-server",
+    "detectedUi5Version": null
+  },
+  "context": {
+    "projectGoal": null,
+    "businessDomain": null,
+    "criticality": null,
+    "runtimeLandscape": null,
+    "ui5RuntimeVersion": null,
+    "allowedRefactorScope": null,
+    "mustKeepStableAreas": [],
+    "knownPainPoints": [],
+    "constraints": [],
+    "complianceRequirements": [],
+    "notes": null
+  },
+  "missingContext": [
+    "projectGoal",
+    "criticality",
+    "allowedRefactorScope"
+  ]
+}

@@ -43,7 +43,7 @@ export function createMcpServer() {
     rootDir: context.rootDir
   });
   runProjectAutoEnsure(context).catch((error) => {
-    logger.warn("Automatic MCP project ensure failed.", {
+    logger.warn("Automatic startup maintenance failed.", {
       error: error?.message ?? String(error)
     });
   });
@@ -59,23 +59,31 @@ async function runProjectAutoEnsure(context) {
   }
 
   const autoApply = process.env.MCP_AUTO_ENSURE_PROJECT_APPLY !== "false";
-  const report = await ensureProjectMcpCurrentTool.handler(
-    {
-      autoApply,
-      runPostValidation: true,
-      failOnValidation: false,
-      runQualityGate: false,
-      reason: "server-startup:auto-ensure"
-    },
-    { context }
-  );
+  try {
+    const report = await ensureProjectMcpCurrentTool.handler(
+      {
+        autoApply,
+        runPostValidation: true,
+        failOnValidation: false,
+        runQualityGate: false,
+        reason: "server-startup:auto-ensure"
+      },
+      { context }
+    );
 
-  logger.info("Automatic MCP project ensure finished.", {
-    actionTaken: report.actionTaken,
-    statusBefore: report.statusBefore,
-    statusAfter: report.statusAfter,
-    autoApply
-  });
+    logger.info("Automatic MCP project ensure finished.", {
+      actionTaken: report.actionTaken,
+      statusBefore: report.statusBefore,
+      statusAfter: report.statusAfter,
+      autoApply
+    });
+  } catch (error) {
+    logger.warn("Automatic MCP project ensure failed.", {
+      error: error?.message ?? String(error),
+      code: error?.code ?? null
+    });
+    return;
+  }
 
   const autoPrepareContextEnabled = process.env.MCP_AUTO_PREPARE_CONTEXT !== "false";
   if (!autoPrepareContextEnabled) {
@@ -84,20 +92,27 @@ async function runProjectAutoEnsure(context) {
   }
 
   const autoPrepareContextApply = process.env.MCP_AUTO_PREPARE_CONTEXT_APPLY !== "false";
-  const prepareReport = await prepareLegacyProjectForAiTool.handler(
-    {
+  try {
+    const prepareReport = await prepareLegacyProjectForAiTool.handler(
+      {
+        autoApply: autoPrepareContextApply,
+        runEnsureProjectMcp: false,
+        reason: "server-startup:auto-prepare-context"
+      },
+      { context }
+    );
+    logger.info("Automatic legacy context preparation finished.", {
       autoApply: autoPrepareContextApply,
-      runEnsureProjectMcp: false,
-      reason: "server-startup:auto-prepare-context"
-    },
-    { context }
-  );
-  logger.info("Automatic legacy context preparation finished.", {
-    autoApply: autoPrepareContextApply,
-    readyForAutopilot: prepareReport.readyForAutopilot,
-    needsUserInput: prepareReport.intake.needsUserInput,
-    collectIntake: prepareReport.ran.collectIntake,
-    analyzeBaseline: prepareReport.ran.analyzeBaseline,
-    buildContextIndex: prepareReport.ran.buildContextIndex
-  });
+      readyForAutopilot: prepareReport.readyForAutopilot,
+      needsUserInput: prepareReport.intake.needsUserInput,
+      collectIntake: prepareReport.ran.collectIntake,
+      analyzeBaseline: prepareReport.ran.analyzeBaseline,
+      buildContextIndex: prepareReport.ran.buildContextIndex
+    });
+  } catch (error) {
+    logger.warn("Automatic legacy context preparation failed.", {
+      error: error?.message ?? String(error),
+      code: error?.code ?? null
+    });
+  }
 }

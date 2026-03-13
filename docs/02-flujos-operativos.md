@@ -79,6 +79,25 @@ Resultado esperado:
    - `run_project_quality_gate` (preferible `qualityProfile: "prod"` para cierre final)
    - `npm run check`
 
+## Flujo F: mantenimiento semanal (gobierno MCP)
+
+1. Revisar salud general:
+   - `mcp_health_report` con `includeDocChecks`, `includePolicyStatus`, `includePolicyTransition`, `includeContractStatus` e `includeManagedArtifacts` en `true`
+2. Revisar estado de sincronizacion:
+   - `docs.referenceInSync` y `docs.examplesInSync`
+   - `contracts.inSync`
+3. Revisar transicion de policy:
+   - `policyTransition.recommendation`
+4. Actuar segun salida:
+   - si hay desalineacion de contratos: `npm run contracts:snapshot`
+   - si hay desalineacion de docs: actualizar `docs/referencia-tools.md` y `docs/ejemplos-tools.md`
+   - si recomienda `promote-to-mature`: `scaffold_project_agents` con `policyPreset: "mature"` y `allowOverwrite: true`
+5. Consolidar aprendizaje:
+   - `record_skill_execution_feedback`
+   - `record_agent_execution_feedback`
+6. Cierre tecnico:
+   - `npm run check`
+
 ## Reglas transversales
 
 - Usar `dryRun: true` por defecto en operaciones de escritura.
