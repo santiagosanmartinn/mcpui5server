@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ToolRegistry } from "./toolRegistry.js";
 import { workspaceRoot } from "../utils/fileSystem.js";
 import { createLogger } from "../utils/logger.js";
+import { createTelemetryRecorder } from "../utils/telemetry.js";
 import { allTools } from "../tools/index.js";
 import { ensureProjectMcpCurrentTool } from "../tools/agents/ensureProjectMcpCurrent.js";
 import { prepareLegacyProjectForAiTool } from "../tools/agents/prepareLegacyProjectForAi.js";
@@ -24,10 +25,16 @@ export function createMcpServer() {
   const contractSnapshot = createToolContractSnapshot(allTools);
   const contractHash = calculateToolContractHash(contractSnapshot);
 
+  const telemetry = createTelemetryRecorder({
+    rootDir: workspaceRoot(),
+    serverInfo: SERVER_INFO
+  });
+
   // Shared runtime context injected into every tool handler.
   const context = {
     rootDir: workspaceRoot(),
     logger,
+    telemetry,
     serverInfo: {
       ...SERVER_INFO
     },
@@ -42,10 +49,19 @@ export function createMcpServer() {
     toolCount: allTools.length,
     rootDir: context.rootDir
   });
+  telemetry.recordServerEvent("server_initialized", {
+    toolCount: allTools.length,
+    rootDir: context.rootDir,
+    contractHash
+  }).catch(() => {});
+  attachServerCloseTelemetry(server, telemetry);
   runProjectAutoEnsure(context).catch((error) => {
     logger.warn("Automatic startup maintenance failed.", {
       error: error?.message ?? String(error)
     });
+    telemetry.recordServerEvent("startup_maintenance_failed", {
+      error: error?.message ?? String(error)
+    }).catch(() => {});
   });
 
   return server;
@@ -55,6 +71,9 @@ async function runProjectAutoEnsure(context) {
   const enabled = process.env.MCP_AUTO_ENSURE_PROJECT !== "false";
   if (!enabled) {
     logger.info("Automatic MCP project ensure disabled by MCP_AUTO_ENSURE_PROJECT=false.");
+    await context.telemetry?.recordServerEvent("auto_ensure_skipped", {
+      reason: "MCP_AUTO_ENSURE_PROJECT=false"
+    });
     return;
   }
 
@@ -77,8 +96,18 @@ async function runProjectAutoEnsure(context) {
       statusAfter: report.statusAfter,
       autoApply
     });
+    await context.telemetry?.recordServerEvent("auto_ensure_completed", {
+      actionTaken: report.actionTaken,
+      statusBefore: report.statusBefore,
+      statusAfter: report.statusAfter,
+      autoApply
+    });
   } catch (error) {
     logger.warn("Automatic MCP project ensure failed.", {
+      error: error?.message ?? String(error),
+      code: error?.code ?? null
+    });
+    await context.telemetry?.recordServerEvent("auto_ensure_failed", {
       error: error?.message ?? String(error),
       code: error?.code ?? null
     });
@@ -88,6 +117,9 @@ async function runProjectAutoEnsure(context) {
   const autoPrepareContextEnabled = process.env.MCP_AUTO_PREPARE_CONTEXT !== "false";
   if (!autoPrepareContextEnabled) {
     logger.info("Automatic legacy context preparation disabled by MCP_AUTO_PREPARE_CONTEXT=false.");
+    await context.telemetry?.recordServerEvent("auto_prepare_context_skipped", {
+      reason: "MCP_AUTO_PREPARE_CONTEXT=false"
+    });
     return;
   }
 
@@ -109,10 +141,39 @@ async function runProjectAutoEnsure(context) {
       analyzeBaseline: prepareReport.ran.analyzeBaseline,
       buildContextIndex: prepareReport.ran.buildContextIndex
     });
+    await context.telemetry?.recordServerEvent("auto_prepare_context_completed", {
+      autoApply: autoPrepareContextApply,
+      readyForAutopilot: prepareReport.readyForAutopilot,
+      needsUserInput: prepareReport.intake.needsUserInput,
+      collectIntake: prepareReport.ran.collectIntake,
+      analyzeBaseline: prepareReport.ran.analyzeBaseline,
+      buildContextIndex: prepareReport.ran.buildContextIndex
+    });
   } catch (error) {
     logger.warn("Automatic legacy context preparation failed.", {
       error: error?.message ?? String(error),
       code: error?.code ?? null
     });
+    await context.telemetry?.recordServerEvent("auto_prepare_context_failed", {
+      error: error?.message ?? String(error),
+      code: error?.code ?? null
+    });
   }
+}
+
+function attachServerCloseTelemetry(server, telemetry) {
+  if (!telemetry?.enabled || typeof server.close !== "function") {
+    return;
+  }
+
+  const originalClose = server.close.bind(server);
+  server.close = async (...args) => {
+    await telemetry.recordServerEvent("server_shutdown_requested");
+    try {
+      return await originalClose(...args);
+    } finally {
+      await telemetry.recordServerEvent("server_shutdown_completed");
+      await telemetry.flush();
+    }
+  };
 }

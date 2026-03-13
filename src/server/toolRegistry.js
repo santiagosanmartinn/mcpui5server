@@ -46,11 +46,26 @@ export class ToolRegistry {
           annotations: tool.annotations
         },
         async (args, extra) => {
+          const invocationId = context.telemetry?.nextInvocationId?.(tool.name) ?? null;
+          const startedAt = new Date().toISOString();
+          const startedAtMs = Date.now();
+
           try {
             // Handlers receive parsed args plus shared runtime context.
             const output = await tool.handler(args ?? {}, {
               context,
               extra
+            });
+
+            await context.telemetry?.recordToolExecution?.({
+              invocationId,
+              toolName: tool.name,
+              status: "success",
+              startedAt,
+              finishedAt: new Date().toISOString(),
+              durationMs: Date.now() - startedAtMs,
+              args: args ?? {},
+              result: output
             });
 
             if (tool.outputSchema) {
@@ -73,6 +88,19 @@ export class ToolRegistry {
           } catch (error) {
             // Normalize all failures to stable machine-readable error shape.
             const normalized = normalizeError(error);
+            await context.telemetry?.recordToolExecution?.({
+              invocationId,
+              toolName: tool.name,
+              status: "error",
+              startedAt,
+              finishedAt: new Date().toISOString(),
+              durationMs: Date.now() - startedAtMs,
+              args: args ?? {},
+              error: {
+                code: normalized.code,
+                message: normalized.message
+              }
+            });
             logger.error(`Tool failed: ${tool.name}`, {
               code: normalized.code,
               message: normalized.message,

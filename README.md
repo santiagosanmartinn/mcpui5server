@@ -1,8 +1,8 @@
-# SAPUI5 MCP Server
+# Servidor MCP SAPUI5
 
-Specialized MCP server for SAPUI5/Fiori JavaScript development with modular tools for project analysis, code generation, refactoring, validation, and documentation lookup.
+Servidor MCP especializado para desarrollo SAPUI5/Fiori en JavaScript, con herramientas modulares para analisis de proyectos, generacion de codigo, refactorizacion, validacion y consulta de documentacion.
 
-## Architecture
+## Arquitectura
 
 ```text
 src/
@@ -30,6 +30,10 @@ src/
       analyzeLegacyProjectBaseline.js
       buildAiContextIndex.js
       prepareLegacyProjectForAi.js
+      scaffoldProjectSkills.js
+      validateProjectSkills.js
+      recordSkillExecutionFeedback.js
+      rankProjectSkills.js
     ui5/
       catalogs/
         ui5ComponentFitRules.js
@@ -44,6 +48,8 @@ src/
       analyzeODataMetadata.js
       validateUi5Code.js
       validateUi5VersionCompatibility.js
+      validateUi5ODataUsage.js
+      scaffoldUi5ODataFeature.js
       securityCheckUi5App.js
     javascript/
       generateFunction.js
@@ -60,6 +66,7 @@ src/
       applyPatch.js
       rollbackPatch.js
       runProjectQualityGate.js
+      mcpHealthReport.js
     documentation/
       cacheStore.js
       searchUI5SDK.js
@@ -76,11 +83,12 @@ src/
     xmlParser.js
     validator.js
     logger.js
+    telemetry.js
     errors.js
     http.js
 ```
 
-## Implemented MCP Tools
+## Herramientas MCP implementadas
 
 1. `analyze_ui5_project`
 2. `generate_ui5_controller`
@@ -97,64 +105,82 @@ src/
 13. `write_project_file_preview`
 14. `apply_project_patch`
 15. `rollback_project_patch`
-16. `search_ui5_sdk`
-17. `search_mdn`
-18. `generate_javascript_function`
-19. `refactor_javascript_code`
-20. `lint_javascript_code`
-21. `security_check_javascript`
-22. `validate_ui5_code`
-23. `scaffold_project_agents`
-24. `validate_project_agents`
-25. `recommend_project_agents`
-26. `materialize_recommended_agents`
-27. `save_agent_pack`
-28. `list_agent_packs`
-29. `apply_agent_pack`
-30. `refresh_project_context_docs`
-31. `validate_ui5_version_compatibility`
-32. `security_check_ui5_app`
-33. `run_project_quality_gate`
-34. `record_agent_execution_feedback`
-35. `rank_agent_packs`
-36. `promote_agent_pack`
-37. `audit_project_mcp_state`
-38. `upgrade_project_mcp`
-39. `ensure_project_mcp_current`
-40. `collect_legacy_project_intake`
-41. `analyze_legacy_project_baseline`
-42. `build_ai_context_index`
-43. `prepare_legacy_project_for_ai`
-44. `analyze_odata_metadata`
+16. `run_project_quality_gate`
+17. `mcp_health_report`
+18. `search_ui5_sdk`
+19. `search_mdn`
+20. `generate_javascript_function`
+21. `refactor_javascript_code`
+22. `lint_javascript_code`
+23. `security_check_javascript`
+24. `validate_ui5_code`
+25. `validate_ui5_version_compatibility`
+26. `security_check_ui5_app`
+27. `analyze_odata_metadata`
+28. `validate_ui5_odata_usage`
+29. `scaffold_ui5_odata_feature`
+30. `scaffold_project_agents`
+31. `validate_project_agents`
+32. `recommend_project_agents`
+33. `materialize_recommended_agents`
+34. `save_agent_pack`
+35. `list_agent_packs`
+36. `apply_agent_pack`
+37. `refresh_project_context_docs`
+38. `record_agent_execution_feedback`
+39. `rank_agent_packs`
+40. `promote_agent_pack`
+41. `audit_project_mcp_state`
+42. `upgrade_project_mcp`
+43. `ensure_project_mcp_current`
+44. `collect_legacy_project_intake`
+45. `analyze_legacy_project_baseline`
+46. `build_ai_context_index`
+47. `prepare_legacy_project_for_ai`
+48. `scaffold_project_skills`
+49. `validate_project_skills`
+50. `record_skill_execution_feedback`
+51. `rank_project_skills`
 
-All tools are dynamically discovered through the central registry in `src/tools/index.js` and registered with MCP `registerTool(...)` including:
+Todas las herramientas se descubren dinamicamente a traves del registro central en `src/tools/index.js` y se registran en MCP con `registerTool(...)`, incluyendo:
 
-- name
-- description
-- input schema
-- output schema
+- `name`
+- `description`
+- `input schema`
+- `output schema`
 
-## Reliability and Safety
+## Fiabilidad y seguridad
 
-- JSON-RPC and MCP-compatible tool registration via `@modelcontextprotocol/sdk`.
-- Structured input/output validation with `zod`.
-- Deterministic tool output shape via `structuredContent`.
-- Sandboxed file access to workspace root only.
-- Path traversal protection (`..` and out-of-root resolution blocked).
-- Structured error responses with machine-readable `code` and `message`.
-- Centralized logging for tool failures and lifecycle events.
-- Project-level policy enforcement via `.codex/mcp/policies/agent-policy.json` in ranking, recommendation, and quality gate flows.
-- Automatic MCP project ensure on server startup (disable with `MCP_AUTO_ENSURE_PROJECT=false`).
-- Automatic legacy context preparation on startup (disable with `MCP_AUTO_PREPARE_CONTEXT=false`).
+- Registro de herramientas compatible con JSON-RPC y MCP mediante `@modelcontextprotocol/sdk`.
+- Validacion estructurada de entrada y salida con `zod`.
+- Forma de salida determinista mediante `structuredContent`.
+- Acceso a archivos limitado en sandbox a la raiz del workspace.
+- Proteccion frente a path traversal (bloqueo de `..` y de resoluciones fuera de la raiz).
+- Respuestas de error estructuradas con `code` y `message` legibles por maquina.
+- Registro centralizado para fallos de herramientas y eventos del ciclo de vida.
+- Aplicacion de politicas a nivel de proyecto mediante `.codex/mcp/policies/agent-policy.json` en flujos de ranking, recomendacion y puerta de calidad.
+- Verificacion automatica del proyecto MCP al arrancar el servidor (se desactiva con `MCP_AUTO_ENSURE_PROJECT=false`).
+- Preparacion automatica del contexto legacy al arrancar (se desactiva con `MCP_AUTO_PREPARE_CONTEXT=false`).
 
-## Run
+## Ejecucion
 
 ```bash
 npm install
 npm run start
 ```
 
-## Example Tool Calls
+## Observabilidad y logs
+
+El servidor genera telemetria estructurada de uso y rendimiento para analizar la adopcion inicial y detectar cuellos de botella.
+
+- Eventos por sesion en `.mcp-runtime/logs/telemetry-events-<sessionId>.jsonl`
+- Resumen agregado en `.mcp-runtime/logs/telemetry-session-latest.json`
+- Variables de entorno soportadas:
+  - `MCP_TELEMETRY_ENABLED=false`
+  - `MCP_TELEMETRY_DIR=.mcp-runtime/logs`
+  - `MCP_TELEMETRY_SLOW_THRESHOLD_MS=2000`
+
+## Ejemplos de llamadas a herramientas
 
 ### `analyze_ui5_project`
 
@@ -194,21 +220,21 @@ npm run start
 {
   "tool": "generate_javascript_function",
   "arguments": {
-    "description": "create a cache-aware fetch wrapper",
+    "description": "crear un envoltorio fetch con cache",
     "runtime": "node",
     "typescript": false
   }
 }
 ```
 
-## Codex MCP Configuration
+## Configuracion MCP para Codex
 
 ```json
 {
   "mcpServers": {
     "sapui5": {
       "command": "node",
-      "args": ["/absolute/path/to/MCPServerUI5/src/index.js"]
+      "args": ["/ruta/absoluta/a/MCPServerUI5/src/index.js"]
     }
   }
 }
@@ -216,4 +242,4 @@ npm run start
 
 ## Documentacion ampliada
 
-Consulta la documentacion para onboarding y mantenimiento en [`docs/README.md`](./docs/README.md).
+Consulta la documentacion para puesta en marcha y mantenimiento en [`docs/README.md`](./docs/README.md).

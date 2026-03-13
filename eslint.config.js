@@ -8,7 +8,8 @@ const nodeGlobals = {
   AbortController: "readonly",
   URL: "readonly",
   setTimeout: "readonly",
-  clearTimeout: "readonly"
+  clearTimeout: "readonly",
+  structuredClone: "readonly"
 };
 
 const testGlobals = {

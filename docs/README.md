@@ -12,6 +12,7 @@ Este directorio explica como usar y mantener el servidor MCP con foco en Codex +
 6. [05 - OData: MVP y Fase Avanzada](./05-odata-mvp-y-avanzado.md)
 7. [06 - Piloto: Medicion y Evaluacion](./06-piloto-medicion-y-evaluacion.md)
 8. [07 - Casos de Prueba por Complejidad](./07-casos-prueba-por-complejidad.md)
+9. [08 - Observabilidad y Logs](./08-observabilidad.md)
 
 ## Referencia tecnica
 

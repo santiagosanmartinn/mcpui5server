@@ -39,7 +39,16 @@ Pide a Codex esta secuencia:
 
 Si devuelve resultados estructurados, la integracion esta funcionando.
 
-## 4) Ruta recomendada segun tipo de proyecto
+## 4) Verificar logs de observabilidad
+
+Tras unas cuantas invocaciones, revisa:
+
+- `.mcp-runtime/logs/telemetry-session-latest.json`
+- `.mcp-runtime/logs/telemetry-events-<sessionId>.jsonl`
+
+Si no quieres generar estos logs en una sesion concreta, arranca el servidor con `MCP_TELEMETRY_ENABLED=false`.
+
+## 5) Ruta recomendada segun tipo de proyecto
 
 ### Proyecto nuevo o ya preparado
 
@@ -54,15 +63,16 @@ Si devuelve resultados estructurados, la integracion esta funcionando.
 3. `materialize_recommended_agents`
 4. Cerrar la tarea con puerta de calidad + `npm run check`
 
-## 5) Regla de oro
+## 6) Regla de oro
 
 - Primero `dryRun`, despues `apply`.
 - Si algo falla tras aplicar: `rollback_project_patch`.
 - No cerrar tareas sin validacion final.
 
-## 6) Siguiente lectura
+## 7) Siguiente lectura
 
 - Flujos completos: [02-flujos-operativos.md](./02-flujos-operativos.md)
 - Operacion y politicas: [03-operacion-y-policies.md](./03-operacion-y-policies.md)
 - Atajos de instrucciones para Codex: [04-cheatsheet-codex.md](./04-cheatsheet-codex.md)
 - Referencia tecnica de herramientas: [referencia-tools.md](./referencia-tools.md)
+- Observabilidad: [08-observabilidad.md](./08-observabilidad.md)

@@ -28,6 +28,7 @@ describe("ToolRegistry", () => {
   it("registers tools and exposes handlers to server", async () => {
     const registry = new ToolRegistry();
     const calls = [];
+    const telemetryCalls = [];
     const fakeServer = {
       registerTool(name, meta, handler) {
         calls.push({ name, meta, handler });
@@ -48,7 +49,15 @@ describe("ToolRegistry", () => {
     ]);
 
     registry.applyToServer(fakeServer, {
-      rootDir: "."
+      rootDir: ".",
+      telemetry: {
+        nextInvocationId(toolName) {
+          return `${toolName}-0001`;
+        },
+        async recordToolExecution(payload) {
+          telemetryCalls.push(payload);
+        }
+      }
     });
 
     expect(calls).toHaveLength(2);
@@ -61,6 +70,54 @@ describe("ToolRegistry", () => {
       {}
     );
     expect(response.content[0].text).toContain("\"echo\": \"x\"");
+    expect(telemetryCalls[0]).toMatchObject({
+      invocationId: "tool_b-0001",
+      toolName: "tool_b",
+      status: "success"
+    });
+  });
+
+  it("records telemetry for tool failures", async () => {
+    const registry = new ToolRegistry();
+    const calls = [];
+    const telemetryCalls = [];
+    const fakeServer = {
+      registerTool(name, meta, handler) {
+        calls.push({ name, meta, handler });
+      }
+    };
+
+    registry.registerTool({
+      name: "tool_fail",
+      description: "Fails",
+      handler: async () => {
+        throw new Error("boom");
+      }
+    });
+
+    registry.applyToServer(fakeServer, {
+      rootDir: ".",
+      telemetry: {
+        nextInvocationId(toolName) {
+          return `${toolName}-0001`;
+        },
+        async recordToolExecution(payload) {
+          telemetryCalls.push(payload);
+        }
+      }
+    });
+
+    const response = await calls[0].handler({}, {});
+
+    expect(response.isError).toBe(true);
+    expect(telemetryCalls[0]).toMatchObject({
+      invocationId: "tool_fail-0001",
+      toolName: "tool_fail",
+      status: "error",
+      error: {
+        code: "UNEXPECTED_ERROR",
+        message: "boom"
+      }
+    });
   });
 });
-
