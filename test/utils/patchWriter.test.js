@@ -57,6 +57,9 @@ describe("patchWriter utils", () => {
     expect(applied.patchId).toMatch(/^patch-/);
     expect(applied.changedFiles).toHaveLength(1);
     expect(await fs.readFile(filePath, "utf8")).toBe("const version = 2;\n");
+    await expect(
+      fs.access(path.join(tempRoot, ".codex", "mcp", "backups", `${applied.patchId}.json`))
+    ).resolves.toBeUndefined();
 
     const rollback = await rollbackProjectPatch(applied.patchId, { root: tempRoot });
     expect(rollback.alreadyRolledBack).toBe(false);
@@ -80,6 +83,9 @@ describe("patchWriter utils", () => {
     );
 
     expect(await fs.readFile(absolutePath, "utf8")).toContain("\"created\":true");
+    await expect(
+      fs.access(path.join(tempRoot, ".codex", "mcp", "backups", `${applied.patchId}.json`))
+    ).resolves.toBeUndefined();
     const rollback = await rollbackProjectPatch(applied.patchId, { root: tempRoot });
     expect(rollback.restoredFiles[0].action).toBe("deleted");
     await expect(fs.access(absolutePath)).rejects.toThrow();

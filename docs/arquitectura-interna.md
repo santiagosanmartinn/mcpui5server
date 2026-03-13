@@ -139,7 +139,7 @@ vitest.config.js
 - `src/utils/patchWriter.js`:
   - Preview de escritura con hashes y diff textual resumido.
   - Aplicacion de patch multiarchivo con validacion de hash base opcional.
-  - Backup local en `.mcp-backups/` y rollback idempotente por `patchId`.
+  - Backup local en `.codex/mcp/backups/` y rollback idempotente por `patchId`.
 - `src/utils/refactor.js`:
   - Transformaciones AST para modernizar JS (var -> let/const y handlers Promise a arrow cuando es seguro).
   - Reporte por regla aplicada y deteccion de callback nesting.

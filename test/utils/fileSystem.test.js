@@ -61,6 +61,12 @@ describe("fileSystem utils", () => {
     await fs.writeFile(path.join(tempRoot, "a.js"), "const key = 'needle';", "utf8");
     await fs.writeFile(path.join(tempRoot, "b.txt"), "needle in text file", "utf8");
     await fs.writeFile(path.join(tempRoot, "c.js"), "no-match", "utf8");
+    await fs.mkdir(path.join(tempRoot, ".codex", "mcp", "backups"), { recursive: true });
+    await fs.writeFile(
+      path.join(tempRoot, ".codex", "mcp", "backups", "patch-test.json"),
+      "needle hidden in backups",
+      "utf8"
+    );
 
     const onlyJs = await searchFiles("needle", {
       root: tempRoot,
@@ -74,5 +80,11 @@ describe("fileSystem utils", () => {
       maxResults: 1
     });
     expect(firstOnly.length).toBe(1);
+
+    const allMatches = await searchFiles("needle", {
+      root: tempRoot,
+      maxResults: 10
+    });
+    expect(allMatches).not.toContain(".codex/mcp/backups/patch-test.json");
   });
 });

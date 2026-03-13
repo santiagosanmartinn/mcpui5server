@@ -1,6 +1,7 @@
 node_modules/
 coverage/
 .mcp-backups/
+.codex/mcp/backups/
 .mcp-runtime/
 .DS_Store
 .env

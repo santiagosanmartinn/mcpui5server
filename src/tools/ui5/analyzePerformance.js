@@ -1,7 +1,7 @@
 import path from "node:path";
 import { promises as fs } from "node:fs";
 import { z } from "zod";
-import { readTextFile, resolveWorkspacePath } from "../../utils/fileSystem.js";
+import { isIgnoredWorkspaceDirectory, readTextFile, resolveWorkspacePath } from "../../utils/fileSystem.js";
 import { analyzeUi5Xml } from "../../utils/xmlParser.js";
 
 const DEFAULT_SOURCE_DIR = "webapp";
@@ -245,7 +245,8 @@ async function listTrackedFiles(options) {
       const absolutePath = path.join(currentDir, entry.name);
       const relativePath = path.relative(path.resolve(root), absolutePath).replaceAll("\\", "/");
       if (entry.isDirectory()) {
-        if (IGNORED_DIRS.has(entry.name)) {
+        const relativePath = path.relative(path.resolve(root), absolutePath).replaceAll("\\", "/");
+        if (isIgnoredWorkspaceDirectory(entry.name, relativePath, IGNORED_DIRS)) {
           continue;
         }
         await walk(absolutePath);

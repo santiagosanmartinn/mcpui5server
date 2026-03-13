@@ -2,7 +2,7 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { z } from "zod";
 import { ToolError } from "../../utils/errors.js";
-import { fileExists, readJsonFile } from "../../utils/fileSystem.js";
+import { fileExists, isIgnoredWorkspaceDirectory, readJsonFile } from "../../utils/fileSystem.js";
 import { DEFAULT_AGENT_POLICY_PATH, loadAgentPolicy, normalizePackSlugSet } from "../../utils/agentPolicy.js";
 import { analyzeUi5ProjectTool } from "../project/analyzeProject.js";
 import { rankAgentPacksTool } from "./rankAgentPacks.js";
@@ -476,7 +476,8 @@ async function scanSourceFiles(options) {
       }
       const absolutePath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) {
-        if (IGNORED_DIRS.has(entry.name)) {
+        const relativePath = path.relative(path.resolve(root), absolutePath).replaceAll("\\", "/");
+        if (isIgnoredWorkspaceDirectory(entry.name, relativePath, IGNORED_DIRS)) {
           continue;
         }
         await walk(absolutePath);

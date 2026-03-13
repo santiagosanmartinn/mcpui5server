@@ -9,6 +9,7 @@ const DEFAULT_IGNORED_DIRS = new Set([
   "dist",
   "coverage"
 ]);
+const MCP_BACKUP_PATHS = [".codex/mcp/backups", ".mcp-backups"];
 
 export function workspaceRoot() {
   // Workspace root is always the current process directory.
@@ -95,7 +96,7 @@ export async function searchFiles(query, options = {}) {
 
       if (entry.isDirectory()) {
         // Skip heavy/non-source folders for predictable performance.
-        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
+        if (isIgnoredWorkspaceDirectory(entry.name, relative, DEFAULT_IGNORED_DIRS)) {
           continue;
         }
         await walk(absolute);
@@ -121,6 +122,17 @@ export async function searchFiles(query, options = {}) {
       }
     }
   }
+}
+
+export function isIgnoredWorkspaceDirectory(entryName, relativePath, ignoredDirs = DEFAULT_IGNORED_DIRS) {
+  if (ignoredDirs.has(entryName)) {
+    return true;
+  }
+
+  const normalizedRelativePath = relativePath.replaceAll("\\", "/");
+  return MCP_BACKUP_PATHS.some(
+    (backupPath) => normalizedRelativePath === backupPath || normalizedRelativePath.startsWith(`${backupPath}/`)
+  );
 }
 
 async function assertPathExists(absolutePath) {

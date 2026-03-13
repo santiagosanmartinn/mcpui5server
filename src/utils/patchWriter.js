@@ -6,7 +6,8 @@ import { resolveWorkspacePath, workspaceRoot } from "./fileSystem.js";
 
 const DEFAULT_MAX_BYTES = 1_000_000;
 const DEFAULT_MAX_DIFF_LINES = 120;
-const BACKUP_DIR = ".mcp-backups";
+const BACKUP_DIR = ".codex/mcp/backups";
+const LEGACY_BACKUP_DIR = ".mcp-backups";
 const PATCH_ID_PATTERN = /^[A-Za-z0-9._-]+$/;
 
 export async function previewFileWrite(inputPath, nextContent, options = {}) {
@@ -171,7 +172,7 @@ export async function rollbackProjectPatch(patchId, options = {}) {
   }
 
   const safeRoot = path.resolve(root);
-  const metadataPath = resolveWorkspacePath(`${BACKUP_DIR}/${patchId}.json`, safeRoot);
+  const metadataPath = await resolveExistingBackupMetadataPath(patchId, safeRoot);
   const metadata = await readBackupMetadata(metadataPath);
 
   if (metadata.rolledBackAt) {
@@ -374,6 +375,21 @@ async function existsOnDisk(absolutePath) {
   } catch {
     return false;
   }
+}
+
+async function resolveExistingBackupMetadataPath(patchId, root) {
+  const candidatePaths = [
+    resolveWorkspacePath(`${BACKUP_DIR}/${patchId}.json`, root),
+    resolveWorkspacePath(`${LEGACY_BACKUP_DIR}/${patchId}.json`, root)
+  ];
+
+  for (const candidatePath of candidatePaths) {
+    if (await existsOnDisk(candidatePath)) {
+      return candidatePath;
+    }
+  }
+
+  return candidatePaths[0];
 }
 
 async function readBackupMetadata(metadataPath) {

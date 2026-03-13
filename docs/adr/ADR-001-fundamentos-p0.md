@@ -29,7 +29,7 @@ Se aprueban estas decisiones de arquitectura:
 
 3. Escritura segura por patch:
 - implementar `preview -> apply -> rollback`.
-- guardar backups en `.mcp-backups/` con `patchId`.
+- guardar backups en `.codex/mcp/backups/` con `patchId`.
 - validar hash base opcional para evitar sobrescrituras inesperadas.
 
 4. Refactor JavaScript basado en AST:

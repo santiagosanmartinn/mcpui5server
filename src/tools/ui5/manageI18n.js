@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import { z } from "zod";
 import { ToolError } from "../../utils/errors.js";
 import { applyProjectPatch, previewFileWrite } from "../../utils/patchWriter.js";
-import { fileExists, readTextFile, resolveWorkspacePath } from "../../utils/fileSystem.js";
+import { fileExists, isIgnoredWorkspaceDirectory, readTextFile, resolveWorkspacePath } from "../../utils/fileSystem.js";
 
 const DEFAULT_SOURCE_DIR = "webapp";
 const DEFAULT_I18N_PATH = "webapp/i18n/i18n.properties";
@@ -304,7 +304,7 @@ async function listTrackedFiles(options) {
       const absolutePath = path.join(currentDir, entry.name);
       const relativePath = path.relative(path.resolve(root), absolutePath).replaceAll("\\", "/");
       if (entry.isDirectory()) {
-        if (IGNORED_DIRS.has(entry.name)) {
+        if (isIgnoredWorkspaceDirectory(entry.name, relativePath, IGNORED_DIRS)) {
           continue;
         }
         await walk(absolutePath);

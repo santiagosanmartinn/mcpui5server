@@ -2,6 +2,7 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import { z } from "zod";
 import { ToolError } from "../../utils/errors.js";
+import { isIgnoredWorkspaceDirectory } from "../../utils/fileSystem.js";
 import { applyProjectPatch, previewFileWrite } from "../../utils/patchWriter.js";
 import { fileExists, readJsonFile, resolveWorkspacePath } from "../../utils/fileSystem.js";
 import { analyzeUi5ProjectTool } from "../project/analyzeProject.js";
@@ -402,7 +403,8 @@ async function scanWorkspace(options) {
       }
       const absolutePath = path.join(currentDir, entry.name);
       if (entry.isDirectory()) {
-        if (IGNORED_DIRS.has(entry.name)) {
+        const relativePath = path.relative(path.resolve(root), absolutePath).replaceAll("\\", "/");
+        if (isIgnoredWorkspaceDirectory(entry.name, relativePath, IGNORED_DIRS)) {
           continue;
         }
         await walk(absolutePath);
