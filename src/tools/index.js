@@ -21,6 +21,9 @@ import { promptTokenBudgetTool } from "./project/promptTokenBudget.js";
 import { promptContextSelectorTool } from "./project/promptContextSelector.js";
 import { promptTemplateCatalogTool } from "./project/promptTemplateCatalog.js";
 import { promptRetrospectiveTool } from "./project/promptRetrospective.js";
+import { cfDeployPrecheckTool } from "./project/cfDeployPrecheck.js";
+import { onpremDeployChecklistTool } from "./project/onpremDeployChecklist.js";
+import { deployRunbookGeneratorTool } from "./project/deployRunbookGenerator.js";
 import { readProjectFileTool } from "./project/readFile.js";
 import { searchProjectFilesTool } from "./project/searchFiles.js";
 import { analyzeCurrentFileTool } from "./project/analyzeCurrentFile.js";
@@ -98,6 +101,9 @@ export const allTools = [
   promptContextSelectorTool,
   promptTemplateCatalogTool,
   promptRetrospectiveTool,
+  cfDeployPrecheckTool,
+  onpremDeployChecklistTool,
+  deployRunbookGeneratorTool,
   // UI5 generation and validation
   generateUi5ControllerTool,
   generateUi5FragmentTool,

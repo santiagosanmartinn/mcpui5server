@@ -2755,6 +2755,196 @@
       }
     },
     {
+      "name": "cf_deploy_precheck",
+      "title": null,
+      "description": "Run a safe pre-deployment readiness check for Cloud Foundry/MTA projects (manifest, mta, scripts, and secret-risk signals).",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "checkSecrets": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "manifestPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "mtaPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "packageJsonPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "strictRoutes": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "evidence": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "recommendation": {
+                  "kind": "string"
+                },
+                "status": {
+                  "kind": "enum",
+                  "values": [
+                    "pass",
+                    "warn",
+                    "fail",
+                    "info"
+                  ]
+                },
+                "title": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "filesDetected": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "manifest": {
+                "kind": "boolean"
+              },
+              "mta": {
+                "kind": "boolean"
+              },
+              "packageJson": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "deploymentMode": {
+                "kind": "enum",
+                "values": [
+                  "unknown",
+                  "cf_manifest",
+                  "mta",
+                  "mixed"
+                ]
+              },
+              "manifestPath": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mtaPath": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "packageJsonPath": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "failCount": {
+                "kind": "number"
+              },
+              "infoCount": {
+                "kind": "number"
+              },
+              "passCount": {
+                "kind": "number"
+              },
+              "ready": {
+                "kind": "boolean"
+              },
+              "warnCount": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "collect_legacy_project_intake",
       "title": null,
       "description": "Collect and persist legacy-project contextual intake to improve AI guidance quality while minimizing repeated prompts/tokens.",
@@ -3258,6 +3448,288 @@
               },
               "score": {
                 "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "deploy_runbook_generator",
+      "title": null,
+      "description": "Generate a deployment runbook (Cloud Foundry or On-Premise) from precheck signals, with dry-run preview and safe optional persistence.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "dryRun": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeRollback": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeValidation": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "manifestPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "maxDiffLines": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "mtaPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "objective": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "outputPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "platform": {
+            "kind": "enum",
+            "values": [
+              "cloud_foundry",
+              "onpremise"
+            ]
+          },
+          "reason": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "targetSystem": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "title": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "transportStrategy": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "cts",
+                "gcts",
+                "manual"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "applyResult": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "appliedAt": {
+                  "kind": "string"
+                },
+                "changedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "bytesAfter": {
+                        "kind": "number"
+                      },
+                      "bytesBefore": {
+                        "kind": "number"
+                      },
+                      "changed": {
+                        "kind": "boolean"
+                      },
+                      "newHash": {
+                        "kind": "string"
+                      },
+                      "oldHash": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "path": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "patchId": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "reason": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "skippedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "writesOnlyWithConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "changed": {
+            "kind": "boolean"
+          },
+          "dryRun": {
+            "kind": "boolean"
+          },
+          "outputPath": {
+            "kind": "string"
+          },
+          "platform": {
+            "kind": "enum",
+            "values": [
+              "cloud_foundry",
+              "onpremise"
+            ]
+          },
+          "precheckSummary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "keyFindings": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "level": {
+                "kind": "enum",
+                "values": [
+                  "ready",
+                  "needs_attention",
+                  "blocked"
+                ]
+              },
+              "ready": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "preview": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "changed": {
+                "kind": "boolean"
+              },
+              "diffPreview": {
+                "kind": "string"
+              },
+              "diffTruncated": {
+                "kind": "boolean"
+              },
+              "existsBefore": {
+                "kind": "boolean"
+              },
+              "newHash": {
+                "kind": "string"
+              },
+              "oldHash": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "path": {
+                "kind": "string"
+              },
+              "role": {
+                "kind": "literal",
+                "value": "deploy-runbook"
+              }
+            },
+            "catchall": null
+          },
+          "runbook": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "markdown": {
+                "kind": "string"
+              },
+              "sections": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "title": {
+                "kind": "string"
               }
             },
             "catchall": null
@@ -7662,6 +8134,328 @@
               "targetRef": {
                 "kind": "nullable",
                 "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "onprem_deploy_checklist",
+      "title": null,
+      "description": "Generate a safe on-premise deployment checklist with readiness scoring, missing-context questions, and rollout/rollback guidance.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "abapPackage": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "appId": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "businessOwner": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "intakePath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "landscape": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "requireIntakeContext": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "rollbackOwner": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "runSmokeTests": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "targetSystem": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "transportStrategy": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "cts",
+                "gcts",
+                "manual"
+              ]
+            }
+          },
+          "ui5RuntimeVersion": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyGuidance": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "checklist": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "deploy": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "evidence": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "postdeploy": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "evidence": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "predeploy": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "evidence": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              }
+            },
+            "catchall": null
+          },
+          "context": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "appId": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "rollbackOwner": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "runtimeLandscape": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "targetSystem": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "transportStrategy": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "enum",
+                  "values": [
+                    "cts",
+                    "gcts",
+                    "manual"
+                  ]
+                }
+              },
+              "ui5RuntimeVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "missingContext": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "field": {
+                  "kind": "string"
+                },
+                "question": {
+                  "kind": "string"
+                },
+                "why": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "nextActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "readiness": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "blockers": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "level": {
+                "kind": "enum",
+                "values": [
+                  "ready",
+                  "needs_attention",
+                  "blocked"
+                ]
+              },
+              "score": {
+                "kind": "number"
+              },
+              "warnings": {
+                "kind": "array",
+                "item": {
                   "kind": "string"
                 }
               }

@@ -731,6 +731,134 @@ Salida (ejemplo):
 }
 ```
 
+## 71) `cf_deploy_precheck`
+
+Entrada:
+```json
+{
+  "tool": "cf_deploy_precheck",
+  "arguments": {
+    "strictRoutes": true,
+    "checkSecrets": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "deploymentMode": "mixed",
+    "manifestPath": "manifest.yml",
+    "mtaPath": "mta.yaml",
+    "packageJsonPath": "package.json"
+  },
+  "summary": {
+    "ready": false,
+    "failCount": 1,
+    "warnCount": 2,
+    "passCount": 6,
+    "infoCount": 1
+  },
+  "checks": [
+    {
+      "id": "manifest_inline_secrets",
+      "status": "fail",
+      "title": "Riesgo de secretos en claro"
+    }
+  ],
+  "recommendedCommands": [
+    "npm run check",
+    "npm run build",
+    "cf push -f manifest.yml",
+    "mbt build -p cf"
+  ]
+}
+```
+
+## 72) `onprem_deploy_checklist`
+
+Entrada:
+```json
+{
+  "tool": "onprem_deploy_checklist",
+  "arguments": {
+    "targetSystem": "QAS",
+    "transportStrategy": "cts",
+    "appId": "demo.app",
+    "rollbackOwner": "team-ui5",
+    "ui5RuntimeVersion": "1.108.0"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "context": {
+    "runtimeLandscape": "onprem",
+    "targetSystem": "QAS",
+    "transportStrategy": "cts",
+    "ui5RuntimeVersion": "1.108.0",
+    "appId": "demo.app",
+    "rollbackOwner": "team-ui5"
+  },
+  "readiness": {
+    "level": "ready",
+    "score": 92,
+    "blockers": [],
+    "warnings": []
+  },
+  "checklist": {
+    "predeploy": [
+      {
+        "id": "confirm-target-system",
+        "status": "todo"
+      }
+    ],
+    "deploy": [],
+    "postdeploy": []
+  }
+}
+```
+
+## 73) `deploy_runbook_generator`
+
+Entrada:
+```json
+{
+  "tool": "deploy_runbook_generator",
+  "arguments": {
+    "platform": "cloud_foundry",
+    "dryRun": true,
+    "includeRollback": true,
+    "includeValidation": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "platform": "cloud_foundry",
+  "outputPath": "docs/mcp/runbooks/deploy-cloud-foundry.md",
+  "precheckSummary": {
+    "ready": false,
+    "level": "needs_attention",
+    "keyFindings": [
+      "[warn] Definicion de rutas: No se detectaron rutas explicitas."
+    ]
+  },
+  "runbook": {
+    "title": "Runbook de despliegue Cloud Foundry",
+    "sections": ["overview", "precheck-summary", "steps", "validation", "rollback"]
+  },
+  "applyResult": null
+}
+```
+
 ## 52) `prompt_intake_wizard`
 
 Entrada:

@@ -1136,3 +1136,51 @@ Nota comun para herramientas Git:
   - `improvements` (ajustes y preguntas para la siguiente iteracion)
   - `suggestedPromptPatch` (`add/keep/remove`)
   - `preview` + `applyResult` (si `dryRun: false`)
+
+### `cf_deploy_precheck`
+
+- Objetivo: ejecutar prechecks de despliegue en Cloud Foundry/MTA sin lanzar `deploy`.
+- Diferenciacion:
+  - valida descriptores (`manifest.yml`/`mta.yaml`), scripts y riesgos tipicos (placeholders, secretos en claro, paths MTA).
+- Entrada destacada:
+  - `manifestPath`, `mtaPath`, `packageJsonPath` (opcionales)
+  - `strictRoutes`, `checkSecrets`
+  - `language`
+- Salida:
+  - `scope.deploymentMode` (`cf_manifest`, `mta`, `mixed`, `unknown`)
+  - `checks` con estado (`pass|warn|fail|info`) y recomendacion
+  - `summary.ready` + contadores por severidad
+  - `recommendedCommands` para ejecutar manualmente
+
+### `onprem_deploy_checklist`
+
+- Objetivo: generar checklist de despliegue on-prem con scoring de readiness y contexto faltante.
+- Diferenciacion:
+  - orientado a preparacion operativa (transporte, sistema objetivo, rollback, smoke tests), no a ejecutar transportes.
+- Entrada destacada:
+  - `targetSystem`, `transportStrategy`, `appId`, `rollbackOwner`
+  - `ui5RuntimeVersion`, `businessOwner`, `runSmokeTests`
+  - `requireIntakeContext`, `intakePath`
+  - `language`
+- Salida:
+  - `readiness` (`ready|needs_attention|blocked`) con `score`, `blockers`, `warnings`
+  - checklist por fases (`predeploy`, `deploy`, `postdeploy`)
+  - `missingContext` con preguntas accionables
+  - `nextActions` para cerrar gaps antes del despliegue
+
+### `deploy_runbook_generator`
+
+- Objetivo: generar runbook de despliegue (Cloud Foundry u on-prem) a partir de prechecks y guardarlo de forma segura con `dryRun`.
+- Diferenciacion:
+  - transforma hallazgos tecnicos en plan operativo reproducible para el equipo.
+- Entrada destacada:
+  - `platform`: `cloud_foundry` | `onpremise`
+  - `title`, `objective`, `includeRollback`, `includeValidation`
+  - `outputPath`, `dryRun`, `reason`
+  - contexto segun plataforma (`manifestPath`/`mtaPath` o `targetSystem`/`transportStrategy`)
+  - `language`
+- Salida:
+  - `precheckSummary` (estado y hallazgos clave)
+  - `runbook.markdown` + secciones incluidas
+  - `preview` y `applyResult` cuando `dryRun=false`
+  - politica explicita de no auto-despliegue
