@@ -9,6 +9,9 @@ import { generatePrDescriptionTool } from "./project/generatePrDescription.js";
 import { branchHygieneReportTool } from "./project/branchHygieneReport.js";
 import { conflictPrecheckTool } from "./project/conflictPrecheck.js";
 import { traceChangeOwnershipTool } from "./project/traceChangeOwnership.js";
+import { smartStageChangesTool } from "./project/smartStageChanges.js";
+import { detectCommitSmellsTool } from "./project/detectCommitSmells.js";
+import { releaseNotesFromCommitsTool } from "./project/releaseNotesFromCommits.js";
 import { readProjectFileTool } from "./project/readFile.js";
 import { searchProjectFilesTool } from "./project/searchFiles.js";
 import { analyzeCurrentFileTool } from "./project/analyzeCurrentFile.js";
@@ -73,6 +76,9 @@ export const allTools = [
   branchHygieneReportTool,
   conflictPrecheckTool,
   traceChangeOwnershipTool,
+  smartStageChangesTool,
+  detectCommitSmellsTool,
+  releaseNotesFromCommitsTool,
   // UI5 generation and validation
   generateUi5ControllerTool,
   generateUi5FragmentTool,

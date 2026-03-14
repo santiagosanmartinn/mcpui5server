@@ -255,6 +255,45 @@ Nota comun para herramientas Git:
   - `reviewerSuggestions`
   - notas de trazabilidad (por ejemplo cuando hay archivos sin historial)
 
+### `smart_stage_changes`
+
+- Objetivo: proponer un plan de staging por bloques logicos sin ejecutar `git add`.
+- Diferenciacion:
+  - no reemplaza `prepare_safe_commit`; lo complementa con una propuesta de particion del staging.
+- Entrada destacada:
+  - alcance diff (`mode`, `baseRef`, `targetRef`)
+  - `includeUntracked`, `maxGroups`, `language`
+- Salida:
+  - `stagingPlan.groups` con ficheros agrupados por intencion (`ui5-runtime`, `manifest-config`, `tests`, `docs`, etc.)
+  - `suggestedAddCommand` por grupo (solo sugerencia, no se ejecuta)
+  - advertencias de contexto (`warnings`)
+
+### `detect_commit_smells`
+
+- Objetivo: detectar "olores" de commit (tamano, mezcla de responsabilidades, gaps de test, conflictos, staged/unstaged mixto).
+- Diferenciacion:
+  - no reemplaza `risk_review_from_diff`; se centra en calidad de commit y particion, no en riesgo funcional global.
+- Entrada destacada:
+  - alcance diff (`mode`, `baseRef`, `targetRef`)
+  - `includeUntracked`, `maxSplitGroups`, `language`
+- Salida:
+  - `smells` priorizados con evidencia y accion sugerida
+  - `splitProposal` reutilizable para separar commits
+  - `gate` con bloqueantes y avisos
+
+### `release_notes_from_commits`
+
+- Objetivo: generar notas de version desde historial Git (rango o cola reciente) usando heuristicas de Conventional Commits.
+- Diferenciacion:
+  - no reemplaza `generate_pr_description`; esta herramienta trabaja sobre historial de commits, no sobre diff puntual.
+- Entrada destacada:
+  - `fromRef`/`toRef` (si no hay `fromRef`, usa modo tail sobre `toRef`)
+  - `maxCommits`, `includeAuthors`, `language`
+- Salida:
+  - `summary` por tipo (`feat`, `fix`, `perf`, etc.) y `breakingChanges`
+  - `entries` normalizados por commit
+  - `releaseNotes.markdown` listo para compartir
+
 ## Dominio ui5
 
 ### `generate_ui5_controller`

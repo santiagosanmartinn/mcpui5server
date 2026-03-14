@@ -3267,6 +3267,259 @@
       }
     },
     {
+      "name": "detect_commit_smells",
+      "title": null,
+      "description": "Detect commit quality smells (size, mixed concerns, test gaps) and suggest a safer split plan.",
+      "inputSchema": {
+        "kind": "effects",
+        "effectType": "refinement",
+        "inner": {
+          "kind": "object",
+          "unknownKeys": "strict",
+          "keys": {
+            "baseRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "includeUntracked": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
+            "maxFiles": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "maxSplitGroups": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "mode": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              }
+            },
+            "targetRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "timeoutMs": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            }
+          },
+          "catchall": null
+        }
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "modifiesGitState": {
+                "kind": "boolean"
+              },
+              "note": {
+                "kind": "string"
+              },
+              "requiresExplicitUserConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "gate": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "blockingSmells": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "shouldSplitCommit": {
+                "kind": "boolean"
+              },
+              "warningSmells": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "baseRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              },
+              "targetRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "smells": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "description": {
+                  "kind": "string"
+                },
+                "evidence": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestedFix": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "splitProposal": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "files": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "groupId": {
+                  "kind": "string"
+                },
+                "suggestedAddCommand": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "title": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "additions": {
+                "kind": "number"
+              },
+              "changedFiles": {
+                "kind": "number"
+              },
+              "deletions": {
+                "kind": "number"
+              },
+              "touches": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "config": {
+                    "kind": "boolean"
+                  },
+                  "controllers": {
+                    "kind": "boolean"
+                  },
+                  "docs": {
+                    "kind": "boolean"
+                  },
+                  "i18n": {
+                    "kind": "boolean"
+                  },
+                  "manifest": {
+                    "kind": "boolean"
+                  },
+                  "tests": {
+                    "kind": "boolean"
+                  },
+                  "views": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "ensure_project_mcp_current",
       "title": null,
       "description": "Automatically audit and upgrade MCP project artifacts to the current managed layout when needed.",
@@ -9036,6 +9289,233 @@
       }
     },
     {
+      "name": "release_notes_from_commits",
+      "title": null,
+      "description": "Generate release notes from commit history (range or recent tail) using conventional-commit heuristics.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "fromRef": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "includeAuthors": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxCommits": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "toRef": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyGitAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "entries": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "author": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "breaking": {
+                  "kind": "boolean"
+                },
+                "date": {
+                  "kind": "string"
+                },
+                "scope": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "sha": {
+                  "kind": "string"
+                },
+                "shortSha": {
+                  "kind": "string"
+                },
+                "subject": {
+                  "kind": "string"
+                },
+                "type": {
+                  "kind": "enum",
+                  "values": [
+                    "feat",
+                    "fix",
+                    "perf",
+                    "refactor",
+                    "docs",
+                    "test",
+                    "chore",
+                    "other"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "range": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "fromRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "range",
+                  "tail"
+                ]
+              },
+              "toRef": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "releaseNotes": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "highlights": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "markdown": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "repository": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "branch": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "gitAvailable": {
+                "kind": "boolean"
+              },
+              "headSha": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "isGitRepository": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "breakingChanges": {
+                "kind": "number"
+              },
+              "byType": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "chore": {
+                    "kind": "number"
+                  },
+                  "docs": {
+                    "kind": "number"
+                  },
+                  "feat": {
+                    "kind": "number"
+                  },
+                  "fix": {
+                    "kind": "number"
+                  },
+                  "other": {
+                    "kind": "number"
+                  },
+                  "perf": {
+                    "kind": "number"
+                  },
+                  "refactor": {
+                    "kind": "number"
+                  },
+                  "test": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "totalCommits": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "risk_review_from_diff",
       "title": null,
       "description": "Review Git diff risk profile and return prioritized findings with mitigation guidance before merge.",
@@ -11854,6 +12334,209 @@
               },
               "truncated": {
                 "kind": "boolean"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "smart_stage_changes",
+      "title": null,
+      "description": "Suggest a non-destructive logical staging plan (grouped git add commands) from the current diff.",
+      "inputSchema": {
+        "kind": "effects",
+        "effectType": "refinement",
+        "inner": {
+          "kind": "object",
+          "unknownKeys": "strict",
+          "keys": {
+            "baseRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "includeUntracked": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
+            "maxFiles": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "maxGroups": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "mode": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              }
+            },
+            "targetRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "timeoutMs": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            }
+          },
+          "catchall": null
+        }
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "appliesGitAdd": {
+                "kind": "boolean"
+              },
+              "note": {
+                "kind": "string"
+              },
+              "requiresExplicitUserConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "baseRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              },
+              "targetRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "stagingPlan": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "groups": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "files": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "id": {
+                      "kind": "string"
+                    },
+                    "rationale": {
+                      "kind": "string"
+                    },
+                    "risk": {
+                      "kind": "enum",
+                      "values": [
+                        "low",
+                        "medium",
+                        "high"
+                      ]
+                    },
+                    "suggestedAddCommand": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "strategy": {
+                "kind": "string"
+              },
+              "warnings": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "additions": {
+                "kind": "number"
+              },
+              "changedFiles": {
+                "kind": "number"
+              },
+              "deletions": {
+                "kind": "number"
+              },
+              "stagedChanges": {
+                "kind": "number"
+              },
+              "unstagedChanges": {
+                "kind": "number"
+              },
+              "untrackedFiles": {
+                "kind": "number"
               }
             },
             "catchall": null

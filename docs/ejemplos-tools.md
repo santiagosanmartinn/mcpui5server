@@ -1192,6 +1192,147 @@ Salida (ejemplo):
 }
 ```
 
+## 62) `smart_stage_changes`
+
+Entrada:
+```json
+{
+  "tool": "smart_stage_changes",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "language": "es",
+    "maxGroups": 6
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "stagingPlan": {
+    "strategy": "Agrupacion por intencion de cambio (runtime, manifest/config, tests, docs, i18n, misc).",
+    "groups": [
+      {
+        "id": "ui5-runtime",
+        "title": "Runtime UI5",
+        "risk": "high",
+        "files": ["webapp/controller/Main.controller.js"],
+        "suggestedAddCommand": "git add -- \"webapp/controller/Main.controller.js\""
+      }
+    ],
+    "warnings": []
+  },
+  "automationPolicy": {
+    "appliesGitAdd": false,
+    "requiresExplicitUserConsent": true
+  }
+}
+```
+
+## 63) `detect_commit_smells`
+
+Entrada:
+```json
+{
+  "tool": "detect_commit_smells",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "language": "es"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "changedFiles": 12,
+    "additions": 210,
+    "deletions": 54
+  },
+  "smells": [
+    {
+      "id": "mixed-concerns",
+      "severity": "medium",
+      "title": "Mezcla de responsabilidades"
+    },
+    {
+      "id": "code-without-tests",
+      "severity": "high",
+      "title": "Codigo/configuracion sin tests asociados"
+    }
+  ],
+  "gate": {
+    "shouldSplitCommit": true,
+    "blockingSmells": ["code-without-tests"],
+    "warningSmells": ["mixed-concerns"]
+  },
+  "automationPolicy": {
+    "modifiesGitState": false,
+    "requiresExplicitUserConsent": true
+  }
+}
+```
+
+## 64) `release_notes_from_commits`
+
+Entrada:
+```json
+{
+  "tool": "release_notes_from_commits",
+  "arguments": {
+    "fromRef": "v1.4.0",
+    "toRef": "HEAD",
+    "maxCommits": 100,
+    "includeAuthors": true,
+    "language": "es"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "range": {
+    "fromRef": "v1.4.0",
+    "toRef": "HEAD",
+    "mode": "range"
+  },
+  "summary": {
+    "totalCommits": 18,
+    "breakingChanges": 1,
+    "byType": {
+      "feat": 5,
+      "fix": 6,
+      "perf": 1,
+      "refactor": 2,
+      "docs": 2,
+      "test": 1,
+      "chore": 1,
+      "other": 0
+    }
+  },
+  "releaseNotes": {
+    "highlights": [
+      "Cambios breaking detectados: 1.",
+      "Nuevas funcionalidades: 5.",
+      "Correcciones: 6."
+    ],
+    "markdown": "# Notas de Version\n\n## Nuevas funcionalidades\n- ..."
+  },
+  "automationPolicy": {
+    "readOnlyGitAnalysis": true
+  }
+}
+```
+
 ## 24) `mcp_health_report`
 
 Entrada:

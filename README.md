@@ -68,6 +68,9 @@ src/
       branchHygieneReport.js
       conflictPrecheck.js
       traceChangeOwnership.js
+      smartStageChanges.js
+      detectCommitSmells.js
+      releaseNotesFromCommits.js
       readFile.js
       searchFiles.js
       analyzeCurrentFile.js
@@ -162,6 +165,9 @@ src/
 59. `branch_hygiene_report`
 60. `conflict_precheck`
 61. `trace_change_ownership`
+62. `smart_stage_changes`
+63. `detect_commit_smells`
+64. `release_notes_from_commits`
 
 Todas las herramientas se descubren dinamicamente a traves del registro central en `src/tools/index.js` y se registran en MCP con `registerTool(...)`, incluyendo:
 
