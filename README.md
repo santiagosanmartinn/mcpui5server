@@ -71,6 +71,8 @@ src/
       smartStageChanges.js
       detectCommitSmells.js
       releaseNotesFromCommits.js
+      mergeReadinessReport.js
+      mergeActionPlan.js
       readFile.js
       searchFiles.js
       analyzeCurrentFile.js
@@ -80,6 +82,7 @@ src/
       rollbackPatch.js
       runProjectQualityGate.js
       mcpHealthReport.js
+      mcpMetricsDashboard.js
     documentation/
       cacheStore.js
       searchUI5SDK.js
@@ -168,6 +171,9 @@ src/
 62. `smart_stage_changes`
 63. `detect_commit_smells`
 64. `release_notes_from_commits`
+65. `merge_readiness_report`
+66. `merge_action_plan`
+67. `mcp_metrics_dashboard`
 
 Todas las herramientas se descubren dinamicamente a traves del registro central en `src/tools/index.js` y se registran en MCP con `registerTool(...)`, incluyendo:
 

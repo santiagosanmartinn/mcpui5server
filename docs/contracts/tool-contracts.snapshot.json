@@ -6450,6 +6450,1229 @@
       }
     },
     {
+      "name": "mcp_metrics_dashboard",
+      "title": null,
+      "description": "Build an MCP telemetry dashboard to surface high-value tools, failing/slow tools, and prioritized improvement opportunities.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "errorRateThreshold": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "includeToolBreakdown": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxSessions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "minInvocations": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sessionIds": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "slowRateThreshold": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "telemetryDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "dashboard": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "failingTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "averageDurationMs": {
+                      "kind": "number"
+                    },
+                    "errorCount": {
+                      "kind": "number"
+                    },
+                    "errorRate": {
+                      "kind": "number"
+                    },
+                    "estimatedReworkCostMs": {
+                      "kind": "number"
+                    },
+                    "estimatedTimeCostMs": {
+                      "kind": "number"
+                    },
+                    "invocations": {
+                      "kind": "number"
+                    },
+                    "maxDurationMs": {
+                      "kind": "number"
+                    },
+                    "slowCount": {
+                      "kind": "number"
+                    },
+                    "slowRate": {
+                      "kind": "number"
+                    },
+                    "successCount": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "toolName": {
+                      "kind": "string"
+                    },
+                    "topErrorCodes": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "object",
+                        "unknownKeys": "strip",
+                        "keys": {
+                          "code": {
+                            "kind": "string"
+                          },
+                          "count": {
+                            "kind": "number"
+                          }
+                        },
+                        "catchall": null
+                      }
+                    },
+                    "valueScore": {
+                      "kind": "number"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "highestValueTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "averageDurationMs": {
+                      "kind": "number"
+                    },
+                    "errorCount": {
+                      "kind": "number"
+                    },
+                    "errorRate": {
+                      "kind": "number"
+                    },
+                    "estimatedReworkCostMs": {
+                      "kind": "number"
+                    },
+                    "estimatedTimeCostMs": {
+                      "kind": "number"
+                    },
+                    "invocations": {
+                      "kind": "number"
+                    },
+                    "maxDurationMs": {
+                      "kind": "number"
+                    },
+                    "slowCount": {
+                      "kind": "number"
+                    },
+                    "slowRate": {
+                      "kind": "number"
+                    },
+                    "successCount": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "toolName": {
+                      "kind": "string"
+                    },
+                    "topErrorCodes": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "object",
+                        "unknownKeys": "strip",
+                        "keys": {
+                          "code": {
+                            "kind": "string"
+                          },
+                          "count": {
+                            "kind": "number"
+                          }
+                        },
+                        "catchall": null
+                      }
+                    },
+                    "valueScore": {
+                      "kind": "number"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "improvementAreas": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "priority": {
+                      "kind": "enum",
+                      "values": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "rationale": {
+                      "kind": "string"
+                    },
+                    "recommendedActions": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "targetTools": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "mostUsedTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "averageDurationMs": {
+                      "kind": "number"
+                    },
+                    "errorCount": {
+                      "kind": "number"
+                    },
+                    "errorRate": {
+                      "kind": "number"
+                    },
+                    "estimatedReworkCostMs": {
+                      "kind": "number"
+                    },
+                    "estimatedTimeCostMs": {
+                      "kind": "number"
+                    },
+                    "invocations": {
+                      "kind": "number"
+                    },
+                    "maxDurationMs": {
+                      "kind": "number"
+                    },
+                    "slowCount": {
+                      "kind": "number"
+                    },
+                    "slowRate": {
+                      "kind": "number"
+                    },
+                    "successCount": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "toolName": {
+                      "kind": "string"
+                    },
+                    "topErrorCodes": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "object",
+                        "unknownKeys": "strip",
+                        "keys": {
+                          "code": {
+                            "kind": "string"
+                          },
+                          "count": {
+                            "kind": "number"
+                          }
+                        },
+                        "catchall": null
+                      }
+                    },
+                    "valueScore": {
+                      "kind": "number"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "potentialSavings": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "avoidableSlowTimeMs": {
+                    "kind": "number"
+                  },
+                  "estimatedReworkTimeMs": {
+                    "kind": "number"
+                  },
+                  "note": {
+                    "kind": "string"
+                  }
+                },
+                "catchall": null
+              },
+              "slowTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "averageDurationMs": {
+                      "kind": "number"
+                    },
+                    "errorCount": {
+                      "kind": "number"
+                    },
+                    "errorRate": {
+                      "kind": "number"
+                    },
+                    "estimatedReworkCostMs": {
+                      "kind": "number"
+                    },
+                    "estimatedTimeCostMs": {
+                      "kind": "number"
+                    },
+                    "invocations": {
+                      "kind": "number"
+                    },
+                    "maxDurationMs": {
+                      "kind": "number"
+                    },
+                    "slowCount": {
+                      "kind": "number"
+                    },
+                    "slowRate": {
+                      "kind": "number"
+                    },
+                    "successCount": {
+                      "kind": "number"
+                    },
+                    "successRate": {
+                      "kind": "number"
+                    },
+                    "toolName": {
+                      "kind": "string"
+                    },
+                    "topErrorCodes": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "object",
+                        "unknownKeys": "strip",
+                        "keys": {
+                          "code": {
+                            "kind": "string"
+                          },
+                          "count": {
+                            "kind": "number"
+                          }
+                        },
+                        "catchall": null
+                      }
+                    },
+                    "valueScore": {
+                      "kind": "number"
+                    }
+                  },
+                  "catchall": null
+                }
+              }
+            },
+            "catchall": null
+          },
+          "dataQuality": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "parseErrors": {
+                "kind": "number"
+              },
+              "telemetryFilesFound": {
+                "kind": "number"
+              },
+              "warnings": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "sessionIds": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "sessionsAnalyzed": {
+                "kind": "number"
+              },
+              "sessionsRequested": {
+                "kind": "number"
+              },
+              "telemetryDir": {
+                "kind": "string"
+              },
+              "totals": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "averageDurationMs": {
+                    "kind": "number"
+                  },
+                  "errors": {
+                    "kind": "number"
+                  },
+                  "invocations": {
+                    "kind": "number"
+                  },
+                  "slowInvocations": {
+                    "kind": "number"
+                  },
+                  "successes": {
+                    "kind": "number"
+                  },
+                  "totalDurationMs": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "window": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "endedAt": {
+                    "kind": "nullable",
+                    "inner": {
+                      "kind": "string"
+                    }
+                  },
+                  "startedAt": {
+                    "kind": "nullable",
+                    "inner": {
+                      "kind": "string"
+                    }
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "toolBreakdown": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "averageDurationMs": {
+                  "kind": "number"
+                },
+                "errorCount": {
+                  "kind": "number"
+                },
+                "errorRate": {
+                  "kind": "number"
+                },
+                "estimatedReworkCostMs": {
+                  "kind": "number"
+                },
+                "estimatedTimeCostMs": {
+                  "kind": "number"
+                },
+                "invocations": {
+                  "kind": "number"
+                },
+                "maxDurationMs": {
+                  "kind": "number"
+                },
+                "slowCount": {
+                  "kind": "number"
+                },
+                "slowRate": {
+                  "kind": "number"
+                },
+                "successCount": {
+                  "kind": "number"
+                },
+                "successRate": {
+                  "kind": "number"
+                },
+                "toolName": {
+                  "kind": "string"
+                },
+                "topErrorCodes": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "code": {
+                        "kind": "string"
+                      },
+                      "count": {
+                        "kind": "number"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "valueScore": {
+                  "kind": "number"
+                }
+              },
+              "catchall": null
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "merge_action_plan",
+      "title": null,
+      "description": "Create a safe, non-destructive merge action plan (strategy, staged checklist, and suggested commands) from merge readiness signals.",
+      "inputSchema": {
+        "kind": "effects",
+        "effectType": "refinement",
+        "inner": {
+          "kind": "object",
+          "unknownKeys": "strict",
+          "keys": {
+            "baseRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "includeCommands": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "includeUntracked": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
+            "maxFiles": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "mode": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              }
+            },
+            "preferredStrategy": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "auto",
+                  "merge",
+                  "rebase"
+                ]
+              }
+            },
+            "sourceRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "targetRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "timeoutMs": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            }
+          },
+          "catchall": null
+        }
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "performsMergeOrPush": {
+                "kind": "boolean"
+              },
+              "requiresExplicitUserConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "commands": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "integrate": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "postmerge": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "premerge": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "sync": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "validate": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "nextActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "plan": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "integrate": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "postmerge": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "premerge": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "sync": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "validate": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "required": {
+                      "kind": "boolean"
+                    },
+                    "status": {
+                      "kind": "enum",
+                      "values": [
+                        "todo",
+                        "blocked",
+                        "not_needed"
+                      ]
+                    },
+                    "title": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                }
+              }
+            },
+            "catchall": null
+          },
+          "readiness": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "blockers": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "level": {
+                "kind": "enum",
+                "values": [
+                  "ready",
+                  "needs_attention",
+                  "blocked"
+                ]
+              },
+              "readyForMerge": {
+                "kind": "boolean"
+              },
+              "score": {
+                "kind": "number"
+              },
+              "warnings": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "baseRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              },
+              "targetRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "signals": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "branchLevel": {
+                "kind": "string"
+              },
+              "conflictLevel": {
+                "kind": "string"
+              },
+              "riskLevel": {
+                "kind": "string"
+              },
+              "shouldSplitCommit": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "strategy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "rationale": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "recommended": {
+                "kind": "enum",
+                "values": [
+                  "merge",
+                  "rebase",
+                  "defer"
+                ]
+              },
+              "requested": {
+                "kind": "enum",
+                "values": [
+                  "auto",
+                  "merge",
+                  "rebase"
+                ]
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "merge_readiness_report",
+      "title": null,
+      "description": "Aggregate Git quality checks into a single merge-readiness decision (ready, needs_attention, blocked).",
+      "inputSchema": {
+        "kind": "effects",
+        "effectType": "refinement",
+        "inner": {
+          "kind": "object",
+          "unknownKeys": "strict",
+          "keys": {
+            "baseRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "includeUntracked": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
+            "maxFiles": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "mode": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              }
+            },
+            "sourceRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "targetRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "timeoutMs": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            }
+          },
+          "catchall": null
+        }
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "performsMergeOrPush": {
+                "kind": "boolean"
+              },
+              "requiresExplicitUserConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "checks": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "branch": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "level": {
+                    "kind": "string"
+                  },
+                  "score": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "commit": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "blockingChecks": {
+                    "kind": "array",
+                    "item": {
+                      "kind": "string"
+                    }
+                  },
+                  "readyForCommit": {
+                    "kind": "boolean"
+                  },
+                  "warningChecks": {
+                    "kind": "array",
+                    "item": {
+                      "kind": "string"
+                    }
+                  }
+                },
+                "catchall": null
+              },
+              "conflict": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "level": {
+                    "kind": "string"
+                  },
+                  "overlappingFiles": {
+                    "kind": "number"
+                  },
+                  "score": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "risk": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "level": {
+                    "kind": "string"
+                  },
+                  "mustFixBeforeMerge": {
+                    "kind": "array",
+                    "item": {
+                      "kind": "string"
+                    }
+                  },
+                  "score": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "smells": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "highSeverityCount": {
+                    "kind": "number"
+                  },
+                  "mediumSeverityCount": {
+                    "kind": "number"
+                  },
+                  "shouldSplitCommit": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "nextActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "readiness": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "blockers": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "level": {
+                "kind": "enum",
+                "values": [
+                  "ready",
+                  "needs_attention",
+                  "blocked"
+                ]
+              },
+              "readyForMerge": {
+                "kind": "boolean"
+              },
+              "score": {
+                "kind": "number"
+              },
+              "warnings": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "baseRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "mode": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              },
+              "targetRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "prepare_legacy_project_for_ai",
       "title": null,
       "description": "Prepare a legacy/existing project for high-quality AI delivery by orchestrating ensure, intake, baseline, and context index steps.",
@@ -9296,7 +10519,35 @@
         "kind": "object",
         "unknownKeys": "strict",
         "keys": {
+          "compareBy": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "auto",
+                "refs",
+                "tags",
+                "since_latest_tag"
+              ]
+            }
+          },
+          "format": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "notes",
+                "changelog"
+              ]
+            }
+          },
           "fromRef": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "fromTag": {
             "kind": "optional",
             "inner": {
               "kind": "string"
@@ -9325,6 +10576,12 @@
             }
           },
           "toRef": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "toTag": {
             "kind": "optional",
             "inner": {
               "kind": "string"
@@ -9404,7 +10661,21 @@
             "kind": "object",
             "unknownKeys": "strip",
             "keys": {
+              "compareBy": {
+                "kind": "enum",
+                "values": [
+                  "refs",
+                  "tags",
+                  "since_latest_tag"
+                ]
+              },
               "fromRef": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "fromTag": {
                 "kind": "nullable",
                 "inner": {
                   "kind": "string"
@@ -9414,11 +10685,19 @@
                 "kind": "enum",
                 "values": [
                   "range",
-                  "tail"
+                  "tail",
+                  "tag_range",
+                  "since_latest_tag"
                 ]
               },
               "toRef": {
                 "kind": "string"
+              },
+              "toTag": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
               }
             },
             "catchall": null
@@ -9427,6 +10706,13 @@
             "kind": "object",
             "unknownKeys": "strip",
             "keys": {
+              "format": {
+                "kind": "enum",
+                "values": [
+                  "notes",
+                  "changelog"
+                ]
+              },
               "highlights": {
                 "kind": "array",
                 "item": {
@@ -13052,7 +14338,7 @@
     {
       "name": "trace_change_ownership",
       "title": null,
-      "description": "Trace likely code ownership for changed files to suggest reviewers using local Git history.",
+      "description": "Trace likely code ownership for changed files using Git history + blame recency to suggest more accurate reviewers.",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -13088,7 +14374,19 @@
                 "kind": "number"
               }
             },
+            "maxFilesWithBlame": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
             "maxOwners": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "maxRangesPerFile": {
               "kind": "optional",
               "inner": {
                 "kind": "number"
@@ -13121,6 +14419,12 @@
               "kind": "optional",
               "inner": {
                 "kind": "number"
+              }
+            },
+            "useBlame": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
               }
             }
           },
@@ -13162,6 +14466,12 @@
                         "high"
                       ]
                     },
+                    "lastActivityAt": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
                     "lastAuthor": {
                       "kind": "nullable",
                       "inner": {
@@ -13186,6 +14496,34 @@
                     },
                     "status": {
                       "kind": "string"
+                    },
+                    "topZoneOwners": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "object",
+                        "unknownKeys": "strip",
+                        "keys": {
+                          "email": {
+                            "kind": "nullable",
+                            "inner": {
+                              "kind": "string"
+                            }
+                          },
+                          "lastTouchedAt": {
+                            "kind": "nullable",
+                            "inner": {
+                              "kind": "string"
+                            }
+                          },
+                          "lines": {
+                            "kind": "number"
+                          },
+                          "name": {
+                            "kind": "string"
+                          }
+                        },
+                        "catchall": null
+                      }
                     }
                   },
                   "catchall": null
@@ -13203,6 +14541,9 @@
                   "kind": "object",
                   "unknownKeys": "strip",
                   "keys": {
+                    "blamedLines": {
+                      "kind": "number"
+                    },
                     "confidence": {
                       "kind": "enum",
                       "values": [
@@ -13223,8 +14564,17 @@
                         "kind": "string"
                       }
                     },
+                    "lastTouchedAt": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
                     "name": {
                       "kind": "string"
+                    },
+                    "recencyScore": {
+                      "kind": "number"
                     },
                     "touchedFiles": {
                       "kind": "number"

@@ -3,10 +3,17 @@ import { runGitInRepository, tryResolveGitRepository } from "../../utils/git.js"
 import { resolveLanguage, t } from "../../utils/language.js";
 
 const NOTE_TYPES = ["feat", "fix", "perf", "refactor", "docs", "test", "chore", "other"];
+const COMPARE_BY = ["auto", "refs", "tags", "since_latest_tag"];
+const RANGE_MODES = ["range", "tail", "tag_range", "since_latest_tag"];
+const NOTE_FORMATS = ["notes", "changelog"];
 
 const inputSchema = z.object({
   fromRef: z.string().min(1).optional(),
   toRef: z.string().min(1).optional(),
+  fromTag: z.string().min(1).optional(),
+  toTag: z.string().min(1).optional(),
+  compareBy: z.enum(COMPARE_BY).optional(),
+  format: z.enum(NOTE_FORMATS).optional(),
   language: z.enum(["es", "en"]).optional(),
   maxCommits: z.number().int().min(1).max(500).optional(),
   includeAuthors: z.boolean().optional()
@@ -22,7 +29,10 @@ const outputSchema = z.object({
   range: z.object({
     fromRef: z.string().nullable(),
     toRef: z.string(),
-    mode: z.enum(["range", "tail"])
+    fromTag: z.string().nullable(),
+    toTag: z.string().nullable(),
+    mode: z.enum(RANGE_MODES),
+    compareBy: z.enum(["refs", "tags", "since_latest_tag"])
   }),
   summary: z.object({
     totalCommits: z.number().int().nonnegative(),
@@ -52,6 +62,7 @@ const outputSchema = z.object({
     })
   ),
   releaseNotes: z.object({
+    format: z.enum(NOTE_FORMATS),
     highlights: z.array(z.string()),
     markdown: z.string()
   }),
@@ -71,8 +82,9 @@ export const releaseNotesFromCommitsTool = {
     const language = resolveLanguage(parsed.language);
     const maxCommits = parsed.maxCommits ?? 50;
     const includeAuthors = parsed.includeAuthors ?? true;
+    const format = resolveOutputFormat(parsed);
     const repository = await tryResolveGitRepository(context.rootDir, {});
-    const toRef = parsed.toRef ?? "HEAD";
+    const fallbackPlan = buildFallbackPlan(parsed);
 
     if (!repository.gitAvailable || !repository.isGitRepository) {
       return outputSchema.parse({
@@ -83,9 +95,12 @@ export const releaseNotesFromCommitsTool = {
           headSha: repository.headSha
         },
         range: {
-          fromRef: parsed.fromRef ?? null,
-          toRef,
-          mode: parsed.fromRef ? "range" : "tail"
+          fromRef: fallbackPlan.fromRef,
+          toRef: fallbackPlan.toRef,
+          fromTag: fallbackPlan.fromTag,
+          toTag: fallbackPlan.toTag,
+          mode: fallbackPlan.mode,
+          compareBy: fallbackPlan.compareBy
         },
         summary: {
           totalCommits: 0,
@@ -95,12 +110,15 @@ export const releaseNotesFromCommitsTool = {
         },
         entries: [],
         releaseNotes: {
+          format,
           highlights: [
             !repository.gitAvailable
               ? t(language, "Git no esta disponible en este entorno.", "Git is not available in this environment.")
               : t(language, "El workspace no es un repositorio Git.", "Workspace is not a Git repository.")
           ],
-          markdown: t(language, "# Notas de Version\n\n_No hay datos de commits disponibles._", "# Release Notes\n\n_No commit data available._")
+          markdown: format === "changelog"
+            ? t(language, "# Changelog\n\n_No hay datos de commits disponibles._", "# Changelog\n\n_No commit data available._")
+            : t(language, "# Notas de Version\n\n_No hay datos de commits disponibles._", "# Release Notes\n\n_No commit data available._")
         },
         automationPolicy: {
           readOnlyGitAnalysis: true,
@@ -109,10 +127,13 @@ export const releaseNotesFromCommitsTool = {
       });
     }
 
-    const mode = parsed.fromRef ? "range" : "tail";
+    const plan = await resolveComparisonPlan({
+      parsed,
+      rootDir: context.rootDir
+    });
     const logArgs = buildLogArgs({
-      fromRef: parsed.fromRef,
-      toRef,
+      fromRef: plan.fromRef,
+      toRef: plan.toRef,
       maxCommits
     });
     const output = await runGitInRepository(logArgs, {
@@ -122,14 +143,29 @@ export const releaseNotesFromCommitsTool = {
     const entries = entriesRaw.map((entry) => toReleaseEntry(entry, includeAuthors));
     const byType = countByType(entries);
     const breakingChanges = entries.filter((item) => item.breaking).length;
-    const truncated = mode === "tail" && entries.length >= maxCommits;
-    const highlights = buildHighlights(entries, language);
-    const markdown = buildMarkdown({
+    const truncated = entries.length >= maxCommits;
+    const highlights = buildHighlights({
+      entries,
+      language,
+      range: plan,
+      fallbackNotes: plan.notes
+    });
+    const markdown = format === "changelog"
+      ? buildChangelogMarkdown({
+        entries,
+        byType,
+        breakingChanges,
+        language,
+        includeAuthors,
+        range: plan
+      })
+      : buildReleaseNotesMarkdown({
       entries,
       byType,
       breakingChanges,
       language,
-      includeAuthors
+      includeAuthors,
+      range: plan
     });
 
     return outputSchema.parse({
@@ -140,9 +176,12 @@ export const releaseNotesFromCommitsTool = {
         headSha: repository.headSha
       },
       range: {
-        fromRef: parsed.fromRef ?? null,
-        toRef,
-        mode
+        fromRef: plan.fromRef,
+        toRef: plan.toRef,
+        fromTag: plan.fromTag,
+        toTag: plan.toTag,
+        mode: plan.mode,
+        compareBy: plan.compareBy
       },
       summary: {
         totalCommits: entries.length,
@@ -152,6 +191,7 @@ export const releaseNotesFromCommitsTool = {
       },
       entries,
       releaseNotes: {
+        format,
         highlights,
         markdown
       },
@@ -166,7 +206,7 @@ export const releaseNotesFromCommitsTool = {
 function buildLogArgs(input) {
   const format = "%H%x1f%h%x1f%an%x1f%ae%x1f%cI%x1f%s%x1f%b%x1e";
   if (input.fromRef) {
-    return ["log", `${input.fromRef}..${input.toRef}`, `--format=${format}`];
+    return ["log", `${input.fromRef}..${input.toRef}`, `--max-count=${input.maxCommits}`, `--format=${format}`];
   }
   return ["log", input.toRef, `--max-count=${input.maxCommits}`, `--format=${format}`];
 }
@@ -254,33 +294,40 @@ function emptyTypeCounter() {
   };
 }
 
-function buildHighlights(entries, language) {
+function buildHighlights(input) {
   const highlights = [];
-  const breaking = entries.filter((entry) => entry.breaking);
+  const breaking = input.entries.filter((entry) => entry.breaking);
+  const compareLabel = buildRangeLabel(input.range, input.language);
+  if (compareLabel) {
+    highlights.push(compareLabel);
+  }
+  for (const note of input.fallbackNotes) {
+    highlights.push(note);
+  }
   if (breaking.length > 0) {
     highlights.push(
       t(
-        language,
+        input.language,
         `Cambios breaking detectados: ${breaking.length}.`,
         `Breaking changes detected: ${breaking.length}.`
       )
     );
   }
-  const featCount = entries.filter((entry) => entry.type === "feat").length;
+  const featCount = input.entries.filter((entry) => entry.type === "feat").length;
   if (featCount > 0) {
-    highlights.push(t(language, `Nuevas funcionalidades: ${featCount}.`, `New features: ${featCount}.`));
+    highlights.push(t(input.language, `Nuevas funcionalidades: ${featCount}.`, `New features: ${featCount}.`));
   }
-  const fixCount = entries.filter((entry) => entry.type === "fix").length;
+  const fixCount = input.entries.filter((entry) => entry.type === "fix").length;
   if (fixCount > 0) {
-    highlights.push(t(language, `Correcciones: ${fixCount}.`, `Fixes: ${fixCount}.`));
+    highlights.push(t(input.language, `Correcciones: ${fixCount}.`, `Fixes: ${fixCount}.`));
   }
   if (highlights.length === 0) {
-    highlights.push(t(language, "No se detectaron highlights relevantes en el rango.", "No relevant highlights were detected in the selected range."));
+    highlights.push(t(input.language, "No se detectaron highlights relevantes en el rango.", "No relevant highlights were detected in the selected range."));
   }
   return highlights;
 }
 
-function buildMarkdown(input) {
+function buildReleaseNotesMarkdown(input) {
   const sections = new Map([
     ["feat", []],
     ["fix", []],
@@ -299,6 +346,10 @@ function buildMarkdown(input) {
   const lines = [];
   lines.push(t(input.language, "# Notas de Version", "# Release Notes"));
   lines.push("");
+  const compareLabel = buildRangeLabel(input.range, input.language);
+  if (compareLabel) {
+    lines.push(compareLabel);
+  }
   lines.push(
     t(
       input.language,
@@ -319,6 +370,43 @@ function buildMarkdown(input) {
   return lines.join("\n");
 }
 
+function buildChangelogMarkdown(input) {
+  const sections = {
+    added: input.entries.filter((entry) => entry.type === "feat"),
+    fixed: input.entries.filter((entry) => entry.type === "fix"),
+    changed: input.entries.filter((entry) => entry.type === "perf" || entry.type === "refactor" || entry.type === "other"),
+    docs: input.entries.filter((entry) => entry.type === "docs"),
+    tests: input.entries.filter((entry) => entry.type === "test"),
+    chore: input.entries.filter((entry) => entry.type === "chore"),
+    breaking: input.entries.filter((entry) => entry.breaking)
+  };
+
+  const releaseLabel = input.range.toTag ?? input.range.toRef;
+  const previousLabel = input.range.fromTag ?? input.range.fromRef;
+  const lines = [];
+  lines.push("# Changelog");
+  lines.push("");
+  lines.push(`## [${releaseLabel}] - ${toDateOnly(new Date())}`);
+  if (previousLabel) {
+    lines.push(t(input.language, `_Comparado con ${previousLabel}_`, `_Compared with ${previousLabel}_`));
+  }
+
+  appendSection(lines, "### Added", sections.added, input.language, input.includeAuthors);
+  appendSection(lines, "### Fixed", sections.fixed, input.language, input.includeAuthors);
+  appendSection(lines, "### Changed", sections.changed, input.language, input.includeAuthors);
+  appendSection(lines, "### Documentation", sections.docs, input.language, input.includeAuthors);
+  appendSection(lines, "### Tests", sections.tests, input.language, input.includeAuthors);
+  appendSection(lines, "### Chore", sections.chore, input.language, input.includeAuthors);
+  appendSection(lines, "### Breaking Changes", sections.breaking, input.language, input.includeAuthors);
+
+  if (input.entries.length === 0) {
+    lines.push("");
+    lines.push(t(input.language, "- Sin cambios detectados en el rango seleccionado.", "- No changes detected in selected range."));
+  }
+
+  return lines.join("\n");
+}
+
 function appendSection(lines, title, entries, language, includeAuthors) {
   if (!entries || entries.length === 0) {
     return;
@@ -331,4 +419,193 @@ function appendSection(lines, title, entries, language, includeAuthors) {
     const authorTag = includeAuthors && entry.author ? ` - ${entry.author}` : "";
     lines.push(`- ${scope}${entry.subject}${breakingTag} (${entry.shortSha})${authorTag}`);
   }
+}
+
+function toDateOnly(value) {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    return "1970-01-01";
+  }
+  return value.toISOString().slice(0, 10);
+}
+
+function resolveOutputFormat(parsed) {
+  if (parsed.format) {
+    return parsed.format;
+  }
+  if (parsed.compareBy === "tags" || parsed.compareBy === "since_latest_tag" || parsed.fromTag || parsed.toTag) {
+    return "changelog";
+  }
+  return "notes";
+}
+
+function buildFallbackPlan(parsed) {
+  const toRef = parsed.toRef ?? "HEAD";
+  if (parsed.compareBy === "since_latest_tag") {
+    return {
+      fromRef: null,
+      toRef,
+      fromTag: parsed.fromTag ?? null,
+      toTag: parsed.toTag ?? null,
+      mode: "since_latest_tag",
+      compareBy: "since_latest_tag"
+    };
+  }
+  if (parsed.compareBy === "tags" || parsed.fromTag || parsed.toTag) {
+    return {
+      fromRef: parsed.fromTag ?? parsed.fromRef ?? null,
+      toRef: parsed.toTag ?? toRef,
+      fromTag: parsed.fromTag ?? null,
+      toTag: parsed.toTag ?? null,
+      mode: "tag_range",
+      compareBy: "tags"
+    };
+  }
+  return {
+    fromRef: parsed.fromRef ?? null,
+    toRef,
+    fromTag: null,
+    toTag: null,
+    mode: parsed.fromRef ? "range" : "tail",
+    compareBy: "refs"
+  };
+}
+
+async function resolveComparisonPlan(input) {
+  const parsed = input.parsed;
+  const rootDir = input.rootDir;
+  const toRef = parsed.toRef ?? "HEAD";
+  const notes = [];
+
+  if (parsed.compareBy === "since_latest_tag") {
+    const latestTag = await resolveLatestMergedTag(rootDir, toRef);
+    if (latestTag) {
+      return {
+        fromRef: latestTag,
+        toRef,
+        fromTag: latestTag,
+        toTag: null,
+        mode: "since_latest_tag",
+        compareBy: "since_latest_tag",
+        notes
+      };
+    }
+    notes.push(
+      t(
+        resolveLanguage(parsed.language),
+        "No se encontro tag previa; se usa modo tail como fallback.",
+        "No previous tag found; falling back to tail mode."
+      )
+    );
+    return {
+      fromRef: null,
+      toRef,
+      fromTag: null,
+      toTag: null,
+      mode: "tail",
+      compareBy: "refs",
+      notes
+    };
+  }
+
+  if (parsed.compareBy === "tags" || parsed.fromTag || parsed.toTag) {
+    const toTag = parsed.toTag ?? await resolveLatestMergedTag(rootDir, toRef);
+    if (toTag) {
+      const fromTag = parsed.fromTag ?? await resolvePreviousTag(rootDir, toTag);
+      if (fromTag) {
+        return {
+          fromRef: fromTag,
+          toRef: toTag,
+          fromTag,
+          toTag,
+          mode: "tag_range",
+          compareBy: "tags",
+          notes
+        };
+      }
+      notes.push(
+        t(
+          resolveLanguage(parsed.language),
+          `No se encontro tag anterior a ${toTag}; se usa modo range/tail como fallback.`,
+          `No previous tag found before ${toTag}; falling back to range/tail mode.`
+        )
+      );
+    }
+  }
+
+  if (parsed.fromRef) {
+    return {
+      fromRef: parsed.fromRef,
+      toRef,
+      fromTag: null,
+      toTag: null,
+      mode: "range",
+      compareBy: "refs",
+      notes
+    };
+  }
+
+  return {
+    fromRef: null,
+    toRef,
+    fromTag: null,
+    toTag: null,
+    mode: "tail",
+    compareBy: "refs",
+    notes
+  };
+}
+
+async function resolveLatestMergedTag(rootDir, ref) {
+  try {
+    const output = await runGitInRepository(["describe", "--tags", "--abbrev=0", ref], {
+      cwd: rootDir
+    });
+    return output.trim() || null;
+  } catch {
+    try {
+      const output = await runGitInRepository(["tag", "--merged", ref, "--sort=-creatordate"], {
+        cwd: rootDir
+      });
+      const tags = output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      return tags[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function resolvePreviousTag(rootDir, toTag) {
+  try {
+    const output = await runGitInRepository(["describe", "--tags", "--abbrev=0", `${toTag}^`], {
+      cwd: rootDir
+    });
+    return output.trim() || null;
+  } catch {
+    try {
+      const output = await runGitInRepository(["tag", "--merged", toTag, "--sort=-creatordate"], {
+        cwd: rootDir
+      });
+      const tags = output
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .filter((tag) => tag !== toTag);
+      return tags[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+function buildRangeLabel(range, language) {
+  if (range.mode === "tag_range" && range.fromTag && range.toTag) {
+    return t(language, `Comparativa de tags: ${range.fromTag}..${range.toTag}.`, `Tag comparison: ${range.fromTag}..${range.toTag}.`);
+  }
+  if (range.mode === "since_latest_tag" && range.fromTag) {
+    return t(language, `Cambios desde la ultima etiqueta (${range.fromTag}) hasta ${range.toRef}.`, `Changes since latest tag (${range.fromTag}) to ${range.toRef}.`);
+  }
+  if (range.mode === "range" && range.fromRef) {
+    return t(language, `Comparativa de refs: ${range.fromRef}..${range.toRef}.`, `Ref comparison: ${range.fromRef}..${range.toRef}.`);
+  }
+  return null;
 }

@@ -55,6 +55,43 @@ describeIfGit("trace_change_ownership", () => {
     expect(result.ownership.reviewerSuggestions.some((value) => value.includes("Bob"))).toBe(true);
     expect(result.automationPolicy.readOnlyGitAnalysis).toBe(true);
   });
+
+  it("prioritizes recent zone ownership using blame data", async () => {
+    await fs.writeFile(path.join(tempRoot, "webapp", "controller", "Recent.controller.js"), "const x = 1;\nconst y = 1;\n", "utf8");
+    await git(["add", "."], { cwd: tempRoot });
+    await gitWithAuthor(["commit", "-m", "recent controller by alice"], {
+      cwd: tempRoot,
+      name: "Alice",
+      email: "alice@example.com",
+      date: "2024-01-01T08:00:00Z"
+    });
+
+    await fs.writeFile(path.join(tempRoot, "webapp", "controller", "Recent.controller.js"), "const x = 2;\nconst y = 2;\n", "utf8");
+    await git(["add", "."], { cwd: tempRoot });
+    await gitWithAuthor(["commit", "-m", "recent controller by bob"], {
+      cwd: tempRoot,
+      name: "Bob",
+      email: "bob@example.com",
+      date: "2026-03-10T09:00:00Z"
+    });
+
+    await fs.writeFile(path.join(tempRoot, "webapp", "controller", "Recent.controller.js"), "const x = 3;\nconst y = 2;\n", "utf8");
+
+    const result = await traceChangeOwnershipTool.handler(
+      {
+        mode: "working_tree",
+        includeUntracked: false
+      },
+      { context: { rootDir: tempRoot } }
+    );
+
+    const topOwner = result.ownership.owners[0];
+    expect(topOwner).toBeDefined();
+    expect(topOwner.name).toBe("Bob");
+    const targetFile = result.ownership.fileOwnership.find((item) => item.path.endsWith("Recent.controller.js"));
+    expect(targetFile).toBeDefined();
+    expect(targetFile.topZoneOwners.some((item) => item.name === "Bob")).toBe(true);
+  });
 });
 
 async function initGitRepo(rootDir) {
@@ -81,7 +118,13 @@ async function gitWithAuthor(args, options) {
       GIT_AUTHOR_NAME: options.name,
       GIT_AUTHOR_EMAIL: options.email,
       GIT_COMMITTER_NAME: options.name,
-      GIT_COMMITTER_EMAIL: options.email
+      GIT_COMMITTER_EMAIL: options.email,
+      ...(options.date
+        ? {
+          GIT_AUTHOR_DATE: options.date,
+          GIT_COMMITTER_DATE: options.date
+        }
+        : {})
     }
   });
 }

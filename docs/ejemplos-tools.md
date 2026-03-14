@@ -1164,7 +1164,9 @@ Entrada:
   "arguments": {
     "mode": "working_tree",
     "includeUntracked": true,
-    "maxReviewers": 3
+    "maxReviewers": 3,
+    "useBlame": true,
+    "maxRangesPerFile": 8
   }
 }
 ```
@@ -1178,12 +1180,17 @@ Salida (ejemplo):
         "name": "Alice",
         "email": "alice@example.com",
         "touchedFiles": 2,
-        "weightedImpact": 34,
+        "weightedImpact": 146,
+        "blamedLines": 7,
+        "recencyScore": 72,
+        "lastTouchedAt": "2026-03-12T09:30:00.000Z",
         "confidence": "medium"
       }
     ],
     "reviewerSuggestions": ["Alice <alice@example.com>"],
-    "notes": ["Reviewer suggestions are inferred from recent file-level ownership, not team policy."]
+    "notes": [
+      "Se priorizo ownership por zonas cambiadas (`git blame`) y recencia."
+    ]
   },
   "automationPolicy": {
     "readOnlyGitAnalysis": true,
@@ -1288,8 +1295,10 @@ Entrada:
 {
   "tool": "release_notes_from_commits",
   "arguments": {
-    "fromRef": "v1.4.0",
-    "toRef": "HEAD",
+    "compareBy": "tags",
+    "fromTag": "v1.4.0",
+    "toTag": "v1.5.0",
+    "format": "changelog",
     "maxCommits": 100,
     "includeAuthors": true,
     "language": "es"
@@ -1302,8 +1311,11 @@ Salida (ejemplo):
 {
   "range": {
     "fromRef": "v1.4.0",
-    "toRef": "HEAD",
-    "mode": "range"
+    "toRef": "v1.5.0",
+    "fromTag": "v1.4.0",
+    "toTag": "v1.5.0",
+    "mode": "tag_range",
+    "compareBy": "tags"
   },
   "summary": {
     "totalCommits": 18,
@@ -1320,15 +1332,162 @@ Salida (ejemplo):
     }
   },
   "releaseNotes": {
+    "format": "changelog",
     "highlights": [
+      "Comparativa de tags: v1.4.0..v1.5.0.",
       "Cambios breaking detectados: 1.",
       "Nuevas funcionalidades: 5.",
       "Correcciones: 6."
     ],
-    "markdown": "# Notas de Version\n\n## Nuevas funcionalidades\n- ..."
+    "markdown": "# Changelog\n\n## [v1.5.0] - 2026-03-14\n_Comparado con v1.4.0_\n\n### Added\n- ..."
   },
   "automationPolicy": {
     "readOnlyGitAnalysis": true
+  }
+}
+```
+
+## 65) `merge_readiness_report`
+
+Entrada:
+```json
+{
+  "tool": "merge_readiness_report",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "targetRef": "origin/main",
+    "sourceRef": "HEAD",
+    "language": "es"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": "origin/main"
+  },
+  "readiness": {
+    "level": "needs_attention",
+    "readyForMerge": false,
+    "score": 62,
+    "blockers": ["risk:code-without-tests"],
+    "warnings": ["commit:mixed-staged-unstaged", "smells:split-recommended"]
+  },
+  "checks": {
+    "commit": {
+      "readyForCommit": false,
+      "blockingChecks": ["tests-not-updated"],
+      "warningChecks": ["mixed-staged-unstaged"]
+    },
+    "risk": {
+      "level": "high",
+      "score": 58,
+      "mustFixBeforeMerge": ["code-without-tests"]
+    },
+    "branch": {
+      "level": "warning",
+      "score": 68
+    },
+    "conflict": {
+      "level": "low",
+      "score": 12,
+      "overlappingFiles": 1
+    },
+    "smells": {
+      "shouldSplitCommit": true,
+      "highSeverityCount": 1,
+      "mediumSeverityCount": 1
+    }
+  },
+  "nextActions": [
+    "Resolver checks bloqueantes de commit antes de continuar.",
+    "Abordar los riesgos marcados como obligatorios (`mustFixBeforeMerge`).",
+    "Ejecutar `npm run check` como puerta final."
+  ],
+  "automationPolicy": {
+    "performsMergeOrPush": false,
+    "requiresExplicitUserConsent": true
+  }
+}
+```
+
+## 66) `merge_action_plan`
+
+Entrada:
+```json
+{
+  "tool": "merge_action_plan",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "targetRef": "origin/main",
+    "sourceRef": "HEAD",
+    "preferredStrategy": "auto",
+    "language": "es"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": "origin/main"
+  },
+  "readiness": {
+    "level": "needs_attention",
+    "readyForMerge": false,
+    "score": 62,
+    "blockers": ["risk:code-without-tests"],
+    "warnings": ["smells:split-recommended"]
+  },
+  "signals": {
+    "riskLevel": "high",
+    "branchLevel": "warning",
+    "conflictLevel": "low",
+    "shouldSplitCommit": true
+  },
+  "strategy": {
+    "requested": "auto",
+    "recommended": "merge",
+    "rationale": [
+      "Se prioriza merge por simplicidad y menor friccion operativa."
+    ]
+  },
+  "plan": {
+    "premerge": [
+      { "id": "resolve-blockers", "required": true, "status": "blocked" }
+    ],
+    "sync": [
+      { "id": "fetch-target", "required": true, "status": "todo" }
+    ],
+    "validate": [
+      { "id": "run-quality-checks", "required": true, "status": "todo" }
+    ],
+    "integrate": [
+      { "id": "execute-merge-or-rebase", "required": true, "status": "blocked" }
+    ],
+    "postmerge": [
+      { "id": "push-with-consent", "required": true, "status": "blocked" }
+    ]
+  },
+  "commands": {
+    "premerge": ["git status --short"],
+    "sync": ["git fetch --all --prune"],
+    "validate": ["npm run check"],
+    "integrate": [],
+    "postmerge": []
+  },
+  "automationPolicy": {
+    "performsMergeOrPush": false,
+    "requiresExplicitUserConsent": true
   }
 }
 ```
@@ -1417,6 +1576,95 @@ Salida (ejemplo):
     "policyExists": true,
     "blueprintExists": true,
     "agentsGuideExists": true
+  }
+}
+```
+
+## 67) `mcp_metrics_dashboard`
+
+Entrada:
+```json
+{
+  "tool": "mcp_metrics_dashboard",
+  "arguments": {
+    "telemetryDir": ".mcp-runtime/logs",
+    "maxSessions": 30,
+    "minInvocations": 2,
+    "errorRateThreshold": 0.15,
+    "slowRateThreshold": 0.25,
+    "includeToolBreakdown": true,
+    "language": "es"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "telemetryDir": ".mcp-runtime/logs",
+    "sessionsAnalyzed": 6,
+    "totals": {
+      "invocations": 214,
+      "errors": 17,
+      "slowInvocations": 41
+    }
+  },
+  "dashboard": {
+    "mostUsedTools": [
+      {
+        "toolName": "analyze_ui5_project",
+        "invocations": 44,
+        "successRate": 1,
+        "valueScore": 93
+      }
+    ],
+    "highestValueTools": [
+      {
+        "toolName": "analyze_ui5_project",
+        "invocations": 44,
+        "errorRate": 0,
+        "slowRate": 0.05,
+        "valueScore": 93
+      }
+    ],
+    "failingTools": [
+      {
+        "toolName": "run_project_quality_gate",
+        "invocations": 18,
+        "errorRate": 0.278,
+        "topErrorCodes": [
+          { "code": "QUALITY_GATE_FAILED", "count": 5 }
+        ]
+      }
+    ],
+    "slowTools": [
+      {
+        "toolName": "validate_ui5_odata_usage",
+        "invocations": 15,
+        "slowRate": 0.533,
+        "averageDurationMs": 2870
+      }
+    ],
+    "improvementAreas": [
+      {
+        "id": "reliability-hotspots",
+        "priority": "high",
+        "targetTools": ["run_project_quality_gate"]
+      },
+      {
+        "id": "latency-hotspots",
+        "priority": "medium",
+        "targetTools": ["validate_ui5_odata_usage"]
+      }
+    ],
+    "potentialSavings": {
+      "avoidableSlowTimeMs": 38000,
+      "estimatedReworkTimeMs": 21000
+    }
+  },
+  "automationPolicy": {
+    "readOnlyAnalysis": true
   }
 }
 ```

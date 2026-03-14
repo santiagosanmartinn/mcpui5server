@@ -244,16 +244,17 @@ Nota comun para herramientas Git:
 
 ### `trace_change_ownership`
 
-- Objetivo: inferir ownership/reviewers de los archivos cambiados usando historial local de Git.
+- Objetivo: inferir ownership/reviewers de los archivos cambiados priorizando zonas tocadas (`git blame`) y recencia de cambios.
 - Entrada destacada:
   - alcance diff: `mode`, `baseRef`, `targetRef`
   - `includeUntracked`, `maxFiles`, `timeoutMs`
-  - limites: `maxOwners`, `maxReviewers`
+  - limites: `maxOwners`, `maxReviewers`, `maxRangesPerFile`, `maxFilesWithBlame`
+  - control de estrategia: `useBlame` (default `true`)
 - Salida:
-  - `owners` agregados por impacto y archivos tocados
-  - `fileOwnership` por archivo con ultimo autor y nivel de confianza
+  - `owners` agregados por impacto (volumen + recencia) y archivos tocados
+  - `fileOwnership` por archivo con ultimo autor, actividad reciente y `topZoneOwners`
   - `reviewerSuggestions`
-  - notas de trazabilidad (por ejemplo cuando hay archivos sin historial)
+  - notas de trazabilidad (por ejemplo untracked o limites de blame por rendimiento)
 
 ### `smart_stage_changes`
 
@@ -283,16 +284,55 @@ Nota comun para herramientas Git:
 
 ### `release_notes_from_commits`
 
-- Objetivo: generar notas de version desde historial Git (rango o cola reciente) usando heuristicas de Conventional Commits.
+- Objetivo: generar notas de version/changelog desde historial Git (rango, cola reciente o comparativa por tags) usando heuristicas de Conventional Commits.
 - Diferenciacion:
   - no reemplaza `generate_pr_description`; esta herramienta trabaja sobre historial de commits, no sobre diff puntual.
 - Entrada destacada:
-  - `fromRef`/`toRef` (si no hay `fromRef`, usa modo tail sobre `toRef`)
+  - comparativa por refs: `fromRef`/`toRef`
+  - comparativa por tags/versiones: `fromTag`/`toTag` con `compareBy: tags`
+  - cambios no liberados: `compareBy: since_latest_tag`
+  - formato de salida: `format` (`notes` | `changelog`)
   - `maxCommits`, `includeAuthors`, `language`
 - Salida:
+  - `range` con modo real (`tail`, `range`, `tag_range`, `since_latest_tag`) y trazabilidad de tags
   - `summary` por tipo (`feat`, `fix`, `perf`, etc.) y `breakingChanges`
   - `entries` normalizados por commit
-  - `releaseNotes.markdown` listo para compartir
+  - `releaseNotes.markdown` listo para compartir en formato notas o changelog
+
+### `merge_readiness_report`
+
+- Objetivo: consolidar en un unico resultado la preparacion de merge usando checks de commit, riesgo, higiene de rama, precheck de conflicto y olores de commit.
+- Diferenciacion:
+  - no reemplaza herramientas individuales como `prepare_safe_commit` o `risk_review_from_diff`; las orquesta para una decision final de readiness.
+- Entrada destacada:
+  - alcance diff (`mode`, `baseRef`, `targetRef`)
+  - `sourceRef` (opcional para precheck de conflicto)
+  - `includeUntracked`, `maxFiles`, `timeoutMs`, `language`
+- Salida:
+  - `readiness.level` (`ready` | `needs_attention` | `blocked`)
+  - `readiness.score` (0-100) y `readyForMerge`
+  - `readiness.blockers`/`warnings` normalizados por dominio (`commit:*`, `risk:*`, etc.)
+  - `checks` agregados por dominio (`commit`, `risk`, `branch`, `conflict`, `smells`)
+  - `nextActions` para cierre de gaps antes de merge
+  - `automationPolicy` explicita (no ejecuta merge/push; requiere consentimiento del usuario)
+
+### `merge_action_plan`
+
+- Objetivo: convertir los resultados de `merge_readiness_report` en un plan de ejecucion seguro por fases (premerge, sync, validate, integrate, postmerge).
+- Diferenciacion:
+  - no reemplaza `merge_readiness_report`; lo utiliza para recomendar estrategia y secuencia operativa.
+- Entrada destacada:
+  - alcance diff (`mode`, `baseRef`, `targetRef`)
+  - `sourceRef` (opcional)
+  - `preferredStrategy`: `auto` | `merge` | `rebase`
+  - `includeCommands` (para incluir o no comandos sugeridos)
+  - `includeUntracked`, `maxFiles`, `timeoutMs`, `language`
+- Salida:
+  - `strategy.requested` y `strategy.recommended` (`merge` | `rebase` | `defer`)
+  - `plan` por fases con acciones y estado (`todo`, `blocked`, `not_needed`)
+  - `commands` sugeridos por fase (solo sugerencias)
+  - `nextActions` heredadas del readiness base
+  - `automationPolicy` explicita (no ejecuta merge/rebase/push; requiere consentimiento)
 
 ## Dominio ui5
 
@@ -959,3 +999,25 @@ Nota comun para herramientas Git:
     - señales y umbrales usados (skills/packs) + `nextAction`
   - `contracts` (sincronizacion de contratos contra `docs/contracts/tool-contracts.snapshot.json`)
   - `managedArtifacts` (existencia de intake/baseline/context-index/blueprint/guide)
+
+### `mcp_metrics_dashboard`
+
+- Objetivo: construir un dashboard operativo de telemetria MCP para identificar tools de alto valor, puntos de fallo, latencias y oportunidades de mejora.
+- Diferenciacion:
+  - complementa `mcp_health_report`; aqui se analiza rendimiento/fiabilidad reales de ejecucion, no solo salud de configuracion/documentacion.
+- Entrada destacada:
+  - `telemetryDir` (opcional, por defecto `.mcp-runtime/logs`)
+  - filtros: `sessionIds`, `maxSessions`, `minInvocations`
+  - umbrales: `errorRateThreshold`, `slowRateThreshold`
+  - `includeToolBreakdown`, `language`
+- Salida:
+  - `scope` con ventana temporal y totales agregados de invocaciones/errores/latencia
+  - dashboard con:
+    - `mostUsedTools`
+    - `highestValueTools`
+    - `failingTools`
+    - `slowTools`
+    - `improvementAreas` priorizadas y acciones recomendadas
+    - `potentialSavings` para orientar reduccion de tiempo y retrabajo
+  - `toolBreakdown` detallado por tool (uso, rates, coste de tiempo, codigos de error)
+  - `dataQuality` (ficheros encontrados, parse errors, warnings)

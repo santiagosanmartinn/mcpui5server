@@ -18,6 +18,7 @@ describeIfGit("release_notes_from_commits", () => {
     await fs.writeFile(path.join(tempRoot, "README.md"), "initial\n", "utf8");
     await git(["add", "."], { cwd: tempRoot });
     await git(["commit", "-m", "chore: initial"], { cwd: tempRoot });
+    await git(["tag", "v1.0.0"], { cwd: tempRoot });
 
     await fs.writeFile(path.join(tempRoot, "feature.txt"), "new feature\n", "utf8");
     await git(["add", "."], { cwd: tempRoot });
@@ -26,6 +27,11 @@ describeIfGit("release_notes_from_commits", () => {
     await fs.writeFile(path.join(tempRoot, "bugfix.txt"), "fix bug\n", "utf8");
     await git(["add", "."], { cwd: tempRoot });
     await git(["commit", "-m", "fix: resolve startup issue"], { cwd: tempRoot });
+    await git(["tag", "v1.1.0"], { cwd: tempRoot });
+
+    await fs.writeFile(path.join(tempRoot, "notes.txt"), "post release\n", "utf8");
+    await git(["add", "."], { cwd: tempRoot });
+    await git(["commit", "-m", "docs: post release notes"], { cwd: tempRoot });
   });
 
   afterEach(async () => {
@@ -47,6 +53,50 @@ describeIfGit("release_notes_from_commits", () => {
     expect(result.releaseNotes.markdown).toContain("# Notas de Version");
     expect(result.releaseNotes.markdown).toContain("## Nuevas funcionalidades");
     expect(result.automationPolicy.readOnlyGitAnalysis).toBe(true);
+  });
+
+  it("compares tags and returns changelog format", async () => {
+    const result = await releaseNotesFromCommitsTool.handler(
+      {
+        compareBy: "tags",
+        fromTag: "v1.0.0",
+        toTag: "v1.1.0",
+        format: "changelog",
+        language: "en",
+        includeAuthors: false
+      },
+      { context: { rootDir: tempRoot } }
+    );
+
+    expect(result.range.mode).toBe("tag_range");
+    expect(result.range.compareBy).toBe("tags");
+    expect(result.range.fromTag).toBe("v1.0.0");
+    expect(result.range.toTag).toBe("v1.1.0");
+    expect(result.releaseNotes.format).toBe("changelog");
+    expect(result.releaseNotes.markdown).toContain("# Changelog");
+    expect(result.releaseNotes.markdown).toContain("## [v1.1.0]");
+    expect(result.releaseNotes.markdown).toContain("### Added");
+    expect(result.summary.byType.feat).toBeGreaterThanOrEqual(1);
+    expect(result.summary.byType.fix).toBeGreaterThanOrEqual(1);
+  });
+
+  it("supports since_latest_tag mode for unreleased commits", async () => {
+    const result = await releaseNotesFromCommitsTool.handler(
+      {
+        compareBy: "since_latest_tag",
+        format: "changelog",
+        language: "es",
+        includeAuthors: false
+      },
+      { context: { rootDir: tempRoot } }
+    );
+
+    expect(result.range.mode).toBe("since_latest_tag");
+    expect(result.range.compareBy).toBe("since_latest_tag");
+    expect(result.range.fromTag).toBe("v1.1.0");
+    expect(result.releaseNotes.markdown).toContain("# Changelog");
+    expect(result.releaseNotes.markdown).toContain("### Documentation");
+    expect(result.summary.totalCommits).toBeGreaterThanOrEqual(1);
   });
 });
 
