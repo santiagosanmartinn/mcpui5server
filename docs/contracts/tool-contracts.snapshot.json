@@ -8515,6 +8515,1782 @@
       }
     },
     {
+      "name": "prompt_builder",
+      "title": null,
+      "description": "Build complete and compact task prompts from structured intake fields with consistent output format.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "acceptanceCriteria": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "constraints": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "contextSummary": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "deliverable": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "extraInstructions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "goal": {
+            "kind": "string"
+          },
+          "inScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "includeChecklist": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeOutputContract": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxBulletsPerSection": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "outOfScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "style": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "full",
+                "compact",
+                "both"
+              ]
+            }
+          },
+          "targetAi": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "codex",
+                "claude",
+                "generic"
+              ]
+            }
+          },
+          "taskType": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "feature",
+                "bugfix",
+                "refactor",
+                "analysis",
+                "docs",
+                "automation",
+                "custom"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyGeneration": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "metadata": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "estimatedTokens": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "compact": {
+                    "kind": "number"
+                  },
+                  "full": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "sectionsIncluded": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "style": {
+                "kind": "enum",
+                "values": [
+                  "full",
+                  "compact",
+                  "both"
+                ]
+              },
+              "targetAi": {
+                "kind": "enum",
+                "values": [
+                  "codex",
+                  "claude",
+                  "generic"
+                ]
+              },
+              "taskType": {
+                "kind": "enum",
+                "values": [
+                  "feature",
+                  "bugfix",
+                  "refactor",
+                  "analysis",
+                  "docs",
+                  "automation",
+                  "custom"
+                ]
+              }
+            },
+            "catchall": null
+          },
+          "prompt": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "compact": {
+                "kind": "string"
+              },
+              "full": {
+                "kind": "string"
+              },
+              "recommended": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "usageHints": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_context_selector",
+      "title": null,
+      "description": "Select the minimum high-value file context for a prompt using git diff, context-index hints, and keyword relevance.",
+      "inputSchema": {
+        "kind": "effects",
+        "effectType": "refinement",
+        "inner": {
+          "kind": "object",
+          "unknownKeys": "strict",
+          "keys": {
+            "baseRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "contextIndexPath": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "goal": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "includeContextIndex": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "includeGitDiff": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "includeKeywordSearch": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "includeUntracked": {
+              "kind": "optional",
+              "inner": {
+                "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
+            "maxFiles": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "maxKeywordMatchesPerTerm": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            },
+            "mode": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "working_tree",
+                  "staged",
+                  "range"
+                ]
+              }
+            },
+            "prompt": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "queryTerms": {
+              "kind": "optional",
+              "inner": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "targetRef": {
+              "kind": "optional",
+              "inner": {
+                "kind": "string"
+              }
+            },
+            "taskType": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "feature",
+                  "bugfix",
+                  "refactor",
+                  "analysis",
+                  "docs",
+                  "automation",
+                  "custom"
+                ]
+              }
+            },
+            "timeoutMs": {
+              "kind": "optional",
+              "inner": {
+                "kind": "number"
+              }
+            }
+          },
+          "catchall": null
+        }
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "droppedPaths": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "dropReason": {
+                  "kind": "string"
+                },
+                "estimatedTokens": {
+                  "kind": "number"
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "reasons": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "score": {
+                  "kind": "number"
+                },
+                "sources": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "enum",
+                    "values": [
+                      "git_diff",
+                      "context_index",
+                      "keyword_match",
+                      "mandatory"
+                    ]
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "notes": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scope": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "maxFiles": {
+                "kind": "number"
+              },
+              "queryTerms": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "taskType": {
+                "kind": "enum",
+                "values": [
+                  "feature",
+                  "bugfix",
+                  "refactor",
+                  "analysis",
+                  "docs",
+                  "automation",
+                  "custom"
+                ]
+              }
+            },
+            "catchall": null
+          },
+          "selectedPaths": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "estimatedTokens": {
+                  "kind": "number"
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "reasons": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "score": {
+                  "kind": "number"
+                },
+                "sources": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "enum",
+                    "values": [
+                      "git_diff",
+                      "context_index",
+                      "keyword_match",
+                      "mandatory"
+                    ]
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "strategy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "contextIndexPath": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "usedContextIndex": {
+                "kind": "boolean"
+              },
+              "usedGitDiff": {
+                "kind": "boolean"
+              },
+              "usedKeywordSearch": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "suggestions": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "promptContextLines": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "recommendedContextTokens": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_intake_wizard",
+      "title": null,
+      "description": "Run a lightweight interactive intake for task prompts and return missing fields/questions before execution.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "acceptanceCriteria": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "constraints": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "contextSummary": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "currentPrompt": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "deliverable": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "goal": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "inScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxQuestions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "outOfScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "taskType": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "feature",
+                "bugfix",
+                "refactor",
+                "analysis",
+                "docs",
+                "automation",
+                "custom"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "intake": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "acceptanceCriteria": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "constraints": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "contextSummary": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "currentPromptProvided": {
+                "kind": "boolean"
+              },
+              "deliverable": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "goal": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "inScope": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "outOfScope": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "taskType": {
+                "kind": "enum",
+                "values": [
+                  "feature",
+                  "bugfix",
+                  "refactor",
+                  "analysis",
+                  "docs",
+                  "automation",
+                  "custom"
+                ]
+              }
+            },
+            "catchall": null
+          },
+          "nextQuestions": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "exampleAnswer": {
+                  "kind": "string"
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "priority": {
+                  "kind": "enum",
+                  "values": [
+                    "high",
+                    "medium"
+                  ]
+                },
+                "question": {
+                  "kind": "string"
+                },
+                "why": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "readiness": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "missingCritical": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "missingRecommended": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "score": {
+                "kind": "number"
+              },
+              "status": {
+                "kind": "enum",
+                "values": [
+                  "insufficient",
+                  "draft",
+                  "ready"
+                ]
+              }
+            },
+            "catchall": null
+          },
+          "tips": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_quality_gate",
+      "title": null,
+      "description": "Evaluate prompt quality with deterministic scoring, blockers, and targeted improvement questions.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "acceptanceCriteria": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "constraints": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "contextSummary": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "deliverable": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "goal": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "inScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxImprovementQuestions": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "outOfScope": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "prompt": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "strictMode": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "taskType": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "feature",
+                "bugfix",
+                "refactor",
+                "analysis",
+                "docs",
+                "automation",
+                "custom"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyAnalysis": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "blockingIssues": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "dimensions": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "evidence": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "recommendation": {
+                  "kind": "string"
+                },
+                "score": {
+                  "kind": "number"
+                },
+                "status": {
+                  "kind": "enum",
+                  "values": [
+                    "pass",
+                    "warn",
+                    "fail"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "improvementQuestions": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "question": {
+                  "kind": "string"
+                },
+                "why": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "improvements": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "normalizedPrompt": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "chars": {
+                "kind": "number"
+              },
+              "estimatedTokens": {
+                "kind": "number"
+              },
+              "hasChecklist": {
+                "kind": "boolean"
+              },
+              "lines": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "ready": {
+                "kind": "boolean"
+              },
+              "score": {
+                "kind": "number"
+              },
+              "status": {
+                "kind": "enum",
+                "values": [
+                  "blocked",
+                  "needs_improvement",
+                  "pass"
+                ]
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_retrospective",
+      "title": null,
+      "description": "Analyze prompt execution outcome, suggest quality improvements, and optionally persist retrospective logs under .codex/mcp.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "dryRun": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "expectedTokenBudget": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "goal": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "issues": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "iterations": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxDiffLines": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "outcome": {
+            "kind": "enum",
+            "values": [
+              "success",
+              "partial",
+              "failed"
+            ]
+          },
+          "promptUsed": {
+            "kind": "string"
+          },
+          "qualityGatePassed": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "reason": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "retrospectivePath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "taskType": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "feature",
+                "bugfix",
+                "refactor",
+                "analysis",
+                "docs",
+                "automation",
+                "custom"
+              ]
+            }
+          },
+          "timeSpentMinutes": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "tokenEstimate": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "whatFailed": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "whatWorked": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "applyResult": {
+            "kind": "nullable",
+            "inner": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "appliedAt": {
+                  "kind": "string"
+                },
+                "changedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "bytesAfter": {
+                        "kind": "number"
+                      },
+                      "bytesBefore": {
+                        "kind": "number"
+                      },
+                      "changed": {
+                        "kind": "boolean"
+                      },
+                      "newHash": {
+                        "kind": "string"
+                      },
+                      "oldHash": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "path": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "patchId": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "reason": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "skippedFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "assessment": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "efficiency": {
+                "kind": "enum",
+                "values": [
+                  "good",
+                  "medium",
+                  "poor"
+                ]
+              },
+              "outcome": {
+                "kind": "enum",
+                "values": [
+                  "success",
+                  "partial",
+                  "failed"
+                ]
+              },
+              "score": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "writesOnlyWithConsent": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "changed": {
+            "kind": "boolean"
+          },
+          "dryRun": {
+            "kind": "boolean"
+          },
+          "improvements": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "expectedImpact": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "nextPromptAdjustments": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "questionsForUser": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "preview": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "changed": {
+                "kind": "boolean"
+              },
+              "diffPreview": {
+                "kind": "string"
+              },
+              "diffTruncated": {
+                "kind": "boolean"
+              },
+              "existsBefore": {
+                "kind": "boolean"
+              },
+              "newHash": {
+                "kind": "string"
+              },
+              "oldHash": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "path": {
+                "kind": "string"
+              },
+              "role": {
+                "kind": "literal",
+                "value": "prompt-retrospective-log"
+              }
+            },
+            "catchall": null
+          },
+          "retrospectivePath": {
+            "kind": "string"
+          },
+          "signals": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "rootCauses": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "strengths": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "suggestedPromptPatch": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "add": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "keep": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "remove": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_template_catalog",
+      "title": null,
+      "description": "Provide reusable prompt templates by task type to standardize quality and reduce prompt drafting effort.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeCompactVariant": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeExamples": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "taskType": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "feature",
+                "bugfix",
+                "refactor",
+                "analysis",
+                "docs",
+                "automation",
+                "custom"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyCatalog": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "catalogVersion": {
+            "kind": "string"
+          },
+          "language": {
+            "kind": "enum",
+            "values": [
+              "es",
+              "en"
+            ]
+          },
+          "quickStart": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "templates": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "example": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "recommendedFields": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "requiredFields": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "taskType": {
+                  "kind": "enum",
+                  "values": [
+                    "feature",
+                    "bugfix",
+                    "refactor",
+                    "analysis",
+                    "docs",
+                    "automation",
+                    "custom"
+                  ]
+                },
+                "template": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "compact": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "full": {
+                      "kind": "string"
+                    }
+                  },
+                  "catchall": null
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "whenToUse": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "prompt_token_budget",
+      "title": null,
+      "description": "Optimize prompt size against a token budget and prioritize context files to minimize unnecessary token consumption.",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "contextCandidates": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "object",
+                "unknownKeys": "strict",
+                "keys": {
+                  "estimatedTokens": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "number"
+                    }
+                  },
+                  "path": {
+                    "kind": "string"
+                  },
+                  "priority": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "enum",
+                      "values": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    }
+                  },
+                  "reason": {
+                    "kind": "optional",
+                    "inner": {
+                      "kind": "string"
+                    }
+                  }
+                },
+                "catchall": null
+              }
+            }
+          },
+          "dedupeLines": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxTokens": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "preserveChecklist": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "prompt": {
+            "kind": "string"
+          },
+          "reservedForResponseTokens": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "automationPolicy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "note": {
+                "kind": "string"
+              },
+              "readOnlyOptimization": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "budget": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "estimatedTokensAfter": {
+                "kind": "number"
+              },
+              "estimatedTokensBefore": {
+                "kind": "number"
+              },
+              "maxTokens": {
+                "kind": "number"
+              },
+              "reductionRate": {
+                "kind": "number"
+              },
+              "reductionTokens": {
+                "kind": "number"
+              },
+              "reservedForResponseTokens": {
+                "kind": "number"
+              },
+              "targetPromptTokens": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "contextSelection": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "availableTokens": {
+                "kind": "number"
+              },
+              "dropped": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "dropReason": {
+                      "kind": "string"
+                    },
+                    "estimatedTokens": {
+                      "kind": "number"
+                    },
+                    "path": {
+                      "kind": "string"
+                    },
+                    "priority": {
+                      "kind": "enum",
+                      "values": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "reason": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "selected": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "estimatedTokens": {
+                      "kind": "number"
+                    },
+                    "path": {
+                      "kind": "string"
+                    },
+                    "priority": {
+                      "kind": "enum",
+                      "values": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "reason": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "totals": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "droppedTokens": {
+                    "kind": "number"
+                  },
+                  "selectedTokens": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "nextActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "optimized": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "prompt": {
+                "kind": "string"
+              },
+              "removedLines": {
+                "kind": "number"
+              },
+              "strategy": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "truncatedSections": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "rank_agent_packs",
       "title": null,
       "description": "Rank saved agent packs using execution feedback metrics to prioritize recommendations for the current context.",

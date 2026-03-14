@@ -1021,3 +1021,118 @@ Nota comun para herramientas Git:
     - `potentialSavings` para orientar reduccion de tiempo y retrabajo
   - `toolBreakdown` detallado por tool (uso, rates, coste de tiempo, codigos de error)
   - `dataQuality` (ficheros encontrados, parse errors, warnings)
+
+### `prompt_intake_wizard`
+
+- Objetivo: guiar al usuario para completar un intake de prompt minimo antes de ejecutar tareas con IA.
+- Diferenciacion:
+  - no reemplaza herramientas de implementacion; prepara la entrada para mejorar calidad y reducir ida/vuelta.
+- Entrada destacada:
+  - `taskType`, `goal`, `deliverable`
+  - `contextSummary`
+  - `constraints`, `acceptanceCriteria`, `inScope`, `outOfScope`
+  - `currentPrompt` (opcional) para inferir tipo de tarea
+  - `maxQuestions`, `language`
+- Salida:
+  - `readiness` (`score`, `status`, campos criticos/recomendados faltantes)
+  - `nextQuestions` priorizadas para mejorar el prompt
+  - `tips` para reducir ambiguedad y consumo
+  - `automationPolicy` (solo lectura)
+
+### `prompt_quality_gate`
+
+- Objetivo: evaluar calidad del prompt con scoring determinista y bloquear entradas de baja calidad antes de ejecutar.
+- Diferenciacion:
+  - complementa `prompt_intake_wizard`; aqui se evalua calidad final del texto/estructura.
+- Entrada destacada:
+  - `prompt` libre (opcional si se usa intake estructurado)
+  - campos estructurados (`goal`, `contextSummary`, `constraints`, `acceptanceCriteria`, `inScope`, `outOfScope`)
+  - `strictMode`, `maxImprovementQuestions`, `language`
+- Salida:
+  - `summary` (`score`, `status`: `blocked|needs_improvement|pass`)
+  - `dimensions` por rubrica (`objective`, `context`, `constraints`, `acceptance`, `execution`, `efficiency`)
+  - `blockingIssues`, `improvements`
+  - `improvementQuestions` para iteracion guiada
+  - `normalizedPrompt` con estimacion de tokens
+
+### `prompt_builder`
+
+- Objetivo: generar prompts completos y compactos desde intake estructurado, con formato consistente para ejecucion.
+- Diferenciacion:
+  - evita redaccion manual repetitiva y estandariza prompts del equipo.
+- Entrada destacada:
+  - `goal` (obligatorio), `taskType`, `targetAi` (`codex|claude|generic`)
+  - `contextSummary`, `constraints`, `acceptanceCriteria`, `inScope`, `outOfScope`
+  - opciones de formato: `style` (`full|compact|both`), `includeChecklist`, `includeOutputContract`
+  - `language`
+- Salida:
+  - `prompt.full`, `prompt.compact`, `prompt.recommended`
+  - `metadata` con secciones incluidas y estimacion de tokens
+  - `usageHints` para ejecucion eficiente
+
+### `prompt_token_budget`
+
+- Objetivo: compactar prompt y priorizar contexto para ajustarse a un presupuesto de tokens.
+- Diferenciacion:
+  - se centra en eficiencia de contexto/coste, no en calidad funcional del prompt.
+- Entrada destacada:
+  - `prompt`, `maxTokens`, `reservedForResponseTokens`
+  - `dedupeLines`, `preserveChecklist`
+  - `contextCandidates` con `path`, `estimatedTokens`, `priority`, `reason`
+  - `language`
+- Salida:
+  - `budget` (antes/despues, reduccion y ratio)
+  - `optimized` (`prompt`, estrategia aplicada, lineas eliminadas, secciones truncadas)
+  - `contextSelection` (seleccionados/descartados segun presupuesto)
+  - `nextActions` para seguir optimizando
+
+### `prompt_context_selector`
+
+- Objetivo: seleccionar el contexto minimo de archivos con mayor valor para un prompt, reduciendo ruido y tokens.
+- Diferenciacion:
+  - combina senales de `git diff`, `context-index` y busqueda por terminos para priorizar rutas concretas.
+- Entrada destacada:
+  - `taskType`, `goal`, `prompt`, `queryTerms`
+  - `includeGitDiff` (+ `mode`, `baseRef`, `targetRef`)
+  - `includeContextIndex` y `contextIndexPath`
+  - `includeKeywordSearch`, `maxFiles`, `maxKeywordMatchesPerTerm`
+  - `language`
+- Salida:
+  - `selectedPaths` con score, tokens estimados, fuentes y razones
+  - `droppedPaths` por limite de `maxFiles`
+  - `suggestions.promptContextLines` para pegar directamente en el prompt
+  - `strategy` de trazabilidad (que fuentes se pudieron usar)
+
+### `prompt_template_catalog`
+
+- Objetivo: ofrecer plantillas reutilizables por tipo de tarea para estandarizar prompts y acelerar arranque.
+- Diferenciacion:
+  - evita redactar prompts desde cero y mantiene estructura consistente entre usuarios/equipo.
+- Entrada destacada:
+  - `taskType` (opcional para filtrar)
+  - `includeExamples`
+  - `includeCompactVariant`
+  - `language`
+- Salida:
+  - `templates` por tipo (`feature`, `bugfix`, `refactor`, etc.)
+  - campos requeridos/recomendados por plantilla
+  - variantes `full` y `compact`
+  - `quickStart` para flujo sugerido
+
+### `prompt_retrospective`
+
+- Objetivo: analizar resultado real de una ejecucion, proponer mejoras de prompt y guardar retrospectiva opcional en `.codex/mcp`.
+- Diferenciacion:
+  - cierra el ciclo de aprendizaje prompt -> ejecucion -> mejora continua.
+- Entrada destacada:
+  - `promptUsed`, `outcome`, `qualityGatePassed`, `iterations`
+  - `issues`, `whatWorked`, `whatFailed`
+  - `tokenEstimate`, `expectedTokenBudget`
+  - persistencia: `retrospectivePath`, `dryRun`, `reason`
+  - `language`
+- Salida:
+  - `assessment` (score/eficiencia)
+  - `signals` (fortalezas y causas raiz)
+  - `improvements` (ajustes y preguntas para la siguiente iteracion)
+  - `suggestedPromptPatch` (`add/keep/remove`)
+  - `preview` + `applyResult` (si `dryRun: false`)

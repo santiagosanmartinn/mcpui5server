@@ -14,6 +14,13 @@ import { detectCommitSmellsTool } from "./project/detectCommitSmells.js";
 import { releaseNotesFromCommitsTool } from "./project/releaseNotesFromCommits.js";
 import { mergeReadinessReportTool } from "./project/mergeReadinessReport.js";
 import { mergeActionPlanTool } from "./project/mergeActionPlan.js";
+import { promptIntakeWizardTool } from "./project/promptIntakeWizard.js";
+import { promptQualityGateTool } from "./project/promptQualityGate.js";
+import { promptBuilderTool } from "./project/promptBuilder.js";
+import { promptTokenBudgetTool } from "./project/promptTokenBudget.js";
+import { promptContextSelectorTool } from "./project/promptContextSelector.js";
+import { promptTemplateCatalogTool } from "./project/promptTemplateCatalog.js";
+import { promptRetrospectiveTool } from "./project/promptRetrospective.js";
 import { readProjectFileTool } from "./project/readFile.js";
 import { searchProjectFilesTool } from "./project/searchFiles.js";
 import { analyzeCurrentFileTool } from "./project/analyzeCurrentFile.js";
@@ -84,6 +91,13 @@ export const allTools = [
   releaseNotesFromCommitsTool,
   mergeReadinessReportTool,
   mergeActionPlanTool,
+  promptIntakeWizardTool,
+  promptQualityGateTool,
+  promptBuilderTool,
+  promptTokenBudgetTool,
+  promptContextSelectorTool,
+  promptTemplateCatalogTool,
+  promptRetrospectiveTool,
   // UI5 generation and validation
   generateUi5ControllerTool,
   generateUi5FragmentTool,

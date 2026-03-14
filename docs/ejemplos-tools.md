@@ -731,6 +731,290 @@ Salida (ejemplo):
 }
 ```
 
+## 52) `prompt_intake_wizard`
+
+Entrada:
+```json
+{
+  "tool": "prompt_intake_wizard",
+  "arguments": {
+    "taskType": "feature",
+    "goal": "Implementar validacion de filtros en Main.controller.js",
+    "constraints": ["No tocar manifest routing"],
+    "maxQuestions": 3
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "readiness": {
+    "score": 55,
+    "status": "insufficient",
+    "missingCritical": ["acceptanceCriteria"],
+    "missingRecommended": ["deliverable", "inScope", "contextSummary"]
+  },
+  "nextQuestions": [
+    {
+      "id": "acceptanceCriteria",
+      "priority": "high",
+      "question": "Que criterios objetivos definen que la tarea esta terminada?"
+    }
+  ],
+  "tips": [
+    "Completa primero campos criticos (objetivo y criterios de aceptacion) antes de ejecutar la tarea."
+  ]
+}
+```
+
+## 53) `prompt_quality_gate`
+
+Entrada:
+```json
+{
+  "tool": "prompt_quality_gate",
+  "arguments": {
+    "goal": "Implementar validacion de filtros en Main.controller.js",
+    "contextSummary": "Proyecto SAPUI5 con OData V2",
+    "constraints": ["No tocar manifest routing"],
+    "acceptanceCriteria": ["npm run check en verde", "Sin errores de consola"],
+    "inScope": ["webapp/controller/Main.controller.js"],
+    "strictMode": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "score": 90,
+    "status": "pass",
+    "ready": true
+  },
+  "blockingIssues": [],
+  "improvements": [],
+  "normalizedPrompt": {
+    "estimatedTokens": 120,
+    "chars": 478,
+    "lines": 7,
+    "hasChecklist": false
+  }
+}
+```
+
+## 54) `prompt_builder`
+
+Entrada:
+```json
+{
+  "tool": "prompt_builder",
+  "arguments": {
+    "taskType": "feature",
+    "goal": "Implementar validacion de filtros en Main.controller.js",
+    "contextSummary": "Proyecto SAPUI5 con OData V2",
+    "constraints": ["No tocar manifest routing"],
+    "acceptanceCriteria": ["npm run check en verde"],
+    "inScope": ["webapp/controller/Main.controller.js"],
+    "deliverable": "Patch aplicado y resumen corto",
+    "style": "both",
+    "targetAi": "codex"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "prompt": {
+    "full": "Eres un asistente tecnico orientado a ejecutar esta tarea...",
+    "compact": "Tarea (feature): Implementar validacion...",
+    "recommended": "Eres un asistente tecnico orientado a ejecutar esta tarea..."
+  },
+  "metadata": {
+    "taskType": "feature",
+    "targetAi": "codex",
+    "style": "both",
+    "sectionsIncluded": ["goal", "context", "inScope", "constraints", "acceptanceCriteria", "deliverable", "responseFormat", "checklist"],
+    "estimatedTokens": {
+      "full": 210,
+      "compact": 74
+    }
+  }
+}
+```
+
+## 55) `prompt_token_budget`
+
+Entrada:
+```json
+{
+  "tool": "prompt_token_budget",
+  "arguments": {
+    "prompt": "Objetivo: ... (prompt largo)",
+    "maxTokens": 900,
+    "reservedForResponseTokens": 300,
+    "contextCandidates": [
+      { "path": "webapp/controller/Main.controller.js", "estimatedTokens": 120, "priority": "high" },
+      { "path": "webapp/manifest.json", "estimatedTokens": 200, "priority": "medium" }
+    ]
+  }
+}
+```
+
+## 56) `prompt_context_selector`
+
+Entrada:
+```json
+{
+  "tool": "prompt_context_selector",
+  "arguments": {
+    "taskType": "bugfix",
+    "goal": "Corregir bug de busqueda en Main.controller.js",
+    "queryTerms": ["search", "controller"],
+    "includeGitDiff": true,
+    "includeContextIndex": true,
+    "maxFiles": 6
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "taskType": "bugfix",
+    "queryTerms": ["search", "controller"],
+    "maxFiles": 6
+  },
+  "strategy": {
+    "usedGitDiff": true,
+    "usedContextIndex": true,
+    "usedKeywordSearch": true,
+    "contextIndexPath": ".codex/mcp/context/context-index.json"
+  },
+  "selectedPaths": [
+    {
+      "path": "webapp/controller/Main.controller.js",
+      "score": 241,
+      "estimatedTokens": 180,
+      "sources": ["git_diff", "context_index", "keyword_match"]
+    }
+  ]
+}
+```
+
+## 57) `prompt_template_catalog`
+
+Entrada:
+```json
+{
+  "tool": "prompt_template_catalog",
+  "arguments": {
+    "taskType": "feature",
+    "includeExamples": true,
+    "includeCompactVariant": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "catalogVersion": "1.0.0",
+  "language": "es",
+  "templates": [
+    {
+      "id": "template-feature",
+      "taskType": "feature",
+      "title": "Plantilla de nueva funcionalidad",
+      "requiredFields": ["goal", "acceptanceCriteria"],
+      "template": {
+        "full": "Tipo de tarea: feature\nObjetivo: <resultado funcional a implementar>\n...",
+        "compact": "[feature] Objetivo: <resultado funcional a implementar>\n..."
+      }
+    }
+  ]
+}
+```
+
+## 58) `prompt_retrospective`
+
+Entrada:
+```json
+{
+  "tool": "prompt_retrospective",
+  "arguments": {
+    "taskType": "bugfix",
+    "promptUsed": "Objetivo: corregir bug en Main.controller.js...",
+    "outcome": "partial",
+    "qualityGatePassed": false,
+    "iterations": 3,
+    "issues": ["faltaron criterios de aceptacion"],
+    "tokenEstimate": 1800,
+    "expectedTokenBudget": 1200,
+    "dryRun": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "dryRun": true,
+  "changed": true,
+  "retrospectivePath": ".codex/mcp/prompts/retrospectives.jsonl",
+  "assessment": {
+    "score": 38,
+    "efficiency": "poor",
+    "outcome": "partial"
+  },
+  "improvements": {
+    "nextPromptAdjustments": [
+      "Definir objetivo y criterios de aceptacion en formato medible antes de ejecutar."
+    ],
+    "questionsForUser": [
+      "Que archivo/modulo no debe tocarse bajo ningun caso?"
+    ]
+  },
+  "applyResult": null
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "budget": {
+    "maxTokens": 900,
+    "reservedForResponseTokens": 300,
+    "targetPromptTokens": 600,
+    "estimatedTokensBefore": 980,
+    "estimatedTokensAfter": 560,
+    "reductionTokens": 420,
+    "reductionRate": 0.429
+  },
+  "optimized": {
+    "prompt": "Objetivo: ... (version compacta)",
+    "strategy": ["dedupe-lines", "drop-low-priority-lines"],
+    "removedLines": 41,
+    "truncatedSections": []
+  },
+  "contextSelection": {
+    "availableTokens": 40,
+    "selected": [],
+    "dropped": [
+      {
+        "path": "webapp/controller/Main.controller.js",
+        "estimatedTokens": 120,
+        "priority": "high",
+        "dropReason": "Sin presupuesto restante de contexto"
+      }
+    ]
+  }
+}
+```
+
 ## 52) `audit_git_worktree_state`
 
 Entrada:
