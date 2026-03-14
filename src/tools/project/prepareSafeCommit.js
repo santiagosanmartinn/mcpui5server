@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import { z } from "zod";
 import { auditGitWorktreeStateTool } from "./auditGitWorktreeState.js";
 import { analyzeGitDiffTool } from "./analyzeGitDiff.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const DIFF_MODES = ["working_tree", "staged", "range"];
 const CHECK_LEVELS = ["blocking", "warning", "info"];
@@ -13,6 +14,7 @@ const inputSchema = z.object({
   baseRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional(),
   largeFileThresholdKb: z.number().int().min(50).max(10240).optional(),
@@ -93,12 +95,14 @@ export const prepareSafeCommitTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const diff = await analyzeGitDiffTool.handler(
       {
         mode: parsed.mode,
         baseRef: parsed.baseRef,
         targetRef: parsed.targetRef,
         includeUntracked: parsed.includeUntracked,
+        language: parsed.language,
         maxFiles: parsed.maxFiles,
         timeoutMs: parsed.timeoutMs
       },
@@ -107,6 +111,7 @@ export const prepareSafeCommitTool = {
     const audit = await auditGitWorktreeStateTool.handler(
       {
         includeUntracked: parsed.includeUntracked,
+        language: parsed.language,
         maxFiles: parsed.maxFiles,
         timeoutMs: parsed.timeoutMs
       },
@@ -130,16 +135,17 @@ export const prepareSafeCommitTool = {
         id: "git-not-available",
         level: "blocking",
         status: "fail",
-        message: "Git is not available in this environment.",
+        message: t(language, "Git no esta disponible en este entorno.", "Git is not available in this environment."),
         evidence: [],
-        suggestedAction: "Install Git before running commit readiness checks."
+        suggestedAction: t(language, "Instala Git antes de ejecutar checks de preparacion de commit.", "Install Git before running commit readiness checks.")
       });
       return outputSchema.parse(buildResponse({
         scope: diff.scope,
         repository,
         summary,
         checks,
-        commands
+        commands,
+        language
       }));
     }
 
@@ -148,16 +154,21 @@ export const prepareSafeCommitTool = {
         id: "git-repository-missing",
         level: "blocking",
         status: "fail",
-        message: "Current workspace is not a Git repository.",
+        message: t(language, "El workspace actual no es un repositorio Git.", "Current workspace is not a Git repository."),
         evidence: [],
-        suggestedAction: "Run `git init` (or open the correct repository folder) before commit preparation."
+        suggestedAction: t(
+          language,
+          "Ejecuta `git init` (o abre la carpeta correcta del repositorio) antes de preparar el commit.",
+          "Run `git init` (or open the correct repository folder) before commit preparation."
+        )
       });
       return outputSchema.parse(buildResponse({
         scope: diff.scope,
         repository,
         summary,
         checks,
-        commands
+        commands,
+        language
       }));
     }
 
@@ -166,18 +177,22 @@ export const prepareSafeCommitTool = {
         id: "no-pending-changes",
         level: "warning",
         status: "warn",
-        message: "No changes detected for selected diff scope.",
+        message: t(language, "No se detectaron cambios para el alcance de diff seleccionado.", "No changes detected for selected diff scope."),
         evidence: [],
-        suggestedAction: "Skip commit preparation or switch diff mode."
+        suggestedAction: t(language, "Omite la preparacion de commit o cambia el modo de diff.", "Skip commit preparation or switch diff mode.")
       });
     } else {
       checks.push({
         id: "pending-changes-detected",
         level: "info",
         status: "pass",
-        message: `Detected ${summary.changedFiles} changed files (+${summary.additions}/-${summary.deletions}).`,
+        message: t(
+          language,
+          `Detectados ${summary.changedFiles} archivos cambiados (+${summary.additions}/-${summary.deletions}).`,
+          `Detected ${summary.changedFiles} changed files (+${summary.additions}/-${summary.deletions}).`
+        ),
         evidence: diff.files.slice(0, 10).map((item) => item.path),
-        suggestedAction: "Proceed with the remaining checks before commit."
+        suggestedAction: t(language, "Continua con los checks restantes antes del commit.", "Proceed with the remaining checks before commit.")
       });
     }
 
@@ -186,12 +201,12 @@ export const prepareSafeCommitTool = {
         id: "conflicts-present",
         level: "blocking",
         status: "fail",
-        message: "Merge conflicts are present in the worktree.",
+        message: t(language, "Hay conflictos de merge en el worktree.", "Merge conflicts are present in the worktree."),
         evidence: audit.workingTree.files
           .filter((item) => item.isConflicted)
           .slice(0, 20)
           .map((item) => item.path),
-        suggestedAction: "Resolve conflicts before committing."
+        suggestedAction: t(language, "Resuelve conflictos antes de hacer commit.", "Resolve conflicts before committing.")
       });
     }
 
@@ -200,9 +215,9 @@ export const prepareSafeCommitTool = {
         id: "nothing-staged",
         level: "warning",
         status: "warn",
-        message: "There are changes but nothing staged yet.",
+        message: t(language, "Hay cambios, pero aun no hay nada en staged.", "There are changes but nothing staged yet."),
         evidence: diff.files.slice(0, 10).map((item) => item.path),
-        suggestedAction: "Review and stage intentional files before commit."
+        suggestedAction: t(language, "Revisa y stagea solo los archivos intencionales antes del commit.", "Review and stage intentional files before commit.")
       });
     }
 
@@ -211,9 +226,9 @@ export const prepareSafeCommitTool = {
         id: "mixed-staged-unstaged",
         level: "warning",
         status: "warn",
-        message: "Mixed staged and unstaged changes detected.",
+        message: t(language, "Se detectaron cambios mezclados entre staged y unstaged.", "Mixed staged and unstaged changes detected."),
         evidence: audit.workingTree.files.slice(0, 20).map((item) => `${item.statusCode} ${item.path}`),
-        suggestedAction: "Split or align changes to avoid accidental partial commits."
+        suggestedAction: t(language, "Separa o alinea cambios para evitar commits parciales accidentales.", "Split or align changes to avoid accidental partial commits.")
       });
     }
 
@@ -222,9 +237,9 @@ export const prepareSafeCommitTool = {
         id: "tests-not-updated",
         level: "blocking",
         status: "fail",
-        message: "Code/config changed without test updates.",
+        message: t(language, "Se cambio codigo/configuracion sin actualizar tests.", "Code/config changed without test updates."),
         evidence: diff.files.filter((item) => isRuntimeOrConfigFile(item.path)).slice(0, 20).map((item) => item.path),
-        suggestedAction: "Add or update targeted tests before commit."
+        suggestedAction: t(language, "Anade o actualiza tests focalizados antes del commit.", "Add or update targeted tests before commit.")
       });
       commands.add("npm run test:run");
     }
@@ -234,9 +249,9 @@ export const prepareSafeCommitTool = {
         id: "quality-gate-required",
         level: "warning",
         status: "warn",
-        message: "High-impact files changed; quality gate is recommended.",
+        message: t(language, "Se cambiaron archivos de alto impacto; se recomienda quality gate.", "High-impact files changed; quality gate is recommended."),
         evidence: diff.files.filter((item) => isRuntimeOrConfigFile(item.path)).slice(0, 20).map((item) => item.path),
-        suggestedAction: "Run full checks before commit."
+        suggestedAction: t(language, "Ejecuta checks completos antes del commit.", "Run full checks before commit.")
       });
       commands.add("npm run check");
     }
@@ -254,9 +269,9 @@ export const prepareSafeCommitTool = {
           id: "potential-secrets",
           level: "blocking",
           status: "fail",
-          message: "Potential secrets detected in changed files.",
+          message: t(language, "Se detectaron posibles secretos en archivos cambiados.", "Potential secrets detected in changed files."),
           evidence: contentFindings.secretMatches.slice(0, 20),
-          suggestedAction: "Remove/rotate secrets and replace with secure config references."
+          suggestedAction: t(language, "Elimina/rota secretos y sustituyelos por referencias de configuracion segura.", "Remove/rotate secrets and replace with secure config references.")
         });
       }
 
@@ -265,9 +280,9 @@ export const prepareSafeCommitTool = {
           id: "debug-statements",
           level: "warning",
           status: "warn",
-          message: "Debug statements found in changed files.",
+          message: t(language, "Se encontraron trazas de debug en archivos cambiados.", "Debug statements found in changed files."),
           evidence: contentFindings.debugStatements.slice(0, 20),
-          suggestedAction: "Remove temporary `console.log`/`debugger` statements."
+          suggestedAction: t(language, "Elimina sentencias temporales `console.log`/`debugger`.", "Remove temporary `console.log`/`debugger` statements.")
         });
       }
 
@@ -276,9 +291,9 @@ export const prepareSafeCommitTool = {
           id: "large-files",
           level: "warning",
           status: "warn",
-          message: "Large files detected in current changes.",
+          message: t(language, "Se detectaron archivos grandes en los cambios actuales.", "Large files detected in current changes."),
           evidence: contentFindings.largeFiles.slice(0, 20),
-          suggestedAction: "Confirm these files are intentionally versioned."
+          suggestedAction: t(language, "Confirma que estos archivos deben versionarse.", "Confirm these files are intentionally versioned.")
         });
       }
     }
@@ -288,9 +303,9 @@ export const prepareSafeCommitTool = {
         id: "baseline-ready",
         level: "info",
         status: "pass",
-        message: "No blocking patterns detected in pre-commit checklist.",
+        message: t(language, "No se detectaron patrones bloqueantes en el checklist pre-commit.", "No blocking patterns detected in pre-commit checklist."),
         evidence: [],
-        suggestedAction: "Proceed with manual review and explicit commit confirmation."
+        suggestedAction: t(language, "Continua con revision manual y confirmacion explicita del commit.", "Proceed with manual review and explicit commit confirmation.")
       });
     }
 
@@ -301,7 +316,8 @@ export const prepareSafeCommitTool = {
       repository,
       summary,
       checks,
-      commands
+      commands,
+      language
     }));
   }
 };
@@ -407,7 +423,11 @@ function buildResponse(input) {
       allowsAutomaticCommit: false,
       allowsAutomaticPush: false,
       requiresExplicitUserConsent: true,
-      note: "This tool only prepares commit readiness. Never run commit/push without explicit user consent."
+      note: t(
+        input.language,
+        "Esta tool solo prepara la validacion previa al commit. Nunca ejecutes commit/push sin consentimiento explicito del usuario.",
+        "This tool only prepares commit readiness. Never run commit/push without explicit user consent."
+      )
     }
   };
 }

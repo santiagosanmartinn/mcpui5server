@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { analyzeGitDiffTool } from "./analyzeGitDiff.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const DIFF_MODES = ["working_tree", "staged", "range"];
 const RISK_LEVELS = ["low", "medium", "high", "critical"];
@@ -10,6 +11,7 @@ const inputSchema = z.object({
   baseRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional()
 }).strict().superRefine((value, ctx) => {
@@ -68,6 +70,7 @@ export const riskReviewFromDiffTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const diffAnalysis = await analyzeGitDiffTool.handler(parsed, { context });
     const summary = diffAnalysis.summary;
     const files = diffAnalysis.files;
@@ -80,10 +83,14 @@ export const riskReviewFromDiffTool = {
         id: "git-context-missing",
         severity: "medium",
         category: "workflow",
-        title: "Git context unavailable",
-        description: "No Git repository was detected, so change risk cannot be assessed with diff evidence.",
+        title: t(language, "Contexto Git no disponible", "Git context unavailable"),
+        description: t(
+          language,
+          "No se detecto repositorio Git, por lo que no se puede evaluar el riesgo del cambio con evidencia de diff.",
+          "No Git repository was detected, so change risk cannot be assessed with diff evidence."
+        ),
         files: [],
-        mitigation: "Initialize Git and rerun risk review before merge."
+        mitigation: t(language, "Inicializa Git y vuelve a ejecutar la revision de riesgo antes del merge.", "Initialize Git and rerun risk review before merge.")
       });
       return outputSchema.parse({
         scope: diffAnalysis.scope,
@@ -109,10 +116,14 @@ export const riskReviewFromDiffTool = {
         id: "diff-too-large",
         severity: "high",
         category: "scope",
-        title: "Large diff detected",
-        description: `The diff touches ${summary.changedFiles} files, which raises review and regression risk.`,
+        title: t(language, "Diff grande detectado", "Large diff detected"),
+        description: t(
+          language,
+          `El diff toca ${summary.changedFiles} archivos, lo que aumenta riesgo de revision y regresion.`,
+          `The diff touches ${summary.changedFiles} files, which raises review and regression risk.`
+        ),
         files: files.slice(0, 20).map((item) => item.path),
-        mitigation: "Split this work into smaller commits or PR slices before merge."
+        mitigation: t(language, "Divide este trabajo en commits o PRs mas pequenos antes de mergear.", "Split this work into smaller commits or PR slices before merge.")
       });
     } else if (summary.changedFiles >= 40) {
       score += 15;
@@ -120,10 +131,14 @@ export const riskReviewFromDiffTool = {
         id: "diff-medium-large",
         severity: "medium",
         category: "scope",
-        title: "Medium-large diff",
-        description: `The diff includes ${summary.changedFiles} files and should be reviewed with extra care.`,
+        title: t(language, "Diff medio-grande", "Medium-large diff"),
+        description: t(
+          language,
+          `El diff incluye ${summary.changedFiles} archivos y debe revisarse con especial cuidado.`,
+          `The diff includes ${summary.changedFiles} files and should be reviewed with extra care.`
+        ),
         files: files.slice(0, 15).map((item) => item.path),
-        mitigation: "Prioritize high-risk files and run focused regression checks."
+        mitigation: t(language, "Prioriza archivos de alto riesgo y ejecuta checks de regresion focalizados.", "Prioritize high-risk files and run focused regression checks.")
       });
     }
 
@@ -133,10 +148,14 @@ export const riskReviewFromDiffTool = {
         id: "high-churn",
         severity: "high",
         category: "scope",
-        title: "High line churn",
-        description: `Total churn is +${summary.additions}/-${summary.deletions}, increasing regression probability.`,
+        title: t(language, "Alto churn de lineas", "High line churn"),
+        description: t(
+          language,
+          `El churn total es +${summary.additions}/-${summary.deletions}, aumentando la probabilidad de regresion.`,
+          `Total churn is +${summary.additions}/-${summary.deletions}, increasing regression probability.`
+        ),
         files: files.slice(0, 20).map((item) => item.path),
-        mitigation: "Run full validation and request broader review coverage."
+        mitigation: t(language, "Ejecuta validacion completa y solicita una revision mas amplia.", "Run full validation and request broader review coverage.")
       });
     } else if (summary.additions + summary.deletions >= 500) {
       score += 10;
@@ -144,10 +163,10 @@ export const riskReviewFromDiffTool = {
         id: "moderate-churn",
         severity: "medium",
         category: "scope",
-        title: "Moderate line churn",
-        description: `Total churn is +${summary.additions}/-${summary.deletions}.`,
+        title: t(language, "Churn moderado de lineas", "Moderate line churn"),
+        description: t(language, `El churn total es +${summary.additions}/-${summary.deletions}.`, `Total churn is +${summary.additions}/-${summary.deletions}.`),
         files: files.slice(0, 10).map((item) => item.path),
-        mitigation: "Run focused tests around impacted modules."
+        mitigation: t(language, "Ejecuta tests focalizados sobre modulos impactados.", "Run focused tests around impacted modules.")
       });
     }
 
@@ -157,10 +176,10 @@ export const riskReviewFromDiffTool = {
         id: "merge-conflicts-present",
         severity: "high",
         category: "workflow",
-        title: "Merge conflicts unresolved",
-        description: "Unmerged files are present in the working tree.",
+        title: t(language, "Conflictos de merge sin resolver", "Merge conflicts unresolved"),
+        description: t(language, "Hay archivos sin mergear en el working tree.", "Unmerged files are present in the working tree."),
         files: files.filter((item) => item.status === "unmerged").map((item) => item.path),
-        mitigation: "Resolve all merge conflicts before validation and merge."
+        mitigation: t(language, "Resuelve todos los conflictos de merge antes de validar y mergear.", "Resolve all merge conflicts before validation and merge.")
       });
     }
 
@@ -170,13 +189,17 @@ export const riskReviewFromDiffTool = {
         id: "code-without-tests",
         severity: "high",
         category: "testing",
-        title: "Code/config changed without test updates",
-        description: "Behavioral surfaces changed but no test files were updated in this diff.",
+        title: t(language, "Codigo/configuracion cambiado sin actualizar tests", "Code/config changed without test updates"),
+        description: t(
+          language,
+          "Se cambiaron superficies de comportamiento, pero no se actualizaron archivos de test en este diff.",
+          "Behavioral surfaces changed but no test files were updated in this diff."
+        ),
         files: files
           .filter((item) => isRuntimeOrConfigFile(item.path))
           .slice(0, 20)
           .map((item) => item.path),
-        mitigation: "Add or update targeted tests before merge."
+        mitigation: t(language, "Anade o actualiza tests focalizados antes de mergear.", "Add or update targeted tests before merge.")
       });
       recommendedChecks.add("npm run test:run");
     }
@@ -187,12 +210,16 @@ export const riskReviewFromDiffTool = {
         id: "manifest-impact",
         severity: "high",
         category: "configuration",
-        title: "Manifest change impact",
-        description: "Manifest updates can affect routing, models, bootstrapping, and compatibility.",
+        title: t(language, "Impacto por cambios en manifest", "Manifest change impact"),
+        description: t(
+          language,
+          "Los cambios en manifest pueden afectar routing, modelos, bootstrapping y compatibilidad.",
+          "Manifest updates can affect routing, models, bootstrapping, and compatibility."
+        ),
         files: files
           .filter((item) => item.path.endsWith("/manifest.json") || item.path === "webapp/manifest.json")
           .map((item) => item.path),
-        mitigation: "Run UI5 quality gate and manually smoke-test app navigation."
+        mitigation: t(language, "Ejecuta quality gate UI5 y prueba manualmente la navegacion de la app.", "Run UI5 quality gate and manually smoke-test app navigation.")
       });
       recommendedChecks.add("npm run check");
     }
@@ -203,13 +230,13 @@ export const riskReviewFromDiffTool = {
         id: "tooling-config-change",
         severity: "medium",
         category: "configuration",
-        title: "Tooling/configuration changed",
-        description: "CI/tooling behavior may shift due to config changes.",
+        title: t(language, "Cambio en tooling/configuracion", "Tooling/configuration changed"),
+        description: t(language, "El comportamiento de CI/tooling puede variar por cambios de configuracion.", "CI/tooling behavior may shift due to config changes."),
         files: files
           .filter((item) => isConfigFile(item.path))
           .slice(0, 15)
           .map((item) => item.path),
-        mitigation: "Run full checks locally and verify CI parity."
+        mitigation: t(language, "Ejecuta checks completos en local y verifica paridad con CI.", "Run full checks locally and verify CI parity.")
       });
       recommendedChecks.add("npm run check");
     }
@@ -220,13 +247,13 @@ export const riskReviewFromDiffTool = {
         id: "ui-runtime-surface",
         severity: "medium",
         category: "runtime",
-        title: "UI runtime behavior affected",
-        description: "Controller/view updates can introduce binding or navigation regressions.",
+        title: t(language, "Superficie runtime UI afectada", "UI runtime behavior affected"),
+        description: t(language, "Los cambios en controller/view pueden introducir regresiones de binding o navegacion.", "Controller/view updates can introduce binding or navigation regressions."),
         files: files
           .filter((item) => isUiRuntimeFile(item.path))
           .slice(0, 20)
           .map((item) => item.path),
-        mitigation: "Run UI flow smoke tests for impacted screens."
+        mitigation: t(language, "Ejecuta smoke tests de flujo UI en pantallas impactadas.", "Run UI flow smoke tests for impacted screens.")
       });
     }
 
@@ -236,10 +263,10 @@ export const riskReviewFromDiffTool = {
         id: "deleted-files",
         severity: "medium",
         category: "runtime",
-        title: "Files removed in diff",
-        description: "Deleted files can break imports/routing if references remain.",
+        title: t(language, "Archivos eliminados en el diff", "Files removed in diff"),
+        description: t(language, "Los archivos eliminados pueden romper imports/routing si quedan referencias.", "Deleted files can break imports/routing if references remain."),
         files: files.filter((item) => item.status === "deleted").slice(0, 20).map((item) => item.path),
-        mitigation: "Validate imports, routes, and dead references before merge."
+        mitigation: t(language, "Valida imports, rutas y referencias muertas antes del merge.", "Validate imports, routes, and dead references before merge.")
       });
     }
 
@@ -248,10 +275,10 @@ export const riskReviewFromDiffTool = {
         id: "no-changes",
         severity: "low",
         category: "workflow",
-        title: "No diff detected",
-        description: "No pending changes were detected for the selected scope.",
+        title: t(language, "No se detectaron cambios", "No diff detected"),
+        description: t(language, "No se detectaron cambios pendientes para el alcance seleccionado.", "No pending changes were detected for the selected scope."),
         files: [],
-        mitigation: "Select another diff scope if you expected pending changes."
+        mitigation: t(language, "Selecciona otro alcance de diff si esperabas cambios pendientes.", "Select another diff scope if you expected pending changes.")
       });
     }
 

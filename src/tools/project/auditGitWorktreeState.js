@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { runGitInRepository, tryResolveGitRepository } from "../../utils/git.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const CONFLICT_CODES = new Set(["DD", "AU", "UD", "UA", "DU", "AA", "UU"]);
 const DEFAULT_MAX_FILES = 200;
 
 const inputSchema = z.object({
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(2000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional()
 }).strict();
@@ -47,8 +49,9 @@ export const auditGitWorktreeStateTool = {
   inputSchema,
   outputSchema,
   async handler(args, { context }) {
-    const { includeUntracked, maxFiles, timeoutMs } = inputSchema.parse(args);
+    const { includeUntracked, language, maxFiles, timeoutMs } = inputSchema.parse(args);
     const includeUntrackedFiles = includeUntracked ?? true;
+    const selectedLanguage = resolveLanguage(language);
     const maxListedFiles = maxFiles ?? DEFAULT_MAX_FILES;
     const repository = await tryResolveGitRepository(context.rootDir, { timeoutMs });
 
@@ -64,7 +67,11 @@ export const auditGitWorktreeStateTool = {
           files: []
         },
         recommendations: [
-          "Install Git to enable worktree audits and diff analysis from MCP tools."
+          t(
+            selectedLanguage,
+            "Instala Git para habilitar auditorias de worktree y analisis de diff desde las tools MCP.",
+            "Install Git to enable worktree audits and diff analysis from MCP tools."
+          )
         ]
       });
     }
@@ -81,7 +88,11 @@ export const auditGitWorktreeStateTool = {
           files: []
         },
         recommendations: [
-          "Initialize the workspace with `git init` before using Git-oriented MCP flows."
+          t(
+            selectedLanguage,
+            "Inicializa el workspace con `git init` antes de usar flujos MCP orientados a Git.",
+            "Initialize the workspace with `git init` before using Git-oriented MCP flows."
+          )
         ]
       });
     }
@@ -104,6 +115,7 @@ export const auditGitWorktreeStateTool = {
         && parsedStatus.conflictedFiles === 0;
 
     const recommendations = buildRecommendations({
+      language: selectedLanguage,
       clean,
       includeUntrackedFiles,
       stagedChanges: parsedStatus.stagedChanges,
@@ -203,6 +215,7 @@ function normalizeStatusPath(rawPath) {
 function buildRecommendations(summary) {
   const recommendations = [];
   const {
+    language,
     clean,
     includeUntrackedFiles,
     stagedChanges,
@@ -214,23 +227,59 @@ function buildRecommendations(summary) {
   } = summary;
 
   if (clean) {
-    recommendations.push("Working tree is clean.");
+    recommendations.push(t(language, "El working tree esta limpio.", "Working tree is clean."));
   }
   if (conflictedFiles > 0) {
-    recommendations.push("Resolve merge conflicts before applying MCP-generated patches.");
+    recommendations.push(
+      t(
+        language,
+        "Resuelve los conflictos de merge antes de aplicar parches generados por MCP.",
+        "Resolve merge conflicts before applying MCP-generated patches."
+      )
+    );
   }
   if (stagedChanges > 0 && unstagedChanges > 0) {
-    recommendations.push("You have mixed staged and unstaged changes; consider splitting commits for clearer reviews.");
+    recommendations.push(
+      t(
+        language,
+        "Tienes cambios staged y unstaged mezclados; considera separar commits para revisiones mas claras.",
+        "You have mixed staged and unstaged changes; consider splitting commits for clearer reviews."
+      )
+    );
   }
   if (includeUntrackedFiles && untrackedFiles > 0) {
-    recommendations.push("Review untracked files to avoid committing temporary artifacts by accident.");
+    recommendations.push(
+      t(
+        language,
+        "Revisa los archivos untracked para evitar subir artefactos temporales por error.",
+        "Review untracked files to avoid committing temporary artifacts by accident."
+      )
+    );
   }
   if (ahead > 0 && behind > 0) {
-    recommendations.push("Branch has diverged from upstream; rebase or merge before opening a PR.");
+    recommendations.push(
+      t(
+        language,
+        "La rama ha divergido del upstream; haz rebase o merge antes de abrir PR.",
+        "Branch has diverged from upstream; rebase or merge before opening a PR."
+      )
+    );
   } else if (behind > 0) {
-    recommendations.push("Branch is behind upstream; pull/rebase before final validation.");
+    recommendations.push(
+      t(
+        language,
+        "La rama esta por detras del upstream; haz pull/rebase antes de la validacion final.",
+        "Branch is behind upstream; pull/rebase before final validation."
+      )
+    );
   } else if (ahead > 0) {
-    recommendations.push("Branch has local commits not pushed yet.");
+    recommendations.push(
+      t(
+        language,
+        "La rama tiene commits locales aun no publicados.",
+        "Branch has local commits not pushed yet."
+      )
+    );
   }
 
   return recommendations;

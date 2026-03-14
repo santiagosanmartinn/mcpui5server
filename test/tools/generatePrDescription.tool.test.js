@@ -35,10 +35,10 @@ describeIfGit("generate_pr_description", () => {
       { context: { rootDir: tempRoot } }
     );
 
-    expect(result.pr.markdown).toContain("## Context");
-    expect(result.pr.markdown).toContain("## Testing");
+    expect(result.pr.markdown).toContain("## Contexto");
+    expect(result.pr.markdown).toContain("## Pruebas");
     expect(result.pr.markdown).toContain("## Checklist");
-    expect(result.pr.markdown).toContain("does not execute Git actions");
+    expect(result.pr.markdown).toContain("no ejecuta acciones Git");
     expect(result.pr.labelsSuggested).toContain("docs");
   });
 });

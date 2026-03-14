@@ -83,6 +83,16 @@
                 "kind": "boolean"
               }
             },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
             "maxFiles": {
               "kind": "optional",
               "inner": {
@@ -1888,6 +1898,16 @@
               "kind": "boolean"
             }
           },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
           "maxFiles": {
             "kind": "optional",
             "inner": {
@@ -2209,6 +2229,16 @@
             "kind": "optional",
             "inner": {
               "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
             }
           },
           "maxFiles": {
@@ -3053,6 +3083,16 @@
         "kind": "object",
         "unknownKeys": "strict",
         "keys": {
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
           "maxFiles": {
             "kind": "optional",
             "inner": {
@@ -3530,6 +3570,16 @@
                 "kind": "boolean"
               }
             },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
             "maxFiles": {
               "kind": "optional",
               "inner": {
@@ -3789,6 +3839,16 @@
               "kind": "optional",
               "inner": {
                 "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
               }
             },
             "maxFiles": {
@@ -6401,6 +6461,16 @@
                 "kind": "boolean"
               }
             },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
+              }
+            },
             "largeFileThresholdKb": {
               "kind": "optional",
               "inner": {
@@ -8986,6 +9056,16 @@
               "kind": "optional",
               "inner": {
                 "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
               }
             },
             "maxFiles": {
@@ -11802,6 +11882,16 @@
               "kind": "boolean"
             }
           },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
           "maxFiles": {
             "kind": "optional",
             "inner": {
@@ -12297,6 +12387,16 @@
               "kind": "optional",
               "inner": {
                 "kind": "boolean"
+              }
+            },
+            "language": {
+              "kind": "optional",
+              "inner": {
+                "kind": "enum",
+                "values": [
+                  "es",
+                  "en"
+                ]
               }
             },
             "maxFiles": {

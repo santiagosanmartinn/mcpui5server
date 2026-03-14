@@ -146,6 +146,10 @@ Ruta recomendada para nuevos usuarios:
   - `files` normalizados por `path`, `status`, `additions`, `deletions`
   - `recommendations` para validacion/revision
 
+Nota comun para herramientas Git:
+- Las herramientas de Git incorporadas en este servidor aceptan `language` opcional (`es` | `en`).
+- Si no se indica, los mensajes funcionales y recomendaciones se devuelven en castellano por defecto.
+
 ### `suggest_tests_from_git_diff`
 
 - Objetivo: sugerir pruebas y checks concretos a partir del impacto detectado en el diff Git.

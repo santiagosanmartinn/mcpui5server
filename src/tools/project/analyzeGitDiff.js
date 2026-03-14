@@ -1,6 +1,7 @@
 import path from "node:path";
 import { z } from "zod";
 import { runGitInRepository, tryResolveGitRepository } from "../../utils/git.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const DIFF_MODES = ["working_tree", "staged", "range"];
 const DEFAULT_MAX_FILES = 300;
@@ -10,6 +11,7 @@ const inputSchema = z.object({
   baseRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional()
 }).strict().superRefine((value, ctx) => {
@@ -91,9 +93,11 @@ export const analyzeGitDiffTool = {
       baseRef,
       targetRef,
       includeUntracked,
+      language,
       maxFiles,
       timeoutMs
     } = inputSchema.parse(args);
+    const selectedLanguage = resolveLanguage(language);
     const selectedMode = mode ?? "working_tree";
     const includeUntrackedFiles = includeUntracked ?? true;
     const maxListedFiles = maxFiles ?? DEFAULT_MAX_FILES;
@@ -105,7 +109,13 @@ export const analyzeGitDiffTool = {
         mode: selectedMode,
         baseRef: baseRef ?? null,
         targetRef: targetRef ?? null,
-        recommendations: ["Install Git to enable diff-aware MCP tooling."]
+        recommendations: [
+          t(
+            selectedLanguage,
+            "Instala Git para habilitar herramientas MCP basadas en diff.",
+            "Install Git to enable diff-aware MCP tooling."
+          )
+        ]
       }));
     }
 
@@ -115,7 +125,13 @@ export const analyzeGitDiffTool = {
         mode: selectedMode,
         baseRef: baseRef ?? null,
         targetRef: targetRef ?? null,
-        recommendations: ["Initialize Git (`git init`) before running diff analysis tools."]
+        recommendations: [
+          t(
+            selectedLanguage,
+            "Inicializa Git (`git init`) antes de usar herramientas de analisis de diff.",
+            "Initialize Git (`git init`) before running diff analysis tools."
+          )
+        ]
       }));
     }
 
@@ -130,7 +146,7 @@ export const analyzeGitDiffTool = {
     });
 
     const summary = buildSummary(files);
-    const recommendations = buildRecommendations(summary);
+    const recommendations = buildRecommendations(summary, selectedLanguage);
 
     return outputSchema.parse({
       repository,
@@ -443,25 +459,49 @@ function flagTouches(relativePath, touches) {
   }
 }
 
-function buildRecommendations(summary) {
+function buildRecommendations(summary, language) {
   const recommendations = [];
   if (summary.changedFiles === 0) {
-    recommendations.push("No diff detected for selected scope.");
+    recommendations.push(t(language, "No se detectaron cambios para el alcance seleccionado.", "No diff detected for selected scope."));
     return recommendations;
   }
   if (summary.byStatus.unmerged > 0) {
-    recommendations.push("Resolve merge conflicts before asking MCP tools to apply further patches.");
+    recommendations.push(
+      t(
+        language,
+        "Resuelve los conflictos de merge antes de pedir a las tools MCP que apliquen mas cambios.",
+        "Resolve merge conflicts before asking MCP tools to apply further patches."
+      )
+    );
   }
   if (summary.changedFiles > 120) {
-    recommendations.push("Large diff detected; consider splitting into smaller commits for safer reviews.");
+    recommendations.push(
+      t(
+        language,
+        "Diff muy grande detectado; considera dividirlo en commits mas pequenos para revisar con seguridad.",
+        "Large diff detected; consider splitting into smaller commits for safer reviews."
+      )
+    );
   }
 
   const codeTouched = summary.touches.controllers || summary.touches.views || summary.touches.manifest || summary.touches.config;
   if (codeTouched && !summary.touches.tests) {
-    recommendations.push("Code/config changed without test updates; consider adding focused tests before merge.");
+    recommendations.push(
+      t(
+        language,
+        "Se cambiaron codigo/configuracion sin actualizar tests; considera anadir pruebas focalizadas antes de mergear.",
+        "Code/config changed without test updates; consider adding focused tests before merge."
+      )
+    );
   }
   if (summary.touches.manifest) {
-    recommendations.push("Manifest changes detected; run `run_project_quality_gate` and `npm run check` before commit.");
+    recommendations.push(
+      t(
+        language,
+        "Se detectaron cambios en manifest; ejecuta `run_project_quality_gate` y `npm run check` antes del commit.",
+        "Manifest changes detected; run `run_project_quality_gate` and `npm run check` before commit."
+      )
+    );
   }
 
   return recommendations;

@@ -963,6 +963,7 @@ Entrada:
   "arguments": {
     "mode": "working_tree",
     "includeUntracked": true,
+    "language": "es",
     "scanContent": true
   }
 }
@@ -1051,6 +1052,7 @@ Entrada:
   "tool": "generate_pr_description",
   "arguments": {
     "mode": "working_tree",
+    "language": "es",
     "includeChecklist": true,
     "includeRollbackPlan": true
   }

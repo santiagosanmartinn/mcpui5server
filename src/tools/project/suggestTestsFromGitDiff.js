@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { analyzeGitDiffTool } from "./analyzeGitDiff.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const DIFF_MODES = ["working_tree", "staged", "range"];
 const PRIORITIES = ["high", "medium", "low"];
@@ -9,6 +10,7 @@ const inputSchema = z.object({
   baseRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional()
 }).strict();
@@ -53,6 +55,7 @@ export const suggestTestsFromGitDiffTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const diffAnalysis = await analyzeGitDiffTool.handler(parsed, { context });
     const scope = diffAnalysis.scope;
     const summary = diffAnalysis.summary;
@@ -71,10 +74,20 @@ export const suggestTestsFromGitDiffTool = {
           {
             id: "git-unavailable",
             priority: "medium",
-            title: "Enable Git-aware test suggestions",
-            rationale: "No Git repository was detected, so diff-driven recommendations are unavailable.",
+            title: t(language, "Activa sugerencias de test basadas en Git", "Enable Git-aware test suggestions"),
+            rationale: t(
+              language,
+              "No se detecto repositorio Git, por lo que no hay recomendaciones guiadas por diff.",
+              "No Git repository was detected, so diff-driven recommendations are unavailable."
+            ),
             relatedFiles: [],
-            recommendedChecks: ["Initialize Git in this workspace and rerun the tool."]
+            recommendedChecks: [
+              t(
+                language,
+                "Inicializa Git en este workspace y vuelve a ejecutar la tool.",
+                "Initialize Git in this workspace and rerun the tool."
+              )
+            ]
           }
         ],
         recommendedCommands: []
@@ -102,10 +115,20 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "docs-change-smoke-check",
         priority: "low",
-        title: "Run docs consistency smoke check",
-        rationale: "Diff contains documentation changes only, so lightweight checks are usually enough.",
+        title: t(language, "Ejecutar smoke check de documentacion", "Run docs consistency smoke check"),
+        rationale: t(
+          language,
+          "El diff contiene solo cambios de documentacion, por lo que normalmente basta con checks ligeros.",
+          "Diff contains documentation changes only, so lightweight checks are usually enough."
+        ),
         relatedFiles: files.map((item) => item.path),
-        recommendedChecks: ["Run documentation sync check via `npm run check` before merge."]
+        recommendedChecks: [
+          t(
+            language,
+            "Ejecuta la validacion de documentacion con `npm run check` antes del merge.",
+            "Run documentation sync check via `npm run check` before merge."
+          )
+        ]
       });
       commands.add("npm run check");
     }
@@ -114,12 +137,20 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "ui5-controller-view-regression",
         priority: "high",
-        title: "Validate UI5 behavior for changed controllers/views",
-        rationale: "Controller/view edits are high-impact for runtime behavior and binding integrity.",
+        title: t(language, "Validar comportamiento UI5 en controllers/views modificados", "Validate UI5 behavior for changed controllers/views"),
+        rationale: t(
+          language,
+          "Los cambios en controller/view tienen alto impacto en comportamiento runtime e integridad de bindings.",
+          "Controller/view edits are high-impact for runtime behavior and binding integrity."
+        ),
         relatedFiles: [...controllerFiles, ...viewFiles].slice(0, 15),
         recommendedChecks: [
-          "Run unit/integration tests that cover affected controllers and views.",
-          "Execute `run_project_quality_gate` before commit."
+          t(
+            language,
+            "Ejecuta tests unitarios/integracion que cubran los controllers y views afectados.",
+            "Run unit/integration tests that cover affected controllers and views."
+          ),
+          t(language, "Ejecuta `run_project_quality_gate` antes del commit.", "Execute `run_project_quality_gate` before commit.")
         ]
       });
       commands.add("npm run test:run");
@@ -130,12 +161,20 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "manifest-routing-model-safety",
         priority: "high",
-        title: "Re-check routing/model compatibility after manifest changes",
-        rationale: "Manifest updates can silently break navigation, model wiring, or version compatibility.",
+        title: t(language, "Revisar compatibilidad de routing/model tras cambios en manifest", "Re-check routing/model compatibility after manifest changes"),
+        rationale: t(
+          language,
+          "Los cambios en manifest pueden romper de forma silenciosa la navegacion, el wiring de modelos o la compatibilidad.",
+          "Manifest updates can silently break navigation, model wiring, or version compatibility."
+        ),
         relatedFiles: manifestFiles,
         recommendedChecks: [
-          "Run `run_project_quality_gate` with OData checks enabled.",
-          "Verify navigation and bootstrapping smoke flow in app."
+          t(
+            language,
+            "Ejecuta `run_project_quality_gate` con checks de OData activos.",
+            "Run `run_project_quality_gate` with OData checks enabled."
+          ),
+          t(language, "Verifica el flujo de navegacion y arranque de la app.", "Verify navigation and bootstrapping smoke flow in app.")
         ]
       });
       commands.add("npm run check");
@@ -145,12 +184,20 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "i18n-consistency",
         priority: "medium",
-        title: "Validate i18n usage and missing keys",
-        rationale: "i18n updates often require key-usage checks in XML/JS bindings.",
+        title: t(language, "Validar uso de i18n y claves faltantes", "Validate i18n usage and missing keys"),
+        rationale: t(
+          language,
+          "Las actualizaciones i18n suelen requerir comprobaciones de uso de claves en bindings XML/JS.",
+          "i18n updates often require key-usage checks in XML/JS bindings."
+        ),
         relatedFiles: i18nFiles.slice(0, 15),
         recommendedChecks: [
-          "Run `manage_ui5_i18n` in report mode to detect missing/unused keys.",
-          "Run `npm run check`."
+          t(
+            language,
+            "Ejecuta `manage_ui5_i18n` en modo report para detectar claves faltantes/no usadas.",
+            "Run `manage_ui5_i18n` in report mode to detect missing/unused keys."
+          ),
+          t(language, "Ejecuta `npm run check`.", "Run `npm run check`.")
         ]
       });
       commands.add("npm run check");
@@ -160,12 +207,20 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "config-change-ci-sanity",
         priority: "medium",
-        title: "Run CI-equivalent checks after tooling/config changes",
-        rationale: "Config updates can alter lint/test behavior and should be validated end-to-end.",
+        title: t(language, "Ejecutar checks equivalentes a CI tras cambios de tooling/config", "Run CI-equivalent checks after tooling/config changes"),
+        rationale: t(
+          language,
+          "Los cambios de configuracion pueden alterar el comportamiento de lint/test y deben validarse end-to-end.",
+          "Config updates can alter lint/test behavior and should be validated end-to-end."
+        ),
         relatedFiles: files.filter(isConfigFile).map((item) => item.path).slice(0, 15),
         recommendedChecks: [
-          "Run full quality gate (`npm run check`).",
-          "If contracts/docs changed, regenerate and verify snapshots."
+          t(language, "Ejecuta la puerta de calidad completa (`npm run check`).", "Run full quality gate (`npm run check`)."),
+          t(
+            language,
+            "Si cambiaron contratos/docs, regenera y valida snapshots.",
+            "If contracts/docs changed, regenerate and verify snapshots."
+          )
         ]
       });
       commands.add("npm run check");
@@ -180,12 +235,16 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "no-tests-updated",
         priority: "high",
-        title: "Add or update tests for changed behavior",
-        rationale: "Code and configuration changed without test updates, increasing regression risk.",
+        title: t(language, "Anadir o actualizar tests para el comportamiento cambiado", "Add or update tests for changed behavior"),
+        rationale: t(
+          language,
+          "Se modifico codigo/configuracion sin actualizar tests, aumentando riesgo de regresion.",
+          "Code and configuration changed without test updates, increasing regression risk."
+        ),
         relatedFiles: [...controllerFiles, ...viewFiles, ...manifestFiles, ...i18nFiles].slice(0, 20),
         recommendedChecks: [
-          "Add targeted tests for changed modules before merge.",
-          "Run `npm run test:run` to confirm baseline remains green."
+          t(language, "Anade tests focalizados para los modulos cambiados antes de mergear.", "Add targeted tests for changed modules before merge."),
+          t(language, "Ejecuta `npm run test:run` para confirmar baseline en verde.", "Run `npm run test:run` to confirm baseline remains green.")
         ]
       });
       commands.add("npm run test:run");
@@ -195,10 +254,14 @@ export const suggestTestsFromGitDiffTool = {
       suggestions.push({
         id: "baseline-check",
         priority: "low",
-        title: "Run baseline validation",
-        rationale: "No specific risk pattern detected; baseline verification is still recommended.",
+        title: t(language, "Ejecutar validacion baseline", "Run baseline validation"),
+        rationale: t(
+          language,
+          "No se detecto un patron de riesgo especifico; aun asi se recomienda una verificacion baseline.",
+          "No specific risk pattern detected; baseline verification is still recommended."
+        ),
         relatedFiles: [],
-        recommendedChecks: ["Run `npm run check`."]
+        recommendedChecks: [t(language, "Ejecuta `npm run check`.", "Run `npm run check`.")]
       });
       commands.add("npm run check");
     }

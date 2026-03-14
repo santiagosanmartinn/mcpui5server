@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { analyzeGitDiffTool } from "./analyzeGitDiff.js";
 import { runGitInRepository } from "../../utils/git.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const DIFF_MODES = ["working_tree", "staged", "range"];
 const CONFIDENCE_LEVELS = ["low", "medium", "high"];
@@ -10,6 +11,7 @@ const inputSchema = z.object({
   baseRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional(),
   maxOwners: z.number().int().min(1).max(20).optional(),
@@ -73,6 +75,7 @@ export const traceChangeOwnershipTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const maxOwners = parsed.maxOwners ?? 8;
     const maxReviewers = parsed.maxReviewers ?? 4;
     const diff = await analyzeGitDiffTool.handler(
@@ -101,13 +104,13 @@ export const traceChangeOwnershipTool = {
           reviewerSuggestions: [],
           notes: [
             !diff.repository.gitAvailable
-              ? "Git is not available; ownership tracing is disabled."
-              : "Workspace is not a Git repository."
+              ? t(language, "Git no esta disponible; el trazado de ownership queda desactivado.", "Git is not available; ownership tracing is disabled.")
+              : t(language, "El workspace no es un repositorio Git.", "Workspace is not a Git repository.")
           ]
         },
         automationPolicy: {
           readOnlyGitAnalysis: true,
-          note: "This tool only reads Git history and never modifies repository state."
+          note: t(language, "Esta tool solo lee el historial Git y nunca modifica el estado del repositorio.", "This tool only reads Git history and never modifies repository state.")
         }
       });
     }
@@ -156,12 +159,12 @@ export const traceChangeOwnershipTool = {
 
     const notes = [];
     if (diff.files.some((file) => file.status === "untracked")) {
-      notes.push("Untracked files have no ownership history yet.");
+      notes.push(t(language, "Los archivos untracked aun no tienen historial de ownership.", "Untracked files have no ownership history yet."));
     }
     if (reviewerSuggestions.length === 0) {
-      notes.push("No historical ownership data was found for current diff.");
+      notes.push(t(language, "No se encontro historial de ownership para el diff actual.", "No historical ownership data was found for current diff."));
     } else {
-      notes.push("Reviewer suggestions are inferred from recent file-level ownership, not team policy.");
+      notes.push(t(language, "Las sugerencias de reviewers se infieren por ownership reciente a nivel de archivo, no por politica de equipo.", "Reviewer suggestions are inferred from recent file-level ownership, not team policy."));
     }
 
     return outputSchema.parse({
@@ -179,7 +182,7 @@ export const traceChangeOwnershipTool = {
       },
       automationPolicy: {
         readOnlyGitAnalysis: true,
-        note: "This tool only reads Git history and never modifies repository state."
+        note: t(language, "Esta tool solo lee el historial Git y nunca modifica el estado del repositorio.", "This tool only reads Git history and never modifies repository state.")
       }
     });
   }

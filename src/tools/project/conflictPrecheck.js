@@ -1,11 +1,13 @@
 import { z } from "zod";
 import { runGitInRepository, tryResolveGitRepository } from "../../utils/git.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const RISK_LEVELS = ["low", "medium", "high"];
 
 const inputSchema = z.object({
   sourceRef: z.string().min(1).optional(),
   targetRef: z.string().min(1).optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(5000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional()
 }).strict();
@@ -54,6 +56,7 @@ export const conflictPrecheckTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const repository = await tryResolveGitRepository(context.rootDir, {
       timeoutMs: parsed.timeoutMs
     });
@@ -81,15 +84,17 @@ export const conflictPrecheckTool = {
           overlapFiles: [],
           notes: [
             !repository.gitAvailable
-              ? "Git is not available, so conflict estimation cannot run."
-              : "Workspace is not a Git repository."
+              ? t(language, "Git no esta disponible, no se puede estimar conflicto.", "Git is not available, so conflict estimation cannot run.")
+              : t(language, "El workspace no es un repositorio Git.", "Workspace is not a Git repository.")
           ],
-          recommendations: ["Initialize or open a Git repository and rerun this precheck."]
+          recommendations: [
+            t(language, "Inicializa o abre un repositorio Git y vuelve a ejecutar este precheck.", "Initialize or open a Git repository and rerun this precheck.")
+          ]
         },
         automationPolicy: {
           performsMerge: false,
           modifiesWorkingTree: false,
-          note: "This tool is read-only and never performs merge/rebase operations."
+          note: t(language, "Esta tool es solo lectura y nunca ejecuta operaciones de merge/rebase.", "This tool is read-only and never performs merge/rebase operations.")
         }
       });
     }
@@ -117,13 +122,15 @@ export const conflictPrecheckTool = {
           level: "medium",
           score: 35,
           overlapFiles: [],
-          notes: ["No target reference found. Pass `targetRef` for accurate conflict analysis."],
-          recommendations: ["Retry with explicit target, e.g. `targetRef: origin/main`."]
+          notes: [
+            t(language, "No se encontro referencia objetivo. Pasa `targetRef` para un analisis de conflicto preciso.", "No target reference found. Pass `targetRef` for accurate conflict analysis.")
+          ],
+          recommendations: [t(language, "Reintenta con objetivo explicito, por ejemplo `targetRef: origin/main`.", "Retry with explicit target, e.g. `targetRef: origin/main`.")]
         },
         automationPolicy: {
           performsMerge: false,
           modifiesWorkingTree: false,
-          note: "This tool is read-only and never performs merge/rebase operations."
+          note: t(language, "Esta tool es solo lectura y nunca ejecuta operaciones de merge/rebase.", "This tool is read-only and never performs merge/rebase operations.")
         }
       });
     }
@@ -154,13 +161,13 @@ export const conflictPrecheckTool = {
           level: "medium",
           score: 45,
           overlapFiles: [],
-          notes: ["One or more refs were not found."],
-          recommendations: ["Verify `sourceRef`/`targetRef` and rerun."]
+          notes: [t(language, "No se encontro una o mas referencias.", "One or more refs were not found.")],
+          recommendations: [t(language, "Verifica `sourceRef`/`targetRef` y vuelve a ejecutar.", "Verify `sourceRef`/`targetRef` and rerun.")]
         },
         automationPolicy: {
           performsMerge: false,
           modifiesWorkingTree: false,
-          note: "This tool is read-only and never performs merge/rebase operations."
+          note: t(language, "Esta tool es solo lectura y nunca ejecuta operaciones de merge/rebase.", "This tool is read-only and never performs merge/rebase operations.")
         }
       });
     }
@@ -187,13 +194,13 @@ export const conflictPrecheckTool = {
           level: "high",
           score: 70,
           overlapFiles: [],
-          notes: ["No merge-base found between refs. Branches may be unrelated."],
-          recommendations: ["Recheck branch ancestry before attempting merge."]
+          notes: [t(language, "No se encontro merge-base entre referencias. Las ramas pueden no estar relacionadas.", "No merge-base found between refs. Branches may be unrelated.")],
+          recommendations: [t(language, "Revisa la ascendencia de ramas antes de intentar merge.", "Recheck branch ancestry before attempting merge.")]
         },
         automationPolicy: {
           performsMerge: false,
           modifiesWorkingTree: false,
-          note: "This tool is read-only and never performs merge/rebase operations."
+          note: t(language, "Esta tool es solo lectura y nunca ejecuta operaciones de merge/rebase.", "This tool is read-only and never performs merge/rebase operations.")
         }
       });
     }
@@ -216,10 +223,10 @@ export const conflictPrecheckTool = {
     const score = inferConflictScore(overlapFiles.length, sourceNumstat.size, targetNumstat.size);
     const level = inferRiskLevel(score);
     const notes = [
-      `Compared changes from merge-base ${mergeBase.slice(0, 10)}.`,
-      `Source changed files: ${sourceNumstat.size}. Target changed files: ${targetNumstat.size}.`
+      t(language, `Cambios comparados desde merge-base ${mergeBase.slice(0, 10)}.`, `Compared changes from merge-base ${mergeBase.slice(0, 10)}.`),
+      t(language, `Archivos cambiados en source: ${sourceNumstat.size}. En target: ${targetNumstat.size}.`, `Source changed files: ${sourceNumstat.size}. Target changed files: ${targetNumstat.size}.`)
     ];
-    const recommendations = buildRecommendations(level, overlapFiles.length);
+    const recommendations = buildRecommendations(level, overlapFiles.length, language);
 
     return outputSchema.parse({
       repository: {
@@ -247,7 +254,7 @@ export const conflictPrecheckTool = {
       automationPolicy: {
         performsMerge: false,
         modifiesWorkingTree: false,
-        note: "This tool is read-only and never performs merge/rebase operations."
+        note: t(language, "Esta tool es solo lectura y nunca ejecuta operaciones de merge/rebase.", "This tool is read-only and never performs merge/rebase operations.")
       }
     });
   }
@@ -359,21 +366,27 @@ function inferRiskLevel(score) {
   return "low";
 }
 
-function buildRecommendations(level, overlapCount) {
+function buildRecommendations(level, overlapCount, language) {
   const recommendations = [];
   if (overlapCount === 0) {
-    recommendations.push("No overlapping file edits detected from merge-base perspective.");
-    recommendations.push("Still run `npm run check` after integration.");
+    recommendations.push(
+      t(
+        language,
+        "No se detectaron ediciones solapadas desde la perspectiva del merge-base.",
+        "No overlapping file edits detected from merge-base perspective."
+      )
+    );
+    recommendations.push(t(language, "Aun asi ejecuta `npm run check` tras la integracion.", "Still run `npm run check` after integration."));
     return recommendations;
   }
   if (level === "high") {
-    recommendations.push("Coordinate merge order and resolve hot files collaboratively.");
-    recommendations.push("Rebase frequently and validate after each conflict resolution.");
+    recommendations.push(t(language, "Coordina el orden de merge y resuelve en equipo los archivos calientes.", "Coordinate merge order and resolve hot files collaboratively."));
+    recommendations.push(t(language, "Haz rebase con frecuencia y valida tras cada resolucion de conflicto.", "Rebase frequently and validate after each conflict resolution."));
   } else if (level === "medium") {
-    recommendations.push("Review overlapping files before merge to reduce manual conflict resolution.");
+    recommendations.push(t(language, "Revisa archivos solapados antes del merge para reducir conflictos manuales.", "Review overlapping files before merge to reduce manual conflict resolution."));
   } else {
-    recommendations.push("Proceed with normal integration flow and standard validation.");
+    recommendations.push(t(language, "Sigue el flujo normal de integracion y validacion estandar.", "Proceed with normal integration flow and standard validation."));
   }
-  recommendations.push("Run `npm run check` after merging target changes.");
+  recommendations.push(t(language, "Ejecuta `npm run check` despues de integrar cambios de la rama objetivo.", "Run `npm run check` after merging target changes."));
   return recommendations;
 }

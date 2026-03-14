@@ -37,7 +37,7 @@ describeIfGit("generate_commit_message_from_diff", () => {
 
     expect(result.commit.type).toBe("docs");
     expect(result.commit.subject.startsWith("docs(") || result.commit.subject.startsWith("docs:")).toBe(true);
-    expect(result.commit.fullMessage).toContain("Files changed");
+    expect(result.commit.fullMessage).toContain("Archivos cambiados");
   });
 
   it("supports explicit override for type/scope and plain style", async () => {

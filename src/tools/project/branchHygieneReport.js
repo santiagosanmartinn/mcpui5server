@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { auditGitWorktreeStateTool } from "./auditGitWorktreeState.js";
 import { runGitInRepository } from "../../utils/git.js";
+import { resolveLanguage, t } from "../../utils/language.js";
 
 const CHECK_STATUS = ["pass", "warn", "fail"];
 const CHECK_SEVERITY = ["low", "medium", "high"];
@@ -9,6 +10,7 @@ const HYGIENE_LEVELS = ["healthy", "warning", "risky"];
 const inputSchema = z.object({
   targetRef: z.string().min(1).optional(),
   includeUntracked: z.boolean().optional(),
+  language: z.enum(["es", "en"]).optional(),
   maxFiles: z.number().int().min(10).max(2000).optional(),
   timeoutMs: z.number().int().min(1000).max(60000).optional(),
   staleDaysThreshold: z.number().int().min(3).max(180).optional()
@@ -70,10 +72,12 @@ export const branchHygieneReportTool = {
   outputSchema,
   async handler(args, { context }) {
     const parsed = inputSchema.parse(args);
+    const language = resolveLanguage(parsed.language);
     const staleDaysThreshold = parsed.staleDaysThreshold ?? 30;
     const audit = await auditGitWorktreeStateTool.handler(
       {
         includeUntracked: parsed.includeUntracked,
+        language: parsed.language,
         maxFiles: parsed.maxFiles,
         timeoutMs: parsed.timeoutMs
       },
@@ -99,8 +103,8 @@ export const branchHygieneReportTool = {
         id: "git-not-available",
         status: "fail",
         severity: "high",
-        message: "Git is not available in this environment.",
-        suggestion: "Install Git before using branch hygiene checks."
+        message: t(language, "Git no esta disponible en este entorno.", "Git is not available in this environment."),
+        suggestion: t(language, "Instala Git antes de usar los checks de higiene de rama.", "Install Git before using branch hygiene checks.")
       });
       return outputSchema.parse(buildOutput({
         repository,
@@ -117,7 +121,8 @@ export const branchHygieneReportTool = {
         },
         checks,
         actions,
-        score
+        score,
+        language
       }));
     }
 
@@ -126,8 +131,8 @@ export const branchHygieneReportTool = {
         id: "not-a-repository",
         status: "fail",
         severity: "high",
-        message: "Current workspace is not a Git repository.",
-        suggestion: "Open a Git repository workspace or initialize one with `git init`."
+        message: t(language, "El workspace actual no es un repositorio Git.", "Current workspace is not a Git repository."),
+        suggestion: t(language, "Abre un workspace Git o inicializalo con `git init`.", "Open a Git repository workspace or initialize one with `git init`.")
       });
       return outputSchema.parse(buildOutput({
         repository,
@@ -144,7 +149,8 @@ export const branchHygieneReportTool = {
         },
         checks,
         actions,
-        score
+        score,
+        language
       }));
     }
 
@@ -165,16 +171,16 @@ export const branchHygieneReportTool = {
         id: "target-ref-missing",
         status: "warn",
         severity: "medium",
-        message: "No valid target reference was found for branch comparison.",
-        suggestion: "Provide `targetRef` explicitly for more accurate hygiene checks."
+        message: t(language, "No se encontro una referencia objetivo valida para comparar la rama.", "No valid target reference was found for branch comparison."),
+        suggestion: t(language, "Indica `targetRef` explicitamente para obtener un analisis mas preciso.", "Provide `targetRef` explicitly for more accurate hygiene checks.")
       });
     } else {
       checks.push({
         id: "target-ref-detected",
         status: "pass",
         severity: "low",
-        message: `Target reference resolved: ${targetRef}.`,
-        suggestion: "Keep target reference stable across the branch lifecycle."
+        message: t(language, `Referencia objetivo resuelta: ${targetRef}.`, `Target reference resolved: ${targetRef}.`),
+        suggestion: t(language, "Mantener una referencia objetivo estable durante el ciclo de la rama.", "Keep target reference stable across the branch lifecycle.")
       });
     }
 
@@ -184,10 +190,10 @@ export const branchHygieneReportTool = {
         id: "behind-upstream",
         status: "warn",
         severity: "high",
-        message: `Branch is behind upstream by ${repository.behind} commit(s).`,
-        suggestion: "Rebase/merge from upstream before opening or updating PR."
+        message: t(language, `La rama esta por detras del upstream por ${repository.behind} commit(s).`, `Branch is behind upstream by ${repository.behind} commit(s).`),
+        suggestion: t(language, "Haz rebase/merge desde upstream antes de abrir o actualizar PR.", "Rebase/merge from upstream before opening or updating PR.")
       });
-      actions.add("Update branch with upstream before final validation.");
+      actions.add(t(language, "Actualiza la rama con upstream antes de la validacion final.", "Update branch with upstream before final validation."));
     }
 
     if (repository.ahead > 0) {
@@ -195,8 +201,8 @@ export const branchHygieneReportTool = {
         id: "ahead-upstream",
         status: "pass",
         severity: "low",
-        message: `Branch has ${repository.ahead} local commit(s) ahead of upstream.`,
-        suggestion: "Ensure commit history is clean and intentional."
+        message: t(language, `La rama tiene ${repository.ahead} commit(s) locales por delante de upstream.`, `Branch has ${repository.ahead} local commit(s) ahead of upstream.`),
+        suggestion: t(language, "Asegura que el historial de commits sea limpio e intencional.", "Ensure commit history is clean and intentional.")
       });
     }
 
@@ -206,10 +212,10 @@ export const branchHygieneReportTool = {
         id: "behind-target",
         status: "warn",
         severity: "medium",
-        message: `Branch is behind target ref (${behindTarget} commit(s)).`,
-        suggestion: "Re-sync with target branch to reduce integration surprises."
+        message: t(language, `La rama esta por detras de la rama objetivo (${behindTarget} commit(s)).`, `Branch is behind target ref (${behindTarget} commit(s)).`),
+        suggestion: t(language, "Re-sincroniza con la rama objetivo para reducir sorpresas de integracion.", "Re-sync with target branch to reduce integration surprises.")
       });
-      actions.add("Rebase or merge target branch before merge request.");
+      actions.add(t(language, "Haz rebase o merge de la rama objetivo antes de solicitar merge.", "Rebase or merge target branch before merge request."));
     }
 
     if (targetExists && aheadOfTarget > 40) {
@@ -218,8 +224,8 @@ export const branchHygieneReportTool = {
         id: "ahead-target-large",
         status: "warn",
         severity: "medium",
-        message: `Branch diverges significantly from target (${aheadOfTarget} commits ahead).`,
-        suggestion: "Consider splitting large branches into smaller mergeable slices."
+        message: t(language, `La rama diverge significativamente de la objetivo (${aheadOfTarget} commits por delante).`, `Branch diverges significantly from target (${aheadOfTarget} commits ahead).`),
+        suggestion: t(language, "Considera dividir ramas grandes en bloques pequenos mergeables.", "Consider splitting large branches into smaller mergeable slices.")
       });
     }
 
@@ -229,10 +235,10 @@ export const branchHygieneReportTool = {
         id: "conflicts-present",
         status: "fail",
         severity: "high",
-        message: "Merge conflicts detected in working tree.",
-        suggestion: "Resolve conflicts before continuing with PR or commit flow."
+        message: t(language, "Se detectaron conflictos de merge en el working tree.", "Merge conflicts detected in working tree."),
+        suggestion: t(language, "Resuelve conflictos antes de continuar con PR o commit.", "Resolve conflicts before continuing with PR or commit flow.")
       });
-      actions.add("Resolve merge conflicts first.");
+      actions.add(t(language, "Resuelve primero los conflictos de merge.", "Resolve merge conflicts first."));
     }
 
     if (!audit.workingTree.clean) {
@@ -241,16 +247,16 @@ export const branchHygieneReportTool = {
         id: "worktree-not-clean",
         status: "warn",
         severity: "medium",
-        message: "Working tree has pending changes.",
-        suggestion: "Stage or stash unrelated changes before final PR checks."
+        message: t(language, "El working tree tiene cambios pendientes.", "Working tree has pending changes."),
+        suggestion: t(language, "Haz stage o stash de cambios no relacionados antes de checks finales de PR.", "Stage or stash unrelated changes before final PR checks.")
       });
     } else {
       checks.push({
         id: "worktree-clean",
         status: "pass",
         severity: "low",
-        message: "Working tree is clean.",
-        suggestion: "Keep changes isolated and explicit."
+        message: t(language, "El working tree esta limpio.", "Working tree is clean."),
+        suggestion: t(language, "Mantener cambios aislados y explicitos.", "Keep changes isolated and explicit.")
       });
     }
 
@@ -265,13 +271,13 @@ export const branchHygieneReportTool = {
         id: "stale-branch",
         status: "warn",
         severity: "medium",
-        message: `Last commit is ${daysSinceLatestCommit} day(s) old (threshold: ${staleDaysThreshold}).`,
-        suggestion: "Refresh and validate the branch against current target state."
+        message: t(language, `El ultimo commit tiene ${daysSinceLatestCommit} dia(s) (umbral: ${staleDaysThreshold}).`, `Last commit is ${daysSinceLatestCommit} day(s) old (threshold: ${staleDaysThreshold}).`),
+        suggestion: t(language, "Refresca y valida la rama contra el estado actual de la rama objetivo.", "Refresh and validate the branch against current target state.")
       });
-      actions.add("Run a fresh validation pass before merge.");
+      actions.add(t(language, "Ejecuta una validacion completa actualizada antes de mergear.", "Run a fresh validation pass before merge."));
     }
 
-    actions.add("Run `npm run check` before merge.");
+    actions.add(t(language, "Ejecuta `npm run check` antes de mergear.", "Run `npm run check` before merge."));
 
     return outputSchema.parse(buildOutput({
       repository,
@@ -294,7 +300,8 @@ export const branchHygieneReportTool = {
       },
       checks,
       actions,
-      score
+      score,
+      language
     }));
   }
 };
@@ -374,7 +381,11 @@ function buildOutput(input) {
       allowsAutomaticCommit: false,
       allowsAutomaticPush: false,
       requiresExplicitUserConsent: true,
-      note: "This tool only audits branch hygiene. Never run commit/push without explicit user consent."
+      note: t(
+        input.language,
+        "Esta tool solo audita la higiene de rama. Nunca ejecutes commit/push sin consentimiento explicito del usuario.",
+        "This tool only audits branch hygiene. Never run commit/push without explicit user consent."
+      )
     }
   };
 }
