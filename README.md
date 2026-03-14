@@ -58,6 +58,16 @@ src/
       securityCheck.js
     project/
       analyzeProject.js
+      auditGitWorktreeState.js
+      analyzeGitDiff.js
+      suggestTestsFromGitDiff.js
+      generateCommitMessageFromDiff.js
+      prepareSafeCommit.js
+      riskReviewFromDiff.js
+      generatePrDescription.js
+      branchHygieneReport.js
+      conflictPrecheck.js
+      traceChangeOwnership.js
       readFile.js
       searchFiles.js
       analyzeCurrentFile.js
@@ -84,6 +94,7 @@ src/
     validator.js
     logger.js
     telemetry.js
+    git.js
     errors.js
     http.js
 ```
@@ -141,6 +152,16 @@ src/
 49. `validate_project_skills`
 50. `record_skill_execution_feedback`
 51. `rank_project_skills`
+52. `audit_git_worktree_state`
+53. `analyze_git_diff`
+54. `suggest_tests_from_git_diff`
+55. `generate_commit_message_from_diff`
+56. `prepare_safe_commit`
+57. `risk_review_from_diff`
+58. `generate_pr_description`
+59. `branch_hygiene_report`
+60. `conflict_precheck`
+61. `trace_change_ownership`
 
 Todas las herramientas se descubren dinamicamente a traves del registro central en `src/tools/index.js` y se registran en MCP con `registerTool(...)`, incluyendo:
 

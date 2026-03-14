@@ -1,4 +1,14 @@
 import { analyzeUi5ProjectTool } from "./project/analyzeProject.js";
+import { auditGitWorktreeStateTool } from "./project/auditGitWorktreeState.js";
+import { analyzeGitDiffTool } from "./project/analyzeGitDiff.js";
+import { suggestTestsFromGitDiffTool } from "./project/suggestTestsFromGitDiff.js";
+import { generateCommitMessageFromDiffTool } from "./project/generateCommitMessageFromDiff.js";
+import { prepareSafeCommitTool } from "./project/prepareSafeCommit.js";
+import { riskReviewFromDiffTool } from "./project/riskReviewFromDiff.js";
+import { generatePrDescriptionTool } from "./project/generatePrDescription.js";
+import { branchHygieneReportTool } from "./project/branchHygieneReport.js";
+import { conflictPrecheckTool } from "./project/conflictPrecheck.js";
+import { traceChangeOwnershipTool } from "./project/traceChangeOwnership.js";
 import { readProjectFileTool } from "./project/readFile.js";
 import { searchProjectFilesTool } from "./project/searchFiles.js";
 import { analyzeCurrentFileTool } from "./project/analyzeCurrentFile.js";
@@ -53,6 +63,16 @@ import { rankProjectSkillsTool } from "./agents/rankProjectSkills.js";
 export const allTools = [
   // Project intelligence
   analyzeUi5ProjectTool,
+  auditGitWorktreeStateTool,
+  analyzeGitDiffTool,
+  suggestTestsFromGitDiffTool,
+  generateCommitMessageFromDiffTool,
+  prepareSafeCommitTool,
+  riskReviewFromDiffTool,
+  generatePrDescriptionTool,
+  branchHygieneReportTool,
+  conflictPrecheckTool,
+  traceChangeOwnershipTool,
   // UI5 generation and validation
   generateUi5ControllerTool,
   generateUi5FragmentTool,

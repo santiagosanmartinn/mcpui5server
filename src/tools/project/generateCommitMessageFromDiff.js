@@ -1,0 +1,284 @@
+import { z } from "zod";
+import { analyzeGitDiffTool } from "./analyzeGitDiff.js";
+
+const DIFF_MODES = ["working_tree", "staged", "range"];
+const COMMIT_STYLES = ["conventional", "plain"];
+const COMMIT_TYPES = ["feat", "fix", "refactor", "docs", "test", "chore"];
+
+const inputSchema = z.object({
+  mode: z.enum(DIFF_MODES).optional(),
+  baseRef: z.string().min(1).optional(),
+  targetRef: z.string().min(1).optional(),
+  includeUntracked: z.boolean().optional(),
+  maxFiles: z.number().int().min(10).max(5000).optional(),
+  timeoutMs: z.number().int().min(1000).max(60000).optional(),
+  style: z.enum(COMMIT_STYLES).optional(),
+  type: z.enum(COMMIT_TYPES).optional(),
+  scope: z.string().regex(/^[a-z0-9._/-]+$/i).max(40).optional(),
+  includeBody: z.boolean().optional(),
+  maxSubjectLength: z.number().int().min(50).max(120).optional()
+}).strict().superRefine((value, ctx) => {
+  const mode = value.mode ?? "working_tree";
+  if (mode === "range" && !value.baseRef) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "baseRef is required when mode is `range`."
+    });
+  }
+});
+
+const outputSchema = z.object({
+  scope: z.object({
+    mode: z.enum(DIFF_MODES),
+    baseRef: z.string().nullable(),
+    targetRef: z.string().nullable()
+  }),
+  summary: z.object({
+    changedFiles: z.number().int().nonnegative(),
+    additions: z.number().int().nonnegative(),
+    deletions: z.number().int().nonnegative()
+  }),
+  commit: z.object({
+    type: z.enum(COMMIT_TYPES),
+    scope: z.string().nullable(),
+    style: z.enum(COMMIT_STYLES),
+    subject: z.string(),
+    bodyLines: z.array(z.string()),
+    fullMessage: z.string()
+  }),
+  rationale: z.array(z.string())
+});
+
+export const generateCommitMessageFromDiffTool = {
+  name: "generate_commit_message_from_diff",
+  description: "Generate a commit message proposal from Git diff impact (conventional or plain style).",
+  inputSchema,
+  outputSchema,
+  async handler(args, { context }) {
+    const parsed = inputSchema.parse(args);
+    const style = parsed.style ?? "conventional";
+    const includeBody = parsed.includeBody ?? true;
+    const maxSubjectLength = parsed.maxSubjectLength ?? 72;
+    const diffAnalysis = await analyzeGitDiffTool.handler(
+      {
+        mode: parsed.mode,
+        baseRef: parsed.baseRef,
+        targetRef: parsed.targetRef,
+        includeUntracked: parsed.includeUntracked,
+        maxFiles: parsed.maxFiles,
+        timeoutMs: parsed.timeoutMs
+      },
+      { context }
+    );
+    const summary = diffAnalysis.summary;
+    const scopeData = diffAnalysis.scope;
+
+    if (!diffAnalysis.repository.gitAvailable || !diffAnalysis.repository.isGitRepository || summary.changedFiles === 0) {
+      const type = parsed.type ?? "chore";
+      const subject = style === "conventional"
+        ? `${type}: no pending changes detected`
+        : "No pending changes detected";
+      return outputSchema.parse({
+        scope: scopeData,
+        summary: {
+          changedFiles: summary.changedFiles,
+          additions: summary.additions,
+          deletions: summary.deletions
+        },
+        commit: {
+          type,
+          scope: parsed.scope ?? null,
+          style,
+          subject,
+          bodyLines: [],
+          fullMessage: subject
+        },
+        rationale: [
+          !diffAnalysis.repository.gitAvailable
+            ? "Git is not available."
+            : !diffAnalysis.repository.isGitRepository
+              ? "Workspace is not a Git repository."
+              : "No diff detected for selected scope."
+        ]
+      });
+    }
+
+    const inferredType = parsed.type ?? inferType(summary);
+    const inferredScope = parsed.scope ?? inferScope(summary);
+    const subjectPhrase = inferSubjectPhrase(summary);
+    const subject = buildSubject({
+      type: inferredType,
+      scope: inferredScope,
+      style,
+      phrase: subjectPhrase,
+      maxSubjectLength
+    });
+    const bodyLines = includeBody
+      ? buildBodyLines(summary, diffAnalysis.files)
+      : [];
+    const fullMessage = bodyLines.length > 0
+      ? `${subject}\n\n${bodyLines.join("\n")}`
+      : subject;
+
+    return outputSchema.parse({
+      scope: scopeData,
+      summary: {
+        changedFiles: summary.changedFiles,
+        additions: summary.additions,
+        deletions: summary.deletions
+      },
+      commit: {
+        type: inferredType,
+        scope: inferredScope,
+        style,
+        subject,
+        bodyLines,
+        fullMessage
+      },
+      rationale: buildRationale(summary, inferredType, inferredScope)
+    });
+  }
+};
+
+function inferType(summary) {
+  const { touches, byStatus } = summary;
+  const docsOnly = touches.docs
+    && !touches.tests
+    && !touches.controllers
+    && !touches.views
+    && !touches.manifest
+    && !touches.i18n
+    && !touches.config;
+  if (docsOnly) {
+    return "docs";
+  }
+
+  const testsOnly = touches.tests
+    && !touches.docs
+    && !touches.controllers
+    && !touches.views
+    && !touches.manifest
+    && !touches.i18n
+    && !touches.config;
+  if (testsOnly) {
+    return "test";
+  }
+
+  if (touches.config && !touches.controllers && !touches.views && !touches.manifest) {
+    return "chore";
+  }
+
+  if (byStatus.added > 0 && summary.additions >= summary.deletions) {
+    return "feat";
+  }
+
+  if (byStatus.deleted > 0 || summary.deletions > summary.additions) {
+    return "refactor";
+  }
+
+  return "fix";
+}
+
+function inferScope(summary) {
+  const { touches } = summary;
+  if (touches.manifest) {
+    return "manifest";
+  }
+  if (touches.controllers || touches.views) {
+    return "ui5";
+  }
+  if (touches.i18n) {
+    return "i18n";
+  }
+  if (touches.config) {
+    return "tooling";
+  }
+  if (touches.docs) {
+    return "docs";
+  }
+  if (touches.tests) {
+    return "tests";
+  }
+  return null;
+}
+
+function inferSubjectPhrase(summary) {
+  const { touches } = summary;
+  if (touches.manifest) {
+    return "update manifest routing and model setup";
+  }
+  if (touches.controllers && touches.views) {
+    return "update ui5 controllers and views";
+  }
+  if (touches.controllers) {
+    return "update ui5 controller logic";
+  }
+  if (touches.views) {
+    return "update ui5 views and bindings";
+  }
+  if (touches.i18n) {
+    return "refresh i18n resources";
+  }
+  if (touches.config) {
+    return "adjust tooling and project configuration";
+  }
+  if (touches.docs) {
+    return "refresh mcp documentation";
+  }
+  if (touches.tests) {
+    return "expand automated test coverage";
+  }
+  return "apply project updates";
+}
+
+function buildSubject(input) {
+  const { type, scope, style, phrase, maxSubjectLength } = input;
+  const base = style === "conventional"
+    ? `${type}${scope ? `(${scope})` : ""}: ${phrase}`
+    : `${capitalize(type)}: ${phrase}`;
+  if (base.length <= maxSubjectLength) {
+    return base;
+  }
+  return `${base.slice(0, maxSubjectLength - 3).trimEnd()}...`;
+}
+
+function buildBodyLines(summary, files) {
+  const lines = [];
+  lines.push(`- Files changed: ${summary.changedFiles} (+${summary.additions}/-${summary.deletions})`);
+  lines.push(
+    `- Status: A=${summary.byStatus.added}, M=${summary.byStatus.modified}, D=${summary.byStatus.deleted}, R=${summary.byStatus.renamed}, U=${summary.byStatus.unmerged}`
+  );
+
+  const topFiles = files.slice(0, 5).map((item) => item.path);
+  if (topFiles.length > 0) {
+    lines.push(`- Impacted files: ${topFiles.join(", ")}`);
+  }
+
+  if ((summary.touches.controllers || summary.touches.views || summary.touches.manifest || summary.touches.config) && !summary.touches.tests) {
+    lines.push("- Note: code/config changed without test updates.");
+  }
+
+  return lines;
+}
+
+function buildRationale(summary, type, scope) {
+  const rationale = [
+    `Type inferred as \`${type}\` from diff status/touch profile.`,
+    `Scope inferred as \`${scope ?? "none"}\`.`,
+    `Diff size: ${summary.changedFiles} files (+${summary.additions}/-${summary.deletions}).`
+  ];
+  if (summary.touches.manifest) {
+    rationale.push("Manifest changes detected, so compatibility and routing impact were prioritized.");
+  }
+  if (summary.touches.controllers || summary.touches.views) {
+    rationale.push("UI behavior files changed (controllers/views).");
+  }
+  if (summary.touches.docs && !summary.touches.tests) {
+    rationale.push("Documentation touched; consider quick docs consistency check.");
+  }
+  return rationale;
+}
+
+function capitalize(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}

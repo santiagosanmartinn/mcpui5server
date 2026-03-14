@@ -114,6 +114,143 @@ Ruta recomendada para nuevos usuarios:
   - timestamp de rollback
   - acciones por archivo (`restored`, `deleted`, `noop`)
 
+### `audit_git_worktree_state`
+
+- Objetivo: auditar el estado Git del workspace (staged/unstaged/untracked, conflictos y divergencia de rama).
+- Entrada destacada:
+  - `includeUntracked` (opcional, por defecto `true`)
+  - `maxFiles` (opcional)
+  - `timeoutMs` (opcional)
+- Salida:
+  - `repository` (`gitAvailable`, `isGitRepository`, rama actual, upstream, ahead/behind, `headSha`)
+  - `workingTree` (conteos y lista de archivos con estado)
+  - `recommendations` con acciones sugeridas
+
+### `analyze_git_diff`
+
+- Objetivo: analizar el diff Git de un alcance concreto y devolver impacto estructurado por archivo.
+- Modos soportados:
+  - `working_tree` (staged + unstaged, y opcionalmente untracked)
+  - `staged` (solo staged)
+  - `range` (comparacion `baseRef...targetRef`)
+- Entrada destacada:
+  - `mode`
+  - `baseRef` / `targetRef` (requerido `baseRef` en modo `range`)
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+- Salida:
+  - `scope` del diff analizado
+  - `summary` con:
+    - `changedFiles`, `additions`, `deletions`
+    - `byStatus` y `byExtension`
+    - `touches` (docs, tests, controllers, views, manifest, i18n, config)
+  - `files` normalizados por `path`, `status`, `additions`, `deletions`
+  - `recommendations` para validacion/revision
+
+### `suggest_tests_from_git_diff`
+
+- Objetivo: sugerir pruebas y checks concretos a partir del impacto detectado en el diff Git.
+- Entrada destacada:
+  - `mode`, `baseRef`, `targetRef`
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+- Salida:
+  - `diffSummary` (changedFiles/additions/deletions + `touches`)
+  - `suggestions` priorizadas (`high|medium|low`) con:
+    - `title`
+    - `rationale`
+    - `relatedFiles`
+    - `recommendedChecks`
+  - `recommendedCommands` (por ejemplo `npm run test:run`, `npm run check`)
+
+### `generate_commit_message_from_diff`
+
+- Objetivo: generar propuesta de mensaje de commit basada en el diff actual.
+- Entrada destacada:
+  - alcance diff: `mode`, `baseRef`, `targetRef`
+  - formato de salida: `style` (`conventional` | `plain`)
+  - overrides opcionales: `type`, `scope`
+  - control de longitud: `maxSubjectLength`
+- Salida:
+  - `commit.subject`
+  - `commit.bodyLines`
+  - `commit.fullMessage`
+  - trazabilidad (`rationale`) de por que se infirio tipo/scope
+  - `summary` del diff usado para la propuesta
+
+### `prepare_safe_commit`
+
+- Objetivo: ejecutar un preflight de commit seguro (checklist de riesgos/calidad) sin ejecutar acciones Git de escritura.
+- Entrada destacada:
+  - alcance diff: `mode`, `baseRef`, `targetRef`
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+  - escaneo opcional de contenido: `scanContent`, `largeFileThresholdKb`
+- Salida:
+  - `checks` priorizados (`blocking`, `warning`, `info`) con evidencia y accion sugerida
+  - `gate.readyForCommit` + detalle de checks bloqueantes/advertencias
+  - `recommendedCommands` para validacion previa
+  - `automationPolicy` explicita (sin commit/push automatico; requiere consentimiento del usuario)
+
+### `risk_review_from_diff`
+
+- Objetivo: evaluar riesgo tecnico del diff y devolver hallazgos priorizados para decision de merge.
+- Entrada destacada:
+  - `mode`, `baseRef`, `targetRef`
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+- Salida:
+  - `risk.score` (0-100) y `risk.level` (`low|medium|high|critical`)
+  - `findings` con severidad/categoria, mitigacion y archivos relacionados
+  - `mustFixBeforeMerge` para riesgos bloqueantes
+  - `recommendedChecks` para cerrar validacion
+
+### `generate_pr_description`
+
+- Objetivo: generar descripcion estructurada de PR basada en diff (contexto, cambios, pruebas, riesgos y rollback).
+- Entrada destacada:
+  - alcance diff (`mode`, `baseRef`, `targetRef`)
+  - controles de salida: `title`, `includeChecklist`, `includeRollbackPlan`, `includeRiskSection`, `maxHighlights`
+- Salida:
+  - `pr.title`, `labelsSuggested`, `reviewersSuggested`
+  - secciones estructuradas (`context`, `highlights`, `testing`, `risks`, `rollback`, `checklist`)
+  - `pr.markdown` listo para pegar en PR
+
+### `branch_hygiene_report`
+
+- Objetivo: auditar higiene de rama antes de PR/merge (divergencia, limpieza del worktree, antiguedad y alineacion con rama objetivo).
+- Entrada destacada:
+  - `targetRef` (opcional, si no se indica intenta upstream o ramas conocidas)
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+  - `staleDaysThreshold` para detectar ramas envejecidas
+- Salida:
+  - `hygiene.score` (0-100) y `hygiene.level` (`healthy|warning|risky`)
+  - checks detallados con `status`, `severity` y accion sugerida
+  - `recommendedActions`
+  - `automationPolicy` explicita (sin commit/push automatico)
+
+### `conflict_precheck`
+
+- Objetivo: estimar riesgo de conflicto entre `sourceRef` y `targetRef` de forma no destructiva.
+- Entrada destacada:
+  - `sourceRef` (default `HEAD`)
+  - `targetRef` (si no se indica intenta upstream o ramas comunes)
+  - `maxFiles`, `timeoutMs`
+- Salida:
+  - `comparison` con `mergeBase`, conteos de archivos cambiados y solapados
+  - `risk.level` y `risk.score` basados en superposicion de cambios
+  - `overlapFiles` priorizados por densidad de cambio
+  - `automationPolicy` indicando que no hace merge ni modifica working tree
+
+### `trace_change_ownership`
+
+- Objetivo: inferir ownership/reviewers de los archivos cambiados usando historial local de Git.
+- Entrada destacada:
+  - alcance diff: `mode`, `baseRef`, `targetRef`
+  - `includeUntracked`, `maxFiles`, `timeoutMs`
+  - limites: `maxOwners`, `maxReviewers`
+- Salida:
+  - `owners` agregados por impacto y archivos tocados
+  - `fileOwnership` por archivo con ultimo autor y nivel de confianza
+  - `reviewerSuggestions`
+  - notas de trazabilidad (por ejemplo cuando hay archivos sin historial)
+
 ## Dominio ui5
 
 ### `generate_ui5_controller`

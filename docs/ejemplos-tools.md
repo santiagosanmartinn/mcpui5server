@@ -731,6 +731,465 @@ Salida (ejemplo):
 }
 ```
 
+## 52) `audit_git_worktree_state`
+
+Entrada:
+```json
+{
+  "tool": "audit_git_worktree_state",
+  "arguments": {
+    "includeUntracked": true,
+    "maxFiles": 200
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "repository": {
+    "gitAvailable": true,
+    "isGitRepository": true,
+    "rootPath": "C:/repo/demo",
+    "branch": "feature/mcp-git",
+    "upstream": "origin/feature/mcp-git",
+    "ahead": 1,
+    "behind": 0,
+    "headSha": "3fd9ab1"
+  },
+  "workingTree": {
+    "clean": false,
+    "stagedChanges": 2,
+    "unstagedChanges": 1,
+    "untrackedFiles": 1,
+    "conflictedFiles": 0,
+    "files": [
+      {
+        "path": "webapp/controller/Main.controller.js",
+        "statusCode": " M",
+        "stagedStatus": " ",
+        "unstagedStatus": "M",
+        "isUntracked": false,
+        "isConflicted": false
+      }
+    ]
+  },
+  "recommendations": [
+    "You have mixed staged and unstaged changes; consider splitting commits for clearer reviews."
+  ]
+}
+```
+
+## 53) `analyze_git_diff`
+
+Entrada:
+```json
+{
+  "tool": "analyze_git_diff",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "maxFiles": 300
+  }
+}
+```
+
+## 54) `suggest_tests_from_git_diff`
+
+Entrada:
+```json
+{
+  "tool": "suggest_tests_from_git_diff",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "diffSummary": {
+    "changedFiles": 5,
+    "additions": 62,
+    "deletions": 14,
+    "touches": {
+      "docs": true,
+      "tests": false,
+      "controllers": true,
+      "views": true,
+      "manifest": true,
+      "i18n": false,
+      "config": false
+    }
+  },
+  "suggestions": [
+    {
+      "id": "ui5-controller-view-regression",
+      "priority": "high",
+      "title": "Validate UI5 behavior for changed controllers/views",
+      "rationale": "Controller/view edits are high-impact for runtime behavior and binding integrity.",
+      "relatedFiles": ["webapp/controller/Main.controller.js", "webapp/view/Main.view.xml"],
+      "recommendedChecks": [
+        "Run unit/integration tests that cover affected controllers and views.",
+        "Execute `run_project_quality_gate` before commit."
+      ]
+    }
+  ],
+  "recommendedCommands": ["npm run test:run", "npm run check"]
+}
+```
+
+## 55) `generate_commit_message_from_diff`
+
+Entrada:
+```json
+{
+  "tool": "generate_commit_message_from_diff",
+  "arguments": {
+    "mode": "working_tree",
+    "style": "conventional"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "summary": {
+    "changedFiles": 4,
+    "additions": 28,
+    "deletions": 6
+  },
+  "commit": {
+    "type": "feat",
+    "scope": "ui5",
+    "style": "conventional",
+    "subject": "feat(ui5): update ui5 controllers and views",
+    "bodyLines": [
+      "- Files changed: 4 (+28/-6)",
+      "- Status: A=1, M=3, D=0, R=0, U=0",
+      "- Impacted files: webapp/controller/Main.controller.js, webapp/view/Main.view.xml"
+    ],
+    "fullMessage": "feat(ui5): update ui5 controllers and views\n\n- Files changed: 4 (+28/-6)\n- Status: A=1, M=3, D=0, R=0, U=0\n- Impacted files: webapp/controller/Main.controller.js, webapp/view/Main.view.xml"
+  },
+  "rationale": [
+    "Type inferred as `feat` from diff status/touch profile.",
+    "Scope inferred as `ui5`.",
+    "Diff size: 4 files (+28/-6)."
+  ]
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "repository": {
+    "gitAvailable": true,
+    "isGitRepository": true,
+    "rootPath": "C:/repo/demo",
+    "branch": "feature/mcp-git",
+    "upstream": "origin/feature/mcp-git",
+    "ahead": 1,
+    "behind": 0,
+    "headSha": "3fd9ab1"
+  },
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "summary": {
+    "changedFiles": 4,
+    "additions": 36,
+    "deletions": 8,
+    "byStatus": {
+      "added": 1,
+      "modified": 2,
+      "deleted": 0,
+      "renamed": 0,
+      "copied": 0,
+      "unmerged": 0,
+      "untracked": 1,
+      "unknown": 0
+    },
+    "byExtension": [
+      { "extension": ".js", "count": 2 },
+      { "extension": ".xml", "count": 1 },
+      { "extension": ".md", "count": 1 }
+    ],
+    "touches": {
+      "docs": true,
+      "tests": false,
+      "controllers": true,
+      "views": true,
+      "manifest": false,
+      "i18n": false,
+      "config": false
+    }
+  },
+  "files": [
+    {
+      "path": "webapp/controller/Main.controller.js",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 1,
+      "extension": ".js"
+    }
+  ],
+  "recommendations": [
+    "Code/config changed without test updates; consider adding focused tests before merge."
+  ]
+}
+```
+
+## 56) `prepare_safe_commit`
+
+Entrada:
+```json
+{
+  "tool": "prepare_safe_commit",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "scanContent": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "repository": {
+    "branch": "feature/mcp-git",
+    "upstream": "origin/feature/mcp-git",
+    "ahead": 0,
+    "behind": 0,
+    "headSha": "8a21c4f",
+    "clean": false
+  },
+  "gate": {
+    "readyForCommit": false,
+    "blockingChecks": ["tests-not-updated"],
+    "warningChecks": ["mixed-staged-unstaged"],
+    "recommendedCommands": ["npm run test:run", "npm run check"]
+  },
+  "automationPolicy": {
+    "allowsAutomaticCommit": false,
+    "allowsAutomaticPush": false,
+    "requiresExplicitUserConsent": true,
+    "note": "This tool only prepares commit readiness. Never run commit/push without explicit user consent."
+  }
+}
+```
+
+## 57) `risk_review_from_diff`
+
+Entrada:
+```json
+{
+  "tool": "risk_review_from_diff",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "summary": {
+    "changedFiles": 6,
+    "additions": 84,
+    "deletions": 12,
+    "touches": {
+      "docs": true,
+      "tests": false,
+      "controllers": true,
+      "views": true,
+      "manifest": true,
+      "i18n": false,
+      "config": false
+    }
+  },
+  "risk": {
+    "score": 68,
+    "level": "high",
+    "mustFixBeforeMerge": ["code-without-tests", "manifest-impact"],
+    "recommendedChecks": ["npm run check", "npm run test:run"]
+  }
+}
+```
+
+## 58) `generate_pr_description`
+
+Entrada:
+```json
+{
+  "tool": "generate_pr_description",
+  "arguments": {
+    "mode": "working_tree",
+    "includeChecklist": true,
+    "includeRollbackPlan": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "scope": {
+    "mode": "working_tree",
+    "baseRef": null,
+    "targetRef": null
+  },
+  "pr": {
+    "title": "Adjust UI5 controller/view behavior",
+    "labelsSuggested": ["ui5", "risk:high"],
+    "reviewersSuggested": ["ui5-maintainer"],
+    "markdown": "# Adjust UI5 controller/view behavior\n\n## Context\n- Scope analyzed: working_tree."
+  }
+}
+```
+
+## 59) `branch_hygiene_report`
+
+Entrada:
+```json
+{
+  "tool": "branch_hygiene_report",
+  "arguments": {
+    "includeUntracked": true,
+    "staleDaysThreshold": 30
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "repository": {
+    "gitAvailable": true,
+    "isGitRepository": true,
+    "branch": "feature/mcp-git",
+    "upstream": "origin/feature/mcp-git",
+    "ahead": 1,
+    "behind": 0,
+    "headSha": "8a21c4f"
+  },
+  "hygiene": {
+    "score": 82,
+    "level": "healthy",
+    "recommendedActions": ["Run `npm run check` before merge."]
+  },
+  "automationPolicy": {
+    "allowsAutomaticCommit": false,
+    "allowsAutomaticPush": false,
+    "requiresExplicitUserConsent": true,
+    "note": "This tool only audits branch hygiene. Never run commit/push without explicit user consent."
+  }
+}
+```
+
+## 60) `conflict_precheck`
+
+Entrada:
+```json
+{
+  "tool": "conflict_precheck",
+  "arguments": {
+    "sourceRef": "HEAD",
+    "targetRef": "origin/main"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "comparison": {
+    "sourceRef": "HEAD",
+    "targetRef": "origin/main",
+    "mergeBase": "ad3f6c42fd0a",
+    "sourceChangedFiles": 7,
+    "targetChangedFiles": 9,
+    "overlappingFiles": 2
+  },
+  "risk": {
+    "level": "medium",
+    "score": 36,
+    "recommendations": [
+      "Review overlapping files before merge to reduce manual conflict resolution.",
+      "Run `npm run check` after merging target changes."
+    ]
+  },
+  "automationPolicy": {
+    "performsMerge": false,
+    "modifiesWorkingTree": false,
+    "note": "This tool is read-only and never performs merge/rebase operations."
+  }
+}
+```
+
+## 61) `trace_change_ownership`
+
+Entrada:
+```json
+{
+  "tool": "trace_change_ownership",
+  "arguments": {
+    "mode": "working_tree",
+    "includeUntracked": true,
+    "maxReviewers": 3
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "ownership": {
+    "owners": [
+      {
+        "name": "Alice",
+        "email": "alice@example.com",
+        "touchedFiles": 2,
+        "weightedImpact": 34,
+        "confidence": "medium"
+      }
+    ],
+    "reviewerSuggestions": ["Alice <alice@example.com>"],
+    "notes": ["Reviewer suggestions are inferred from recent file-level ownership, not team policy."]
+  },
+  "automationPolicy": {
+    "readOnlyGitAnalysis": true,
+    "note": "This tool only reads Git history and never modifies repository state."
+  }
+}
+```
+
 ## 24) `mcp_health_report`
 
 Entrada:
