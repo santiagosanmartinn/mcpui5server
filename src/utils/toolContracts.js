@@ -1,18 +1,15 @@
 import crypto from "node:crypto";
 
+export const TOOL_CONTRACT_SNAPSHOT_SCHEMA_VERSION = "1.1.0";
+export const DEFAULT_TOOL_CONTRACT_VERSION = "1.0.0";
+
 export function createToolContractSnapshot(tools) {
   const contracts = tools
-    .map((tool) => ({
-      name: tool.name,
-      title: tool.title ?? null,
-      description: tool.description ?? "",
-      inputSchema: describeZodSchema(tool.inputSchema),
-      outputSchema: describeZodSchema(tool.outputSchema)
-    }))
+    .map((tool) => createToolContractEntry(tool))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
-    schemaVersion: "1.0.0",
+    schemaVersion: TOOL_CONTRACT_SNAPSHOT_SCHEMA_VERSION,
     tools: contracts
   };
 }
@@ -24,11 +21,46 @@ export function calculateToolContractHash(snapshot) {
     .digest("hex");
 }
 
+export function createToolContractEntry(tool) {
+  return normalizeToolContractEntry({
+    name: tool?.name,
+    title: tool?.title ?? null,
+    description: tool?.description ?? "",
+    contractVersion: tool?.contractVersion,
+    inputSchema: describeZodSchema(tool?.inputSchema),
+    outputSchema: describeZodSchema(tool?.outputSchema)
+  });
+}
+
+export function normalizeToolContractEntry(entry) {
+  return {
+    name: String(entry?.name ?? ""),
+    title: entry?.title == null ? null : String(entry.title),
+    description: String(entry?.description ?? ""),
+    contractVersion: normalizeToolContractVersion(entry?.contractVersion),
+    inputSchema: entry?.inputSchema ?? null,
+    outputSchema: entry?.outputSchema ?? null
+  };
+}
+
+export function calculateSingleToolContractHash(entry) {
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(normalizeToolContractEntry(entry)))
+    .digest("hex");
+}
+
 export function describeZodSchema(schema) {
   if (!schema || typeof schema !== "object" || !schema._def) {
     return null;
   }
   return describeInternal(schema);
+}
+
+export function normalizeToolContractVersion(value) {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : DEFAULT_TOOL_CONTRACT_VERSION;
 }
 
 function describeInternal(schema) {
@@ -219,4 +251,3 @@ function stripZodPrefix(typeName) {
     ? typeName.slice(3).toLowerCase()
     : typeName.toLowerCase();
 }
-

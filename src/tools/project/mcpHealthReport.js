@@ -85,6 +85,8 @@ const outputSchema = z.object({
     snapshotPath: z.string(),
     exists: z.boolean(),
     inSync: z.boolean(),
+    runtimeSchemaVersion: z.string().nullable(),
+    snapshotSchemaVersion: z.string().nullable(),
     currentHash: z.string().nullable(),
     snapshotHash: z.string().nullable(),
     error: z.string().nullable()
@@ -220,6 +222,8 @@ export const mcpHealthReportTool = {
         snapshotPath: selectedContractSnapshotPath,
         exists: false,
         inSync: true,
+        runtimeSchemaVersion: context.contractSnapshot?.schemaVersion ?? null,
+        snapshotSchemaVersion: null,
         currentHash: null,
         snapshotHash: null,
         error: null
@@ -396,6 +400,8 @@ async function evaluateContractStatus(options) {
         snapshotPath,
         exists: false,
         inSync: false,
+        runtimeSchemaVersion: runtimeSnapshot?.schemaVersion ?? null,
+        snapshotSchemaVersion: null,
         currentHash: runtimeHash,
         snapshotHash: null,
         error: "Contract snapshot file is missing."
@@ -410,6 +416,8 @@ async function evaluateContractStatus(options) {
       snapshotPath,
       exists: true,
       inSync: Boolean(currentHash && snapshotHash === currentHash),
+      runtimeSchemaVersion: runtimeSnapshot?.schemaVersion ?? null,
+      snapshotSchemaVersion: typeof savedSnapshot?.schemaVersion === "string" ? savedSnapshot.schemaVersion : null,
       currentHash,
       snapshotHash,
       error: null
@@ -420,6 +428,8 @@ async function evaluateContractStatus(options) {
       snapshotPath,
       exists: false,
       inSync: false,
+      runtimeSchemaVersion: runtimeSnapshot?.schemaVersion ?? null,
+      snapshotSchemaVersion: null,
       currentHash: runtimeHash,
       snapshotHash: null,
       error: error.message

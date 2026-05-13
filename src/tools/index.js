@@ -34,6 +34,7 @@ import { rollbackProjectPatchTool } from "./project/rollbackPatch.js";
 import { runProjectQualityGateTool } from "./project/runProjectQualityGate.js";
 import { mcpHealthReportTool } from "./project/mcpHealthReport.js";
 import { mcpMetricsDashboardTool } from "./project/mcpMetricsDashboard.js";
+import { toolContractCatalogTool } from "./project/toolContractCatalog.js";
 import { generateUi5ControllerTool } from "./ui5/generateController.js";
 import { generateUi5FragmentTool } from "./ui5/generateFragment.js";
 import { generateUi5FormatterTool } from "./ui5/generateFormatter.js";
@@ -122,6 +123,7 @@ export const allTools = [
   runProjectQualityGateTool,
   mcpHealthReportTool,
   mcpMetricsDashboardTool,
+  toolContractCatalogTool,
   // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,

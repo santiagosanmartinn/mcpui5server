@@ -1000,6 +1000,25 @@ Nota comun para herramientas Git:
   - `contracts` (sincronizacion de contratos contra `docs/contracts/tool-contracts.snapshot.json`)
   - `managedArtifacts` (existencia de intake/baseline/context-index/blueprint/guide)
 
+### `tool_contract_catalog`
+
+- Objetivo: inspeccionar el catalogo de contratos MCP en runtime con version por tool, hashes y deriva opcional frente al snapshot versionado del repositorio.
+- Entrada destacada:
+  - `toolNames` (opcional para filtrar un subconjunto)
+  - `includeSchemas` (opcional; incluye `inputSchema` y `outputSchema`)
+  - `includeHashes` (opcional; incluye hash runtime y hash del snapshot por tool)
+  - `includeSnapshotStatus` (opcional; compara contra `docs/contracts/tool-contracts.snapshot.json`)
+  - `snapshotPath` (opcional)
+- Salida:
+  - `runtime` (schemaVersion, hash global y total de tools)
+  - `snapshot` (existencia, schemaVersion, hash, sincronizacion y tools extra/faltantes)
+  - `summary` con conteos de contratos seleccionados, drift y matches
+  - `contracts` con:
+    - `contractVersion`
+    - `hash`
+    - `snapshotStatus` (`matches_snapshot`, `drifted_from_snapshot`, `missing_in_snapshot`, `not_compared`)
+    - `inputSchema` / `outputSchema` opcionales
+
 ### `mcp_metrics_dashboard`
 
 - Objetivo: construir un dashboard operativo de telemetria MCP para identificar tools de alto valor, puntos de fallo, latencias y oportunidades de mejora.

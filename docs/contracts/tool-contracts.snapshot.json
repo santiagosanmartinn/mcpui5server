@@ -1,10 +1,11 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "tools": [
     {
       "name": "analyze_current_file",
       "title": null,
       "description": "Analyze the current file for imports, class structure, and controller methods.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -64,6 +65,7 @@
       "name": "analyze_git_diff",
       "title": null,
       "description": "Analyze current Git diff scope and return structured impact summary by file, status, extension, and risk hints.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -340,6 +342,7 @@
       "name": "analyze_legacy_project_baseline",
       "title": null,
       "description": "Build a technical baseline for legacy projects to guide high-quality AI integration with minimal context waste.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -704,6 +707,7 @@
       "name": "analyze_odata_metadata",
       "title": null,
       "description": "Analyze OData V2/V4 metadata from XML, file, URL, or service root and return entities, properties, navigation, and operations.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -1232,6 +1236,7 @@
       "name": "analyze_ui5_performance",
       "title": null,
       "description": "Analyze UI5 XML/JS files with performance-focused rules and actionable recommendations.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -1369,6 +1374,7 @@
       "name": "analyze_ui5_project",
       "title": null,
       "description": "Analyze SAPUI5 project configuration from ui5.yaml, manifest.json, and package.json.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -1440,6 +1446,7 @@
       "name": "apply_agent_pack",
       "title": null,
       "description": "Apply a saved agent pack to the current project with fingerprint verification and scaffolded materialization.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -1789,6 +1796,7 @@
       "name": "apply_project_patch",
       "title": null,
       "description": "Apply one or more safe workspace file changes and create rollback metadata for later restore.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -1888,6 +1896,7 @@
       "name": "audit_git_worktree_state",
       "title": null,
       "description": "Audit current Git worktree state (staged, unstaged, untracked, conflicts, and branch divergence).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -2034,6 +2043,7 @@
       "name": "audit_project_mcp_state",
       "title": null,
       "description": "Audit MCP project artifacts/layout version and produce a migration plan to the current managed structure.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -2221,6 +2231,7 @@
       "name": "branch_hygiene_report",
       "title": null,
       "description": "Assess branch hygiene (divergence, worktree cleanliness, staleness, and target alignment) before merge/PR.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -2455,6 +2466,7 @@
       "name": "build_ai_context_index",
       "title": null,
       "description": "Build a token-efficient, quality-aware context index for legacy projects to minimize redundant prompts.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -2758,6 +2770,7 @@
       "name": "cf_deploy_precheck",
       "title": null,
       "description": "Run a safe pre-deployment readiness check for Cloud Foundry/MTA projects (manifest, mta, scripts, and secret-risk signals).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -2948,6 +2961,7 @@
       "name": "collect_legacy_project_intake",
       "title": null,
       "description": "Collect and persist legacy-project contextual intake to improve AI guidance quality while minimizing repeated prompts/tokens.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -3269,6 +3283,7 @@
       "name": "conflict_precheck",
       "title": null,
       "description": "Estimate merge conflict risk between source and target refs using merge-base overlap analysis (non-destructive).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -3460,6 +3475,7 @@
       "name": "deploy_runbook_generator",
       "title": null,
       "description": "Generate a deployment runbook (Cloud Foundry or On-Premise) from precheck signals, with dry-run preview and safe optional persistence.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -3742,6 +3758,7 @@
       "name": "detect_commit_smells",
       "title": null,
       "description": "Detect commit quality smells (size, mixed concerns, test gaps) and suggest a safer split plan.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -3995,6 +4012,7 @@
       "name": "ensure_project_mcp_current",
       "title": null,
       "description": "Automatically audit and upgrade MCP project artifacts to the current managed layout when needed.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -4270,6 +4288,7 @@
       "name": "generate_commit_message_from_diff",
       "title": null,
       "description": "Generate a commit message proposal from Git diff impact (conventional or plain style).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -4478,6 +4497,7 @@
       "name": "generate_javascript_function",
       "title": null,
       "description": "Generate an ES2022 JavaScript or TypeScript function with JSDoc for browser or Node runtime.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -4529,6 +4549,7 @@
       "name": "generate_pr_description",
       "title": null,
       "description": "Generate a structured PR description from Git diff context, including testing, risk, and rollback guidance.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -4772,6 +4793,7 @@
       "name": "generate_ui5_controller",
       "title": null,
       "description": "Generate a SAPUI5 controller skeleton with lifecycle hooks and JSDoc.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -4809,6 +4831,7 @@
       "name": "generate_ui5_feature",
       "title": null,
       "description": "Generate an end-to-end UI5 feature scaffold (view/controller/fragment/routing/i18n) with dry-run support.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5318,6 +5341,7 @@
       "name": "generate_ui5_formatter",
       "title": null,
       "description": "Generate a formatter module that follows SAPUI5 module structure.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5358,6 +5382,7 @@
       "name": "generate_ui5_fragment",
       "title": null,
       "description": "Generate an XML SAPUI5 fragment skeleton with proper namespaces.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5395,6 +5420,7 @@
       "name": "generate_ui5_view_logic",
       "title": null,
       "description": "Generate UI5 view-controller event logic methods for XML views.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5432,6 +5458,7 @@
       "name": "lint_javascript_code",
       "title": null,
       "description": "Run ESLint-style static checks and return warnings plus suggested fixes.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5482,6 +5509,7 @@
       "name": "list_agent_packs",
       "title": null,
       "description": "List saved reusable agent packs from catalog.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5556,6 +5584,7 @@
       "name": "manage_ui5_i18n",
       "title": null,
       "description": "Extract UI literals, detect missing/unused i18n keys, and optionally apply fixes with safe preview/apply patch flow.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -5851,6 +5880,7 @@
       "name": "materialize_recommended_agents",
       "title": null,
       "description": "Materialize recommended agents into project artifacts by generating blueprint/guide/prompt and optional MCP config.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -6509,6 +6539,7 @@
       "name": "mcp_health_report",
       "title": null,
       "description": "Return MCP server/runtime health diagnostics (tool exposure, docs alignment, contract snapshot, and managed artifact status).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -6617,6 +6648,12 @@
               "inSync": {
                 "kind": "boolean"
               },
+              "runtimeSchemaVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
               "snapshotHash": {
                 "kind": "nullable",
                 "inner": {
@@ -6625,6 +6662,12 @@
               },
               "snapshotPath": {
                 "kind": "string"
+              },
+              "snapshotSchemaVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
               }
             },
             "catchall": null
@@ -6925,6 +6968,7 @@
       "name": "mcp_metrics_dashboard",
       "title": null,
       "description": "Build an MCP telemetry dashboard to surface high-value tools, failing/slow tools, and prioritized improvement opportunities.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -7487,6 +7531,7 @@
       "name": "merge_action_plan",
       "title": null,
       "description": "Create a safe, non-destructive merge action plan (strategy, staged checklist, and suggested commands) from merge readiness signals.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -7893,6 +7938,7 @@
       "name": "merge_readiness_report",
       "title": null,
       "description": "Aggregate Git quality checks into a single merge-readiness decision (ready, needs_attention, blocked).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -8148,6 +8194,7 @@
       "name": "onprem_deploy_checklist",
       "title": null,
       "description": "Generate a safe on-premise deployment checklist with readiness scoring, missing-context questions, and rollout/rollback guidance.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -8470,6 +8517,7 @@
       "name": "prepare_legacy_project_for_ai",
       "title": null,
       "description": "Prepare a legacy/existing project for high-quality AI delivery by orchestrating ensure, intake, baseline, and context index steps.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -8712,6 +8760,7 @@
       "name": "prepare_safe_commit",
       "title": null,
       "description": "Run a safe pre-commit readiness checklist from Git state/diff without performing commit or push operations.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -8991,6 +9040,7 @@
       "name": "promote_agent_pack",
       "title": null,
       "description": "Promote/degrade pack lifecycle status (experimental/candidate/recommended/deprecated) using automatic rules over feedback metrics or manual override.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -9312,6 +9362,7 @@
       "name": "prompt_builder",
       "title": null,
       "description": "Build complete and compact task prompts from structured intake fields with consistent output format.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -9542,6 +9593,7 @@
       "name": "prompt_context_selector",
       "title": null,
       "description": "Select the minimum high-value file context for a prompt using git diff, context-index hints, and keyword relevance.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -9844,6 +9896,7 @@
       "name": "prompt_intake_wizard",
       "title": null,
       "description": "Run a lightweight interactive intake for task prompts and return missing fields/questions before execution.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -10096,6 +10149,7 @@
       "name": "prompt_quality_gate",
       "title": null,
       "description": "Evaluate prompt quality with deterministic scoring, blockers, and targeted improvement questions.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -10329,6 +10383,7 @@
       "name": "prompt_retrospective",
       "title": null,
       "description": "Analyze prompt execution outcome, suggest quality improvements, and optionally persist retrospective logs under .codex/mcp.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -10685,6 +10740,7 @@
       "name": "prompt_template_catalog",
       "title": null,
       "description": "Provide reusable prompt templates by task type to standardize quality and reduce prompt drafting effort.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -10835,6 +10891,7 @@
       "name": "prompt_token_budget",
       "title": null,
       "description": "Optimize prompt size against a token budget and prioritize context files to minimize unnecessary token consumption.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -11088,6 +11145,7 @@
       "name": "rank_agent_packs",
       "title": null,
       "description": "Rank saved agent packs using execution feedback metrics to prioritize recommendations for the current context.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -11331,6 +11389,7 @@
       "name": "rank_project_skills",
       "title": null,
       "description": "Rank project skills using local feedback metrics to prioritize reliable skills in future recommendations.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -11533,6 +11592,7 @@
       "name": "read_project_file",
       "title": null,
       "description": "Read a workspace file safely with project-root sandboxing.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -11570,6 +11630,7 @@
       "name": "recommend_project_agents",
       "title": null,
       "description": "Analyze project signals and recommend agent definitions with materialization-ready arguments.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -12132,6 +12193,7 @@
       "name": "record_agent_execution_feedback",
       "title": null,
       "description": "Record agent execution feedback in local JSONL log and update aggregate pack metrics for future ranking and promotion.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -12491,6 +12553,7 @@
       "name": "record_skill_execution_feedback",
       "title": null,
       "description": "Record structured execution feedback for project skills and update aggregate metrics for future ranking.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -12827,6 +12890,7 @@
       "name": "refactor_javascript_code",
       "title": null,
       "description": "Refactor JavaScript code using modern syntax while preserving readability.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -12858,6 +12922,7 @@
       "name": "refresh_project_context_docs",
       "title": null,
       "description": "Refresh docs/mcp context files incrementally using workspace snapshot diff with deterministic output.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -13085,6 +13150,7 @@
       "name": "release_notes_from_commits",
       "title": null,
       "description": "Generate release notes from commit history (range or recent tail) using conventional-commit heuristics.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -13375,6 +13441,7 @@
       "name": "risk_review_from_diff",
       "title": null,
       "description": "Review Git diff risk profile and return prioritized findings with mitigation guidance before merge.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -13597,6 +13664,7 @@
       "name": "rollback_project_patch",
       "title": null,
       "description": "Rollback a previously applied patch using stored backup metadata.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -13649,6 +13717,7 @@
       "name": "run_project_quality_gate",
       "title": null,
       "description": "Run consolidated quality gate for UI5 projects (version compatibility, security, performance, OData usage, and context docs freshness).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -14017,6 +14086,7 @@
       "name": "save_agent_pack",
       "title": null,
       "description": "Save generated agent artifacts into a reusable pack catalog with strict validation and fingerprinting.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -14268,6 +14338,7 @@
       "name": "scaffold_project_agents",
       "title": null,
       "description": "Scaffold reusable project agent artifacts (blueprint, guide, bootstrap prompt, optional MCP config) with dry-run and patch safety.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -14662,6 +14733,7 @@
       "name": "scaffold_project_skills",
       "title": null,
       "description": "Scaffold and manage project skills catalog with official references, safe preview/apply flow, and growth-ready feedback artifacts.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -15004,6 +15076,7 @@
       "name": "scaffold_ui5_odata_feature",
       "title": null,
       "description": "Generate a base UI5 OData feature scaffold (view/controller/manifest/i18n) from service metadata with dry-run safety.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -15675,6 +15748,7 @@
       "name": "search_mdn",
       "title": null,
       "description": "Search MDN documentation for JavaScript and web platform references.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -15810,6 +15884,7 @@
       "name": "search_project_files",
       "title": null,
       "description": "Search workspace files by text query with optional extension filtering.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -15856,6 +15931,7 @@
       "name": "search_ui5_sdk",
       "title": null,
       "description": "Search official SAPUI5 SDK metadata and return API/topic summaries with examples.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -15994,6 +16070,7 @@
       "name": "security_check_javascript",
       "title": null,
       "description": "Detect risky JavaScript patterns including eval, command injection, and prototype pollution.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -16040,6 +16117,7 @@
       "name": "security_check_ui5_app",
       "title": null,
       "description": "Scan UI5 XML/JS sources for security risks (XSS, unsafe HTML injection, dynamic code execution, insecure redirects).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -16202,6 +16280,7 @@
       "name": "smart_stage_changes",
       "title": null,
       "description": "Suggest a non-destructive logical staging plan (grouped git add commands) from the current diff.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -16405,6 +16484,7 @@
       "name": "suggest_tests_from_git_diff",
       "title": null,
       "description": "Suggest focused tests/checks based on current Git diff impact (UI5, manifest, config, docs, and test coverage gaps).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -16591,6 +16671,7 @@
       "name": "sync_manifest_json",
       "title": null,
       "description": "Synchronize manifest.json models, routes, and targets with idempotent updates and optional dry-run.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -16906,9 +16987,227 @@
       }
     },
     {
+      "name": "tool_contract_catalog",
+      "title": null,
+      "description": "Inspect runtime MCP tool contracts with per-tool contract versions, hashes, and optional snapshot drift status.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeHashes": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeSchemas": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeSnapshotStatus": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "snapshotPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "toolNames": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "contracts": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "contractVersion": {
+                  "kind": "string"
+                },
+                "description": {
+                  "kind": "string"
+                },
+                "hash": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "inputSchema": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "unknown"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "outputSchema": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "unknown"
+                  }
+                },
+                "snapshotHash": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "snapshotStatus": {
+                  "kind": "enum",
+                  "values": [
+                    "not_compared",
+                    "matches_snapshot",
+                    "drifted_from_snapshot",
+                    "missing_in_snapshot"
+                  ]
+                },
+                "title": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "runtime": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "hash": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "schemaVersion": {
+                "kind": "string"
+              },
+              "toolCount": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "server": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "name": {
+                "kind": "string"
+              },
+              "version": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "snapshot": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "compared": {
+                "kind": "boolean"
+              },
+              "exists": {
+                "kind": "boolean"
+              },
+              "extraTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "hash": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "inSync": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "boolean"
+                }
+              },
+              "missingRequestedTools": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "path": {
+                "kind": "string"
+              },
+              "schemaVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "driftedTools": {
+                "kind": "number"
+              },
+              "includeHashes": {
+                "kind": "boolean"
+              },
+              "includeSchemas": {
+                "kind": "boolean"
+              },
+              "matchingTools": {
+                "kind": "number"
+              },
+              "missingFromSnapshot": {
+                "kind": "number"
+              },
+              "selectedTools": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "trace_change_ownership",
       "title": null,
       "description": "Trace likely code ownership for changed files using Git history + blame recency to suggest more accurate reviewers.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -17216,6 +17515,7 @@
       "name": "upgrade_project_mcp",
       "title": null,
       "description": "Upgrade MCP-managed project artifacts to the latest layout version with dry-run, preview, and rollback-safe patching.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -17607,6 +17907,7 @@
       "name": "validate_project_agents",
       "title": null,
       "description": "Validate generated agent blueprint and guardrail artifacts for consistency, tool coverage, and MCP integration readiness.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -17761,6 +18062,7 @@
       "name": "validate_project_skills",
       "title": null,
       "description": "Validate project skill catalog integrity, official references, and file layout consistency.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -17867,6 +18169,7 @@
       "name": "validate_ui5_code",
       "title": null,
       "description": "Validate SAPUI5 code for sap.ui.define usage, dependency order, naming, and MVC separation.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",
@@ -18136,6 +18439,7 @@
       "name": "validate_ui5_odata_usage",
       "title": null,
       "description": "Validate UI5 OData usage across manifest, XML/JS bindings, model APIs, and optional metadata cross-checks.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -18440,6 +18744,7 @@
       "name": "validate_ui5_version_compatibility",
       "title": null,
       "description": "Validate UI5 control/module compatibility against project version and recommend better-fit components (e.g. dedicated date controls).",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "effects",
         "effectType": "refinement",
@@ -18685,6 +18990,7 @@
       "name": "write_project_file_preview",
       "title": null,
       "description": "Preview a safe workspace file write with hashes, line summary, and textual diff preview.",
+      "contractVersion": "1.0.0",
       "inputSchema": {
         "kind": "object",
         "unknownKeys": "strict",

@@ -18,6 +18,12 @@ export class ToolRegistry {
     if (typeof definition.name !== "string" || definition.name.trim().length === 0) {
       throw new Error("Tool definition must include a non-empty name.");
     }
+    if (
+      definition.contractVersion !== undefined
+      && (typeof definition.contractVersion !== "string" || definition.contractVersion.trim().length === 0)
+    ) {
+      throw new Error(`Tool ${definition.name} must include a non-empty string contractVersion when provided.`);
+    }
     if (typeof definition.handler !== "function") {
       throw new Error(`Tool ${definition.name} must include a handler function.`);
     }

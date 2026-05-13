@@ -2010,6 +2010,72 @@ Entrada:
 }
 ```
 
+## 68) `tool_contract_catalog`
+
+Entrada:
+```json
+{
+  "tool": "tool_contract_catalog",
+  "arguments": {
+    "toolNames": ["run_project_quality_gate", "mcp_health_report"],
+    "includeSchemas": true,
+    "includeHashes": true,
+    "includeSnapshotStatus": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "generatedAt": "2026-04-13T09:30:00.000Z",
+  "server": {
+    "name": "sapui5-mcp-server",
+    "version": "1.0.0"
+  },
+  "runtime": {
+    "schemaVersion": "1.1.0",
+    "hash": "1d7f2f9b0c1b2e4dcf0d06ce7c0f57f4fa3317d28ae3b96143bd8b90ef4cc2f4",
+    "toolCount": 68
+  },
+  "snapshot": {
+    "compared": true,
+    "path": "docs/contracts/tool-contracts.snapshot.json",
+    "exists": true,
+    "schemaVersion": "1.1.0",
+    "hash": "1d7f2f9b0c1b2e4dcf0d06ce7c0f57f4fa3317d28ae3b96143bd8b90ef4cc2f4",
+    "inSync": true,
+    "missingRequestedTools": [],
+    "extraTools": []
+  },
+  "summary": {
+    "selectedTools": 2,
+    "includeSchemas": true,
+    "includeHashes": true,
+    "matchingTools": 2,
+    "driftedTools": 0,
+    "missingFromSnapshot": 0
+  },
+  "contracts": [
+    {
+      "name": "mcp_health_report",
+      "title": null,
+      "description": "Return MCP server/runtime health diagnostics (tool exposure, docs alignment, contract snapshot, and managed artifact status).",
+      "contractVersion": "1.0.0",
+      "hash": "9c2990b83d7275d18d1df4a06cff44685ad08099d4985472e8d63d13b7a5182e",
+      "inputSchema": {
+        "kind": "object"
+      },
+      "outputSchema": {
+        "kind": "object"
+      },
+      "snapshotStatus": "matches_snapshot",
+      "snapshotHash": "9c2990b83d7275d18d1df4a06cff44685ad08099d4985472e8d63d13b7a5182e"
+    }
+  ]
+}
+```
+
 Salida (ejemplo):
 ```json
 {

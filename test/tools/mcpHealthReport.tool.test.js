@@ -11,35 +11,20 @@ describe("mcp_health_report tool", () => {
 
   beforeEach(async () => {
     tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-health-report-"));
-    runtimeSnapshot = {
-      schemaVersion: "1.0.0",
-      tools: [
-        {
-          name: "tool_a",
-          title: null,
-          description: "A",
-          inputSchema: {
-            kind: "object",
-            unknownKeys: "strip",
-            keys: {},
-            catchall: null
-          },
-          outputSchema: null
-        },
-        {
-          name: "tool_b",
-          title: null,
-          description: "B",
-          inputSchema: {
-            kind: "object",
-            unknownKeys: "strip",
-            keys: {},
-            catchall: null
-          },
-          outputSchema: null
-        }
-      ]
-    };
+    runtimeSnapshot = createToolContractSnapshot([
+      {
+        name: "tool_a",
+        description: "A",
+        inputSchema: null,
+        outputSchema: null
+      },
+      {
+        name: "tool_b",
+        description: "B",
+        inputSchema: null,
+        outputSchema: null
+      }
+    ]);
     runtimeHash = calculateToolContractHash(runtimeSnapshot);
 
     await fs.mkdir(path.join(tempRoot, "docs", "contracts"), { recursive: true });
@@ -100,6 +85,8 @@ describe("mcp_health_report tool", () => {
     expect(report.docs.referenceInSync).toBe(true);
     expect(report.docs.examplesInSync).toBe(true);
     expect(report.contracts.inSync).toBe(true);
+    expect(report.contracts.runtimeSchemaVersion).toBe("1.1.0");
+    expect(report.contracts.snapshotSchemaVersion).toBe("1.1.0");
   });
 
   it("flags mismatches for docs and contract snapshot drift", async () => {
