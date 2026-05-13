@@ -1,6 +1,6 @@
 # Servidor MCP SAPUI5
 
-Servidor MCP especializado para desarrollo SAPUI5/Fiori en JavaScript, con herramientas modulares para analisis de proyectos, generacion de codigo, refactorizacion, validacion y consulta de documentacion.
+Servidor MCP especializado para desarrollo SAPUI5/Fiori y SAP CAP en JavaScript, con herramientas modulares para analisis de proyectos, generacion de codigo, refactorizacion, validacion y consulta de documentacion.
 
 ## Arquitectura
 
@@ -56,6 +56,10 @@ src/
       refactorCode.js
       lintCode.js
       securityCheck.js
+    cap/
+      analyzeProject.js
+      validateProject.js
+      runQualityGate.js
     project/
       analyzeProject.js
       auditGitWorktreeState.js
@@ -87,6 +91,7 @@ src/
       cacheStore.js
       searchUI5SDK.js
       searchMDN.js
+      sapOfficialDocs.js
     index.js
   utils/
     fileSystem.js
@@ -127,54 +132,58 @@ src/
 18. `tool_contract_catalog`
 19. `search_ui5_sdk`
 20. `search_mdn`
-21. `generate_javascript_function`
-22. `refactor_javascript_code`
-23. `lint_javascript_code`
-24. `security_check_javascript`
-25. `validate_ui5_code`
-26. `validate_ui5_version_compatibility`
-27. `security_check_ui5_app`
-28. `analyze_odata_metadata`
-29. `validate_ui5_odata_usage`
-30. `scaffold_ui5_odata_feature`
-31. `scaffold_project_agents`
-32. `validate_project_agents`
-33. `recommend_project_agents`
-34. `materialize_recommended_agents`
-35. `save_agent_pack`
-36. `list_agent_packs`
-37. `apply_agent_pack`
-38. `refresh_project_context_docs`
-39. `record_agent_execution_feedback`
-40. `rank_agent_packs`
-41. `promote_agent_pack`
-42. `audit_project_mcp_state`
-43. `upgrade_project_mcp`
-44. `ensure_project_mcp_current`
-45. `collect_legacy_project_intake`
-46. `analyze_legacy_project_baseline`
-47. `build_ai_context_index`
-48. `prepare_legacy_project_for_ai`
-49. `scaffold_project_skills`
-50. `validate_project_skills`
-51. `record_skill_execution_feedback`
-52. `rank_project_skills`
-53. `audit_git_worktree_state`
-54. `analyze_git_diff`
-55. `suggest_tests_from_git_diff`
-56. `generate_commit_message_from_diff`
-57. `prepare_safe_commit`
-58. `risk_review_from_diff`
-59. `generate_pr_description`
-60. `branch_hygiene_report`
-61. `conflict_precheck`
-62. `trace_change_ownership`
-63. `smart_stage_changes`
-64. `detect_commit_smells`
-65. `release_notes_from_commits`
-66. `merge_readiness_report`
-67. `merge_action_plan`
-68. `mcp_metrics_dashboard`
+21. `sap_official_documentation_catalog`
+22. `generate_javascript_function`
+23. `refactor_javascript_code`
+24. `lint_javascript_code`
+25. `security_check_javascript`
+26. `analyze_cap_project`
+27. `validate_cap_project`
+28. `run_cap_quality_gate`
+29. `validate_ui5_code`
+30. `validate_ui5_version_compatibility`
+31. `security_check_ui5_app`
+32. `analyze_odata_metadata`
+33. `validate_ui5_odata_usage`
+34. `scaffold_ui5_odata_feature`
+35. `scaffold_project_agents`
+36. `validate_project_agents`
+37. `recommend_project_agents`
+38. `materialize_recommended_agents`
+39. `save_agent_pack`
+40. `list_agent_packs`
+41. `apply_agent_pack`
+42. `refresh_project_context_docs`
+43. `record_agent_execution_feedback`
+44. `rank_agent_packs`
+45. `promote_agent_pack`
+46. `audit_project_mcp_state`
+47. `upgrade_project_mcp`
+48. `ensure_project_mcp_current`
+49. `collect_legacy_project_intake`
+50. `analyze_legacy_project_baseline`
+51. `build_ai_context_index`
+52. `prepare_legacy_project_for_ai`
+53. `scaffold_project_skills`
+54. `validate_project_skills`
+55. `record_skill_execution_feedback`
+56. `rank_project_skills`
+57. `audit_git_worktree_state`
+58. `analyze_git_diff`
+59. `suggest_tests_from_git_diff`
+60. `generate_commit_message_from_diff`
+61. `prepare_safe_commit`
+62. `risk_review_from_diff`
+63. `generate_pr_description`
+64. `branch_hygiene_report`
+65. `conflict_precheck`
+66. `trace_change_ownership`
+67. `smart_stage_changes`
+68. `detect_commit_smells`
+69. `release_notes_from_commits`
+70. `merge_readiness_report`
+71. `merge_action_plan`
+72. `mcp_metrics_dashboard`
 
 Todas las herramientas se descubren dinamicamente a traves del registro central en `src/tools/index.js` y se registran en MCP con `registerTool(...)`, incluyendo:
 

@@ -35,7 +35,6 @@ Entrada:
 }
 ```
 
-
 ## 2) `read_project_file`
 
 Entrada:
@@ -492,6 +491,45 @@ Entrada:
 }
 ```
 
+## 82) `sap_official_documentation_catalog`
+
+Entrada:
+```json
+{
+  "tool": "sap_official_documentation_catalog",
+  "arguments": {
+    "product": "cap",
+    "rule": "CAP_SERVICE_AUTH_MISSING"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "references": 1,
+    "validationExecuted": true,
+    "invalidReferences": 0
+  },
+  "references": [
+    {
+      "id": "sap-cap-authorization",
+      "product": "cap",
+      "topic": "security",
+      "title": "CAP-level Authorization",
+      "url": "https://cap.cloud.sap/docs/guides/security/authorization",
+      "officialDomain": "cap.cloud.sap",
+      "usedByRules": ["CAP_SERVICE_AUTH_MISSING"]
+    }
+  ],
+  "validation": {
+    "valid": true,
+    "issues": []
+  }
+}
+```
+
 Salida (ejemplo):
 ```json
 {
@@ -592,6 +630,114 @@ Salida (ejemplo):
     "diffTruncated": false
   },
   "applyResult": null
+}
+```
+
+## 79) `analyze_cap_project`
+
+Entrada:
+```json
+{
+  "tool": "analyze_cap_project",
+  "arguments": {
+    "sourceDir": ".",
+    "maxFiles": 1000
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "detected": true,
+  "project": {
+    "name": "bookshop",
+    "type": "cap",
+    "capVersion": "^8.0.0"
+  },
+  "cds": {
+    "sourceFiles": 4,
+    "services": [
+      {
+        "name": "CatalogService",
+        "path": "srv/catalog-service.cds",
+        "secured": true,
+        "entityCount": 2
+      }
+    ],
+    "entities": 8,
+    "projections": 2
+  },
+  "recommendations": []
+}
+```
+
+## 80) `validate_cap_project`
+
+Entrada:
+```json
+{
+  "tool": "validate_cap_project",
+  "arguments": {
+    "allowPublicServices": false,
+    "requireTestScript": true,
+    "checkSecrets": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "valid": false,
+  "summary": {
+    "totalFindings": 2,
+    "bySeverity": {
+      "high": 1,
+      "medium": 1,
+      "low": 0
+    }
+  },
+  "findings": [
+    {
+      "rule": "CAP_SERVICE_AUTH_MISSING",
+      "severity": "high",
+      "file": "srv/catalog-service.cds",
+      "message": "Service CatalogService has no nearby @requires/@restrict annotation."
+    }
+  ]
+}
+```
+
+## 81) `run_cap_quality_gate`
+
+Entrada:
+```json
+{
+  "tool": "run_cap_quality_gate",
+  "arguments": {
+    "qualityProfile": "prod",
+    "maxHighFindings": 0,
+    "failOnMediumFindings": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": false,
+  "qualityProfile": "prod",
+  "summary": {
+    "errorChecks": 1,
+    "highFindings": 1,
+    "mediumFindings": 1
+  },
+  "recommendedCommands": [
+    "npm test",
+    "npm run build",
+    "npx cds compile srv --to csn"
+  ]
 }
 ```
 

@@ -2,6 +2,229 @@
   "schemaVersion": "1.1.0",
   "tools": [
     {
+      "name": "analyze_cap_project",
+      "title": null,
+      "description": "Analyze SAP CAP project structure, dependencies, CDS services/entities, scripts, and deployment signals.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "cds": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "actions": {
+                "kind": "number"
+              },
+              "entities": {
+                "kind": "number"
+              },
+              "functions": {
+                "kind": "number"
+              },
+              "projections": {
+                "kind": "number"
+              },
+              "services": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "actionCount": {
+                      "kind": "number"
+                    },
+                    "entityCount": {
+                      "kind": "number"
+                    },
+                    "functionCount": {
+                      "kind": "number"
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "path": {
+                      "kind": "string"
+                    },
+                    "secured": {
+                      "kind": "boolean"
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "sourceFiles": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "dependencies": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cds": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "cdsDk": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "hana": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "sqlite": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "detected": {
+            "kind": "boolean"
+          },
+          "detectedFiles": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "appDir": {
+                "kind": "boolean"
+              },
+              "cdsConfig": {
+                "kind": "boolean"
+              },
+              "dbDir": {
+                "kind": "boolean"
+              },
+              "defaultEnvJson": {
+                "kind": "boolean"
+              },
+              "mtaYaml": {
+                "kind": "boolean"
+              },
+              "packageJson": {
+                "kind": "boolean"
+              },
+              "srvDir": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "project": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "capVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "cdsDkVersion": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "name": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "type": {
+                "kind": "literal",
+                "value": "cap"
+              }
+            },
+            "catchall": null
+          },
+          "recommendations": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "requires": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "credentialsConfigured": {
+                  "kind": "boolean"
+                },
+                "kind": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "scripts": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "build": {
+                "kind": "boolean"
+              },
+              "deploy": {
+                "kind": "boolean"
+              },
+              "start": {
+                "kind": "boolean"
+              },
+              "test": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "sourceDir": {
+            "kind": "string"
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "analyze_current_file",
       "title": null,
       "description": "Analyze the current file for imports, class structure, and controller methods.",
@@ -13714,6 +13937,218 @@
       }
     },
     {
+      "name": "run_cap_quality_gate",
+      "title": null,
+      "description": "Run a consolidated SAP CAP quality gate for project detection, model/service validation, handler risks, and test readiness.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "allowPublicServices": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "failOnMediumFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxHighFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "qualityProfile": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "dev",
+                "prod"
+              ]
+            }
+          },
+          "requireTestScript": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "pass": {
+                  "kind": "boolean"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "error",
+                    "warn"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "pass": {
+            "kind": "boolean"
+          },
+          "qualityProfile": {
+            "kind": "enum",
+            "values": [
+              "dev",
+              "prod"
+            ]
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "reports": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "analysis": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "capVersion": {
+                    "kind": "nullable",
+                    "inner": {
+                      "kind": "string"
+                    }
+                  },
+                  "detected": {
+                    "kind": "boolean"
+                  },
+                  "entityCount": {
+                    "kind": "number"
+                  },
+                  "serviceCount": {
+                    "kind": "number"
+                  },
+                  "testScript": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              },
+              "validation": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "byRule": {
+                    "kind": "record",
+                    "key": {
+                      "kind": "string"
+                    },
+                    "value": {
+                      "kind": "number"
+                    }
+                  },
+                  "bySeverity": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "high": {
+                        "kind": "number"
+                      },
+                      "low": {
+                        "kind": "number"
+                      },
+                      "medium": {
+                        "kind": "number"
+                      }
+                    },
+                    "catchall": null
+                  },
+                  "totalFindings": {
+                    "kind": "number"
+                  },
+                  "valid": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "errorChecks": {
+                "kind": "number"
+              },
+              "failedChecks": {
+                "kind": "number"
+              },
+              "highFindings": {
+                "kind": "number"
+              },
+              "lowFindings": {
+                "kind": "number"
+              },
+              "mediumFindings": {
+                "kind": "number"
+              },
+              "warningChecks": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "run_project_quality_gate",
       "title": null,
       "description": "Run consolidated quality gate for UI5 projects (version compatibility, security, performance, OData usage, and context docs freshness).",
@@ -14077,6 +14512,222 @@
             "inner": {
               "kind": "string"
             }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "sap_official_documentation_catalog",
+      "title": null,
+      "description": "Return the curated official SAP documentation catalog used to ground MCP validations and agent guidance.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeValidation": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "product": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "all",
+                "cap",
+                "ui5"
+              ]
+            }
+          },
+          "rule": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "topic": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "filters": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "product": {
+                "kind": "enum",
+                "values": [
+                  "all",
+                  "cap",
+                  "ui5"
+                ]
+              },
+              "rule": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "topic": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "policy": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "allowedDomains": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "freshness": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "reviewedAfter": {
+                    "kind": "string"
+                  },
+                  "staleAfterDays": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "officialOnly": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "references": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "lastReviewed": {
+                  "kind": "string"
+                },
+                "officialDomain": {
+                  "kind": "string"
+                },
+                "product": {
+                  "kind": "enum",
+                  "values": [
+                    "cap",
+                    "ui5"
+                  ]
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "topic": {
+                  "kind": "string"
+                },
+                "url": {
+                  "kind": "string"
+                },
+                "usedByRules": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "invalidReferences": {
+                "kind": "number"
+              },
+              "products": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "references": {
+                "kind": "number"
+              },
+              "staleReferences": {
+                "kind": "number"
+              },
+              "topics": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "validationExecuted": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "validation": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "executed": {
+                "kind": "boolean"
+              },
+              "issues": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "id": {
+                      "kind": "string"
+                    },
+                    "message": {
+                      "kind": "string"
+                    },
+                    "severity": {
+                      "kind": "enum",
+                      "values": [
+                        "error",
+                        "warn"
+                      ]
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "valid": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
           }
         },
         "catchall": null
@@ -17898,6 +18549,211 @@
               }
             },
             "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "validate_cap_project",
+      "title": null,
+      "description": "Validate SAP CAP projects for model keys, service authorization, handler security, testability, and deployment readiness.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "allowPublicServices": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "checkSecrets": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "requireTestScript": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "findings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "project",
+                    "model",
+                    "service",
+                    "handler",
+                    "security",
+                    "testing",
+                    "deployment"
+                  ]
+                },
+                "file": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "scanned": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cdsFiles": {
+                "kind": "number"
+              },
+              "files": {
+                "kind": "number"
+              },
+              "handlerFiles": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "byCategory": {
+                "kind": "record",
+                "key": {
+                  "kind": "string"
+                },
+                "value": {
+                  "kind": "number"
+                }
+              },
+              "byRule": {
+                "kind": "record",
+                "key": {
+                  "kind": "string"
+                },
+                "value": {
+                  "kind": "number"
+                }
+              },
+              "bySeverity": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "high": {
+                    "kind": "number"
+                  },
+                  "low": {
+                    "kind": "number"
+                  },
+                  "medium": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "totalFindings": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "valid": {
+            "kind": "boolean"
           }
         },
         "catchall": null

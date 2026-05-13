@@ -334,6 +334,59 @@ Nota comun para herramientas Git:
   - `nextActions` heredadas del readiness base
   - `automationPolicy` explicita (no ejecuta merge/rebase/push; requiere consentimiento)
 
+## Dominio cap
+
+### `analyze_cap_project`
+
+- Objetivo: analizar estructura SAP CAP para orientar trabajo de un agente IA/desarrollador.
+- Lee: `package.json`, configuracion `cds`, carpetas `srv`, `db`, `app`, ficheros `.cds` y senales de despliegue.
+- Salida principal:
+  - deteccion de proyecto CAP
+  - versiones/dependencias `@sap/cds`, `@sap/cds-dk`, HANA/SQLite
+  - scripts disponibles (`start`, `test`, `build`, `deploy`)
+  - servicios, entidades, acciones/funciones y proyecciones CDS
+  - recomendaciones accionables para calidad y trazabilidad
+
+### `validate_cap_project`
+
+- Objetivo: validar riesgos estaticos de proyectos SAP CAP antes de cambios asistidos por IA.
+- Entrada destacada:
+  - `sourceDir` (opcional)
+  - `maxFiles`, `maxFindings`
+  - `allowPublicServices` para APIs intencionalmente publicas
+  - `requireTestScript`
+  - `checkSecrets`
+- Cobertura:
+  - dependencia `@sap/cds` y layout `srv`
+  - entidades CDS sin clave
+  - servicios sin `@requires`/`@restrict`
+  - SQL dinamico en handlers CAP
+  - lecturas custom sin limite cercano
+  - mutaciones directas de `req.data`
+  - posibles secretos en `.env`, `default-env.json`, `.cdsrc-private.json`
+- Salida:
+  - `valid`
+  - resumen por severidad/categoria/regla
+  - hallazgos con fichero, linea, mensaje y sugerencia
+
+### `run_cap_quality_gate`
+
+- Objetivo: ejecutar una puerta de calidad consolidada para SAP CAP.
+- Orquesta:
+  - `analyze_cap_project`
+  - `validate_cap_project`
+- Entrada destacada:
+  - `qualityProfile`: `dev` o `prod`
+  - `allowPublicServices`
+  - `requireTestScript`
+  - `failOnMediumFindings`
+  - `maxHighFindings`
+- Salida:
+  - `pass` global
+  - checks bloqueantes/avisos
+  - resumen de hallazgos CAP
+  - comandos recomendados como `npm test`, `npm run build`, `npx cds compile srv --to csn`
+
 ## Dominio ui5
 
 ### `generate_ui5_controller`
@@ -582,6 +635,23 @@ Nota comun para herramientas Git:
 - Devuelve:
   - resultados
   - `trace` con fecha/hora de consulta y origen de datos (cache/red)
+
+### `sap_official_documentation_catalog`
+
+- Objetivo: devolver el catalogo curado de documentacion oficial SAP usado para fundamentar validaciones MCP y guiar agentes.
+- Politica:
+  - solo referencias HTTPS
+  - dominios oficiales permitidos: `cap.cloud.sap`, `ui5.sap.com`, `sapui5.hana.ondemand.com`, `help.sap.com`, `learning.sap.com`
+  - cada referencia incluye `lastReviewed` para revisar frescura documental
+- Entrada destacada:
+  - `product`: `all` | `cap` | `ui5`
+  - `topic` para filtrar por area
+  - `rule` para obtener referencias asociadas a una regla de validacion
+  - `includeValidation`
+- Salida:
+  - referencias oficiales con `id`, `title`, `url`, `product`, `topic`
+  - reglas que usan cada referencia (`usedByRules`)
+  - validacion de dominios/frescura del catalogo
 
 ## Dominio agents
 

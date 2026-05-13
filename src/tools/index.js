@@ -52,8 +52,12 @@ import { generateJavaScriptFunctionTool } from "./javascript/generateFunction.js
 import { refactorJavaScriptCodeTool } from "./javascript/refactorCode.js";
 import { lintJavaScriptCodeTool } from "./javascript/lintCode.js";
 import { securityCheckJavaScriptTool } from "./javascript/securityCheck.js";
+import { analyzeCapProjectTool } from "./cap/analyzeProject.js";
+import { validateCapProjectTool } from "./cap/validateProject.js";
+import { runCapQualityGateTool } from "./cap/runQualityGate.js";
 import { searchUi5SdkTool } from "./documentation/searchUI5SDK.js";
 import { searchMdnTool } from "./documentation/searchMDN.js";
+import { sapOfficialDocumentationCatalogTool } from "./documentation/sapOfficialDocs.js";
 import { scaffoldProjectAgentsTool } from "./agents/scaffoldProjectAgents.js";
 import { validateProjectAgentsTool } from "./agents/validateProjectAgents.js";
 import { recommendProjectAgentsTool } from "./agents/recommendProjectAgents.js";
@@ -127,11 +131,15 @@ export const allTools = [
   // External documentation lookup
   searchUi5SdkTool,
   searchMdnTool,
+  sapOfficialDocumentationCatalogTool,
   // JavaScript assistant tools
   generateJavaScriptFunctionTool,
   refactorJavaScriptCodeTool,
   lintJavaScriptCodeTool,
   securityCheckJavaScriptTool,
+  analyzeCapProjectTool,
+  validateCapProjectTool,
+  runCapQualityGateTool,
   validateUi5CodeTool,
   validateUi5VersionCompatibilityTool,
   securityCheckUi5AppTool,
