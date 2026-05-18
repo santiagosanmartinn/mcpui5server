@@ -55,6 +55,20 @@ import { securityCheckJavaScriptTool } from "./javascript/securityCheck.js";
 import { analyzeCapProjectTool } from "./cap/analyzeProject.js";
 import { validateCapProjectTool } from "./cap/validateProject.js";
 import { runCapQualityGateTool } from "./cap/runQualityGate.js";
+import { analyzeCdsModelContractTool } from "./cap/analyzeCdsModelContract.js";
+import { validateCapTypescriptReadinessTool } from "./cap/validateTypescriptReadiness.js";
+import { runCapOfficialQualityGateTool } from "./cap/runOfficialQualityGate.js";
+import { analyzeCapServiceSurfaceTool } from "./cap/analyzeServiceSurface.js";
+import { validateUi5CapContractAlignmentTool } from "./cap/validateUi5CapAlignment.js";
+import { generateCapTestPlanTool } from "./cap/generateTestPlan.js";
+import { analyzeCapChangeImpactTool } from "./cap/analyzeChangeImpact.js";
+import { buildCapAiContextPackTool } from "./cap/buildAiContextPack.js";
+import { analyzeCapPerformanceHotspotsTool } from "./cap/analyzePerformanceHotspots.js";
+import { runCapDevelopmentReadinessTool } from "./cap/runDevelopmentReadiness.js";
+import { analyzeSddSpecTool } from "./sdd/analyzeSpec.js";
+import { deriveCapUiBacklogTool } from "./sdd/deriveBacklog.js";
+import { validateSddBacklogQualityTool } from "./sdd/validateBacklog.js";
+import { planAiCodingIterationsTool } from "./sdd/planIterations.js";
 import { searchUi5SdkTool } from "./documentation/searchUI5SDK.js";
 import { searchMdnTool } from "./documentation/searchMDN.js";
 import { sapOfficialDocumentationCatalogTool } from "./documentation/sapOfficialDocs.js";
@@ -140,6 +154,20 @@ export const allTools = [
   analyzeCapProjectTool,
   validateCapProjectTool,
   runCapQualityGateTool,
+  analyzeCdsModelContractTool,
+  validateCapTypescriptReadinessTool,
+  runCapOfficialQualityGateTool,
+  analyzeCapServiceSurfaceTool,
+  validateUi5CapContractAlignmentTool,
+  generateCapTestPlanTool,
+  analyzeCapChangeImpactTool,
+  buildCapAiContextPackTool,
+  analyzeCapPerformanceHotspotsTool,
+  runCapDevelopmentReadinessTool,
+  analyzeSddSpecTool,
+  deriveCapUiBacklogTool,
+  validateSddBacklogQualityTool,
+  planAiCodingIterationsTool,
   validateUi5CodeTool,
   validateUi5VersionCompatibilityTool,
   securityCheckUi5AppTool,

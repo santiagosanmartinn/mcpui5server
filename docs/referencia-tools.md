@@ -387,6 +387,219 @@ Nota comun para herramientas Git:
   - resumen de hallazgos CAP
   - comandos recomendados como `npm test`, `npm run build`, `npx cds compile srv --to csn`
 
+### `analyze_cds_model_contract`
+
+- Objetivo: analizar el contrato CDS de un proyecto CAP antes de generar codigo.
+- Entrada destacada:
+  - `sourceDir`, `maxFiles`, `maxFindings`
+  - `includeRawSnippets` para depuracion puntual
+- Salida:
+  - namespaces, entidades, claves, campos, asociaciones/composiciones y anotaciones
+  - servicios, proyecciones expuestas, acciones y funciones
+  - hallazgos trazables para entidades sin clave, `String` sin longitud, asociaciones sin target conocido y servicios vacios
+  - referencias oficiales SAP por regla y comandos sugeridos (`cds compile`, `cds lint`)
+
+### `validate_cap_typescript_readiness`
+
+- Objetivo: validar si un proyecto CAP Node esta preparado para TypeScript o JavaScript tipado con `cds-typer`.
+- Entrada destacada:
+  - `sourceDir`, `maxFiles`
+  - `targetMode`: `javascript_jsdoc`, `typescript` o `mixed`
+- Salida:
+  - score de readiness, estado `ready` y checks bloqueantes/avisos
+  - deteccion de `tsconfig`/`jsconfig`, `checkJs`, `@cap-js/cds-typer`, `@cap-js/cds-types`, imports `#cds-models` y uso de `TypedRequest`
+  - comandos recomendados como `npx cds add typer`, `npx cds add typescript` y ejecucion de `cds-typer`
+  - referencias oficiales CAP TypeScript/CDS Typer
+
+### `run_cap_official_quality_gate`
+
+- Objetivo: ejecutar una puerta de calidad CAP solo lectura, conectada al catalogo oficial SAP.
+- Orquesta:
+  - `analyze_cap_project`
+  - `run_cap_quality_gate`
+  - `analyze_cds_model_contract`
+  - `validate_cap_typescript_readiness`
+  - `sap_official_documentation_catalog`
+- Entrada destacada:
+  - `qualityProfile`: `dev` o `prod`
+  - `requireTypescriptReadiness`
+  - `allowPublicServices`, `requireTestScript`
+- Salida:
+  - `pass` global y checks con referencias oficiales
+  - resumen de findings CAP/modelo y score TypeScript
+  - reportes agregados de CAP, contrato CDS, readiness TypeScript y catalogo SAP
+  - comandos recomendados sin ejecutar ni modificar el proyecto
+
+### `analyze_cap_service_surface`
+
+- Objetivo: analizar la superficie CAP/OData expuesta antes de construir handlers, tests o pantallas UI5.
+- Entrada destacada:
+  - `sourceDir`, `maxFiles`, `maxFindings`
+- Salida:
+  - servicios CAP con ruta OData estimada o derivada de `@path`
+  - entity sets expuestos, acciones/funciones y metodo HTTP esperado
+  - cobertura heuristica de handlers `before/on/after`
+  - hallazgos sobre servicios publicos, servicios vacios y operaciones sin handler detectado
+  - comandos recomendados de validacion (`cds compile`, `npm test`)
+
+### `validate_ui5_cap_contract_alignment`
+
+- Objetivo: validar que `manifest.json` y bindings UI5 consumen servicios y entity sets que existen en el contrato CAP local.
+- Entrada destacada:
+  - `capSourceDir`
+  - `ui5SourceDir` (default `webapp`)
+  - `manifestPath`
+  - `maxFiles`, `maxFindings`
+- Salida:
+  - dataSources/modelos OData detectados y servicio CAP emparejado
+  - entity sets CAP expuestos y referencias UI5 encontradas en XML/JS
+  - hallazgos por dataSource sin servicio local, version OData no declarada, modelo ausente o entity set inexistente
+  - referencias oficiales CAP OData y UI5 manifest/OData
+
+### `generate_cap_test_plan`
+
+- Objetivo: generar un plan de pruebas CAP/UI5 solo lectura a partir del contrato CDS, superficie de servicio y alineacion UI5-CAP.
+- Entrada destacada:
+  - `sourceDir`, `ui5SourceDir`, `manifestPath`
+  - `includeUi5Checks`
+  - `testRunner`: `node_test`, `vitest`, `jest` o `generic`
+  - `maxCases`
+- Salida:
+  - suites y casos de prueba por servicio, entity set, operacion, contrato CDS, seguridad y binding UI5
+  - gaps de testabilidad como ausencia de `@cap-js/cds-test`, script `test`, operaciones sin handler o bloqueos UI5-CAP
+  - comandos recomendados y contexto minimo para un agente de codificacion
+
+### `analyze_cap_change_impact`
+
+- Objetivo: estimar impacto de un cambio CAP/UI5 antes de editar codigo, usando contrato CDS, superficie OData y senales de UI5/tests.
+- Entrada destacada:
+  - `changeRequest`
+  - `targetFiles`
+  - `entities`, `services`, `entitySets`
+  - `includeUi5`, `includeTests`
+  - `maxFiles`, `maxResults`
+- Salida:
+  - nivel y score de impacto (`low`, `medium`, `high`)
+  - ficheros afectados con area (`cds`, `handler`, `ui5`, `test`, `config`) y prioridad
+  - servicios, entidades, entity sets y operaciones potencialmente impactadas
+  - riesgos trazables como gaps de tests, bloqueos de modelo o riesgos de seguridad de servicio
+  - tools y comandos de validacion recomendados
+
+### `build_cap_ai_context_pack`
+
+- Objetivo: construir un paquete compacto de contexto para agentes de codificacion, evitando que lean todo el proyecto.
+- Entrada destacada:
+  - `changeRequest` obligatorio
+  - `targetFiles`, `entities`, `services`, `entitySets`
+  - `agentTarget`: `codex`, `claude` o `generic`
+  - `maxFiles`, `maxChars`
+  - `includeOfficialRefs`
+- Salida:
+  - ficheros prioritarios con extractos acotados por presupuesto
+  - prompt compacto de handoff con impacto, contrato afectado, riesgos y comandos
+  - referencias oficiales SAP relevantes
+  - checklist de handoff y archivos omitidos por presupuesto
+
+### `analyze_cap_performance_hotspots`
+
+- Objetivo: detectar hotspots de rendimiento en CAP Node, CDS y UI5 antes de implementar o ampliar funcionalidad.
+- Entrada destacada:
+  - `sourceDir`
+  - `ui5SourceDir`
+  - `includeUi5`
+  - `maxFiles`, `maxFindings`
+- Detecta:
+  - lecturas CAP custom sin limite
+  - `SELECT *` o lecturas demasiado amplias
+  - `await` dentro de bucles en handlers
+  - asociaciones to-many expuestas y textos localizados sin longitud
+  - batch OData desactivado en UI5
+  - listas/tablas UI5 sin `growing=true`
+- Salida:
+  - score de rendimiento
+  - hotspots por severidad/categoria
+  - referencias oficiales CAP/UI5 por regla
+  - comandos recomendados de validacion
+
+### `run_cap_development_readiness`
+
+- Objetivo: ejecutar la puerta final de readiness para desarrollo CAP/UI5 asistido por IA.
+- Orquesta:
+  - `run_cap_official_quality_gate`
+  - `validate_ui5_cap_contract_alignment`
+  - `analyze_cap_performance_hotspots`
+  - `generate_cap_test_plan`
+  - opcionalmente `build_cap_ai_context_pack`
+- Entrada destacada:
+  - `qualityProfile`: `dev` o `prod`
+  - `changeRequest`
+  - `includeContextPack`
+  - `includeUi5`
+- Salida:
+  - `pass` y score final
+  - checks bloqueantes/avisos
+  - reportes agregados de calidad oficial, alineacion, rendimiento, test plan y context pack
+  - siguientes acciones, tools recomendadas y comandos de validacion
+
+## Dominio sdd
+
+### `analyze_sdd_spec`
+
+- Objetivo: analizar documentos funcionales/tecnicos SDD desde Markdown, texto, PDF, DOCX y referencias visuales.
+- Entrada destacada:
+  - `sourcePaths` o `specRoot`
+  - `includeImages`
+  - `maxChars`
+  - `language`
+- Salida:
+  - documentos extraidos y estado de parsing
+  - requisitos funcionales/no funcionales con trazas `REQ-*`
+  - actores, reglas de negocio, pantallas, entidades candidatas, riesgos y ambiguedades
+  - evidencias visuales referenciadas sin OCR
+  - cobertura de trazabilidad por fuente
+
+### `derive_cap_ui_backlog`
+
+- Objetivo: transformar el analisis SDD en backlog trazable para CAP Node y UI5/Fiori mixto.
+- Entrada destacada:
+  - `analysis` de `analyze_sdd_spec` o fuentes (`sourcePaths`/`specRoot`)
+- Salida:
+  - epicas, historias, tareas tecnicas y criterios de aceptacion
+  - entidades CDS candidatas y servicios CAP
+  - pantallas UI con recomendacion `fiori_elements` o `ui5_freestyle`
+  - dependencias entre modelo, servicio y UI
+  - matriz requisito -> historia/tarea/entidad/pantalla
+
+### `validate_sdd_backlog_quality`
+
+- Objetivo: validar que el backlog derivado esta listo para agentes de codificacion.
+- Entrada destacada:
+  - `backlog` o fuentes/analisis para derivarlo al vuelo
+- Detecta:
+  - requisitos sin tareas
+  - tareas sin trazabilidad
+  - pantallas sin flujo
+  - entidades sin servicio
+  - criterios de aceptacion debiles
+- Salida:
+  - `pass`
+  - gaps normalizados
+  - hallazgos con referencias oficiales SAP cuando aplica
+
+### `plan_ai_coding_iterations`
+
+- Objetivo: dividir el backlog en iteraciones pequenas, trazables y eficientes para Codex/Claude.
+- Entrada destacada:
+  - `backlog`
+  - `targetAi`: `codex` | `claude` | `generic`
+  - `tokenBudget`
+  - `maxTasksPerIteration`
+- Salida:
+  - paquetes de trabajo ordenados
+  - prompts compactos por iteracion
+  - contexto minimo sugerido
+  - checks recomendados por lote
+
 ## Dominio ui5
 
 ### `generate_ui5_controller`

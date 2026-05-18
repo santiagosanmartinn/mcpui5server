@@ -2,6 +2,517 @@
   "schemaVersion": "1.1.0",
   "tools": [
     {
+      "name": "analyze_cap_change_impact",
+      "title": null,
+      "description": "Analyze likely SAP CAP/UI5 change impact from a request, target files, entities, services, and local service/model contracts.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "changeRequest": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "entities": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "entitySets": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "includeTests": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeUi5": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxResults": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "services": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "targetFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "impact": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "level": {
+                "kind": "enum",
+                "values": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "reason": {
+                "kind": "string"
+              },
+              "score": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "impacted": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entities": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "entitySets": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "files": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "area": {
+                      "kind": "enum",
+                      "values": [
+                        "cds",
+                        "handler",
+                        "ui5",
+                        "test",
+                        "config",
+                        "docs"
+                      ]
+                    },
+                    "matchedSignals": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "path": {
+                      "kind": "string"
+                    },
+                    "priority": {
+                      "kind": "enum",
+                      "values": [
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "reasons": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "operations": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "services": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "recommendedTools": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "risks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "area": {
+                  "kind": "enum",
+                  "values": [
+                    "model",
+                    "service",
+                    "ui5",
+                    "testing",
+                    "scope"
+                  ]
+                },
+                "files": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "signals": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entities": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "entitySets": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "explicitFiles": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "keywords": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "services": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "ui5SourceDir": {
+            "kind": "string"
+          },
+          "validationCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "analyze_cap_performance_hotspots",
+      "title": null,
+      "description": "Analyze SAP CAP and UI5 sources for common performance hotspots in CDS models, handlers, OData usage, batching, and list bindings.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeUi5": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "hotspots": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "query",
+                    "model",
+                    "handler",
+                    "ui5",
+                    "batch"
+                  ]
+                },
+                "file": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scanned": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "capFiles": {
+                "kind": "number"
+              },
+              "cdsFiles": {
+                "kind": "number"
+              },
+              "handlerFiles": {
+                "kind": "number"
+              },
+              "ui5Files": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "score": {
+            "kind": "number"
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "byCategory": {
+                "kind": "record",
+                "key": {
+                  "kind": "string"
+                },
+                "value": {
+                  "kind": "number"
+                }
+              },
+              "high": {
+                "kind": "number"
+              },
+              "low": {
+                "kind": "number"
+              },
+              "medium": {
+                "kind": "number"
+              },
+              "totalHotspots": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "ui5SourceDir": {
+            "kind": "string"
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "analyze_cap_project",
       "title": null,
       "description": "Analyze SAP CAP project structure, dependencies, CDS services/entities, scripts, and deployment signals.",
@@ -219,6 +730,736 @@
           },
           "sourceDir": {
             "kind": "string"
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "analyze_cap_service_surface",
+      "title": null,
+      "description": "Analyze SAP CAP service/OData surface, exposed entity sets, actions/functions, security annotations, and handler coverage signals.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "findings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "service",
+                    "security",
+                    "handler",
+                    "odata"
+                  ]
+                },
+                "file": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                },
+                "target": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "handlerBindings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "event": {
+                  "kind": "string"
+                },
+                "file": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "target": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scanned": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cdsFiles": {
+                "kind": "number"
+              },
+              "files": {
+                "kind": "number"
+              },
+              "handlerFiles": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "services": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "annotations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "entitySets": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "entityType": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "hasHandler": {
+                        "kind": "boolean"
+                      },
+                      "name": {
+                        "kind": "string"
+                      },
+                      "source": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "file": {
+                  "kind": "string"
+                },
+                "handlerFiles": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "odataPath": {
+                  "kind": "string"
+                },
+                "operations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "hasHandler": {
+                        "kind": "boolean"
+                      },
+                      "httpMethod": {
+                        "kind": "enum",
+                        "values": [
+                          "POST",
+                          "GET"
+                        ]
+                      },
+                      "kind": {
+                        "kind": "enum",
+                        "values": [
+                          "action",
+                          "function"
+                        ]
+                      },
+                      "name": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "secured": {
+                  "kind": "boolean"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "actions": {
+                "kind": "number"
+              },
+              "entitySets": {
+                "kind": "number"
+              },
+              "findings": {
+                "kind": "number"
+              },
+              "functions": {
+                "kind": "number"
+              },
+              "handlerBindings": {
+                "kind": "number"
+              },
+              "highFindings": {
+                "kind": "number"
+              },
+              "securedServices": {
+                "kind": "number"
+              },
+              "services": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "analyze_cds_model_contract",
+      "title": null,
+      "description": "Analyze SAP CAP CDS model contracts: entities, keys, fields, associations, services, projections, actions, and contract risks.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeRawSnippets": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "entities": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "annotations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "associations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "association": {
+                        "kind": "boolean"
+                      },
+                      "cardinality": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "enum",
+                          "values": [
+                            "one",
+                            "many",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "composition": {
+                        "kind": "boolean"
+                      },
+                      "key": {
+                        "kind": "boolean"
+                      },
+                      "localized": {
+                        "kind": "boolean"
+                      },
+                      "name": {
+                        "kind": "string"
+                      },
+                      "target": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "type": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "exposedByServices": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "fieldCount": {
+                  "kind": "number"
+                },
+                "fields": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "association": {
+                        "kind": "boolean"
+                      },
+                      "cardinality": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "enum",
+                          "values": [
+                            "one",
+                            "many",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "composition": {
+                        "kind": "boolean"
+                      },
+                      "key": {
+                        "kind": "boolean"
+                      },
+                      "localized": {
+                        "kind": "boolean"
+                      },
+                      "name": {
+                        "kind": "string"
+                      },
+                      "target": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      },
+                      "type": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "file": {
+                  "kind": "string"
+                },
+                "hasKey": {
+                  "kind": "boolean"
+                },
+                "keyFields": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "kind": {
+                  "kind": "enum",
+                  "values": [
+                    "entity",
+                    "view",
+                    "aspect",
+                    "type"
+                  ]
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "namespace": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "qualifiedName": {
+                  "kind": "string"
+                },
+                "rawSnippet": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "source": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "findings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "model",
+                    "service",
+                    "contract"
+                  ]
+                },
+                "file": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                },
+                "target": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "namespaces": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scanned": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cdsFiles": {
+                "kind": "number"
+              },
+              "files": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "services": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "actions": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "kind": {
+                        "kind": "enum",
+                        "values": [
+                          "action",
+                          "function"
+                        ]
+                      },
+                      "name": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "annotations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "exposures": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "name": {
+                        "kind": "string"
+                      },
+                      "source": {
+                        "kind": "nullable",
+                        "inner": {
+                          "kind": "string"
+                        }
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "file": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "secured": {
+                  "kind": "boolean"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "actions": {
+                "kind": "number"
+              },
+              "annotations": {
+                "kind": "number"
+              },
+              "associations": {
+                "kind": "number"
+              },
+              "compositions": {
+                "kind": "number"
+              },
+              "entities": {
+                "kind": "number"
+              },
+              "findings": {
+                "kind": "number"
+              },
+              "functions": {
+                "kind": "number"
+              },
+              "highFindings": {
+                "kind": "number"
+              },
+              "projections": {
+                "kind": "number"
+              },
+              "services": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
           }
         },
         "catchall": null
@@ -1450,6 +2691,442 @@
               }
             },
             "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "analyze_sdd_spec",
+      "title": null,
+      "description": "Analyze SDD functional/technical specs from Markdown, text, PDF, DOCX, and visual references into traceable requirements.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeImages": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxChars": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourcePaths": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "specRoot": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "actors": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "ambiguities": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "reason": {
+                  "kind": "string"
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "businessRules": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "documents": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "chars": {
+                  "kind": "number"
+                },
+                "error": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "extractionStatus": {
+                  "kind": "enum",
+                  "values": [
+                    "ok",
+                    "partial",
+                    "failed"
+                  ]
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "truncated": {
+                  "kind": "boolean"
+                },
+                "type": {
+                  "kind": "enum",
+                  "values": [
+                    "markdown",
+                    "text",
+                    "pdf",
+                    "docx"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "entityCandidates": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "attributes": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "operations": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "requirements": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "confidence": {
+                  "kind": "number"
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "type": {
+                  "kind": "enum",
+                  "values": [
+                    "functional",
+                    "non_functional"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "risks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "mitigation": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "screens": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "dataHints": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "flow": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "name": {
+                  "kind": "string"
+                },
+                "sourcePath": {
+                  "kind": "string"
+                },
+                "text": {
+                  "kind": "string"
+                },
+                "visualEvidence": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "source": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "includeImages": {
+                "kind": "boolean"
+              },
+              "maxChars": {
+                "kind": "number"
+              },
+              "sourcePaths": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "specRoot": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "traceability": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "sourceCoverage": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "sourcePath": {
+                      "kind": "string"
+                    },
+                    "traceIds": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "traceIds": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "visualEvidence": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "path": {
+                  "kind": "string"
+                },
+                "relatedScreen": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "type": {
+                  "kind": "enum",
+                  "values": [
+                    "png",
+                    "jpg",
+                    "jpeg",
+                    "gif",
+                    "webp",
+                    "svg"
+                  ]
+                }
+              },
+              "catchall": null
+            }
           }
         },
         "catchall": null
@@ -2990,6 +4667,279 @@
       }
     },
     {
+      "name": "build_cap_ai_context_pack",
+      "title": null,
+      "description": "Build a compact SAP CAP/UI5 context pack for coding agents from change impact, relevant files, official references, and validation commands.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "agentTarget": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "codex",
+                "claude",
+                "generic"
+              ]
+            }
+          },
+          "changeRequest": {
+            "kind": "string"
+          },
+          "entities": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "entitySets": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "includeOfficialRefs": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeTests": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeUi5": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxChars": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "services": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "targetFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "agentTarget": {
+            "kind": "enum",
+            "values": [
+              "codex",
+              "claude",
+              "generic"
+            ]
+          },
+          "budget": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "maxChars": {
+                "kind": "number"
+              },
+              "maxFiles": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              },
+              "usedChars": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "change": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "impactLevel": {
+                "kind": "enum",
+                "values": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "impactScore": {
+                "kind": "number"
+              },
+              "request": {
+                "kind": "string"
+              }
+            },
+            "catchall": null
+          },
+          "compactPrompt": {
+            "kind": "string"
+          },
+          "files": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "area": {
+                  "kind": "enum",
+                  "values": [
+                    "cds",
+                    "handler",
+                    "ui5",
+                    "test",
+                    "config",
+                    "docs"
+                  ]
+                },
+                "chars": {
+                  "kind": "number"
+                },
+                "excerpt": {
+                  "kind": "string"
+                },
+                "path": {
+                  "kind": "string"
+                },
+                "priority": {
+                  "kind": "enum",
+                  "values": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                "reason": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "handoffChecklist": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "officialRefs": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "product": {
+                  "kind": "enum",
+                  "values": [
+                    "cap",
+                    "ui5"
+                  ]
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "topic": {
+                  "kind": "string"
+                },
+                "url": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "omittedFiles": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "path": {
+                  "kind": "string"
+                },
+                "reason": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "recommendedTools": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "ui5SourceDir": {
+            "kind": "string"
+          },
+          "validationCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "cf_deploy_precheck",
       "title": null,
       "description": "Run a safe pre-deployment readiness check for Cloud Foundry/MTA projects (manifest, mta, scripts, and secret-risk signals).",
@@ -3978,6 +5928,387 @@
       }
     },
     {
+      "name": "derive_cap_ui_backlog",
+      "title": null,
+      "description": "Derive a traceable CAP Node and mixed UI5/Fiori backlog from SDD analysis or source specification files.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "analysis": {
+            "kind": "optional",
+            "inner": {
+              "kind": "unknown"
+            }
+          },
+          "includeImages": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxChars": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourcePaths": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "specRoot": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "cap": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entities": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "attributes": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "operations": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "traceIds": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "services": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "actions": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "entity": {
+                      "kind": "string"
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "traceIds": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              }
+            },
+            "catchall": null
+          },
+          "dependencies": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "from": {
+                  "kind": "string"
+                },
+                "reason": {
+                  "kind": "string"
+                },
+                "to": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "epics": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "traceIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "generatedAt": {
+            "kind": "string"
+          },
+          "mode": {
+            "kind": "literal",
+            "value": "mixed"
+          },
+          "stories": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "acceptanceCriteria": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "traceIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entities": {
+                "kind": "number"
+              },
+              "epics": {
+                "kind": "number"
+              },
+              "services": {
+                "kind": "number"
+              },
+              "stories": {
+                "kind": "number"
+              },
+              "tasks": {
+                "kind": "number"
+              },
+              "uiScreens": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "tasks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "acceptanceCriteria": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "contextHints": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "priority": {
+                  "kind": "enum",
+                  "values": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                "recommendedChecks": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "traceIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "type": {
+                  "kind": "enum",
+                  "values": [
+                    "cap_model",
+                    "cap_service",
+                    "cap_handler",
+                    "ui5_screen",
+                    "test",
+                    "documentation",
+                    "quality"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "traceMatrix": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "entities": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "screens": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "stories": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "tasks": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "traceId": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "ui": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "screens": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "dataHints": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "flow": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "rationale": {
+                      "kind": "string"
+                    },
+                    "recommendation": {
+                      "kind": "enum",
+                      "values": [
+                        "fiori_elements",
+                        "ui5_freestyle"
+                      ]
+                    },
+                    "traceIds": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    },
+                    "visualEvidence": {
+                      "kind": "array",
+                      "item": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "detect_commit_smells",
       "title": null,
       "description": "Detect commit quality smells (size, mixed concerns, test gaps) and suggest a safer split plan.",
@@ -4502,6 +6833,255 @@
               },
               "catchall": null
             }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "generate_cap_test_plan",
+      "title": null,
+      "description": "Generate a read-only SAP CAP/UI5 test plan from local CDS service surface, model contract, and optional UI5-CAP alignment signals.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "includeUi5Checks": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "manifestPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "maxCases": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "testRunner": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "node_test",
+                "vitest",
+                "jest",
+                "generic"
+              ]
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "detected": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "capEntitySets": {
+                "kind": "number"
+              },
+              "capOperations": {
+                "kind": "number"
+              },
+              "capServices": {
+                "kind": "number"
+              },
+              "cdsTestDependency": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "testScript": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "gaps": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "recommendation": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "promptContext": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "suites": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "cases": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "commands": {
+                        "kind": "array",
+                        "item": {
+                          "kind": "string"
+                        }
+                      },
+                      "id": {
+                        "kind": "string"
+                      },
+                      "priority": {
+                        "kind": "enum",
+                        "values": [
+                          "high",
+                          "medium",
+                          "low"
+                        ]
+                      },
+                      "suggestedAssertion": {
+                        "kind": "string"
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "traceTargets": {
+                        "kind": "array",
+                        "item": {
+                          "kind": "string"
+                        }
+                      },
+                      "type": {
+                        "kind": "enum",
+                        "values": [
+                          "unit",
+                          "service",
+                          "integration",
+                          "security",
+                          "contract",
+                          "ui5"
+                        ]
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "priority": {
+                  "kind": "enum",
+                  "values": [
+                    "high",
+                    "medium",
+                    "low"
+                  ]
+                },
+                "target": {
+                  "kind": "string"
+                },
+                "title": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cases": {
+                "kind": "number"
+              },
+              "highPriority": {
+                "kind": "number"
+              },
+              "lowPriority": {
+                "kind": "number"
+              },
+              "mediumPriority": {
+                "kind": "number"
+              },
+              "suites": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              },
+              "ui5AlignmentIncluded": {
+                "kind": "boolean"
+              }
+            },
+            "catchall": null
+          },
+          "testRunner": {
+            "kind": "enum",
+            "values": [
+              "node_test",
+              "vitest",
+              "jest",
+              "generic"
+            ]
           }
         },
         "catchall": null
@@ -8731,6 +11311,167 @@
               }
             },
             "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "plan_ai_coding_iterations",
+      "title": null,
+      "description": "Plan token-efficient coding-agent iterations from a validated CAP/UI SDD backlog.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "analysis": {
+            "kind": "optional",
+            "inner": {
+              "kind": "unknown"
+            }
+          },
+          "backlog": {
+            "kind": "optional",
+            "inner": {
+              "kind": "unknown"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxTasksPerIteration": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourcePaths": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "specRoot": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "targetAi": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "codex",
+                "claude",
+                "generic"
+              ]
+            }
+          },
+          "tokenBudget": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "iterations": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "agent": {
+                  "kind": "enum",
+                  "values": [
+                    "codex",
+                    "claude",
+                    "generic"
+                  ]
+                },
+                "checks": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "contextPaths": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "estimatedTokens": {
+                  "kind": "number"
+                },
+                "id": {
+                  "kind": "string"
+                },
+                "prompt": {
+                  "kind": "string"
+                },
+                "taskIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                },
+                "title": {
+                  "kind": "string"
+                },
+                "traceIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "estimatedPromptTokens": {
+                "kind": "number"
+              },
+              "iterations": {
+                "kind": "number"
+              },
+              "tasks": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "targetAi": {
+            "kind": "enum",
+            "values": [
+              "codex",
+              "claude",
+              "generic"
+            ]
+          },
+          "tokenBudget": {
+            "kind": "number"
           }
         },
         "catchall": null
@@ -13937,6 +16678,529 @@
       }
     },
     {
+      "name": "run_cap_development_readiness",
+      "title": null,
+      "description": "Run a consolidated SAP CAP/UI5 readiness gate for AI-assisted development, combining official quality, UI alignment, performance, tests, and optional context pack.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "changeRequest": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "includeContextPack": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "includeUi5": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "manifestPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "qualityProfile": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "dev",
+                "prod"
+              ]
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "pass": {
+                  "kind": "boolean"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "error",
+                    "warn"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "nextActions": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "pass": {
+            "kind": "boolean"
+          },
+          "qualityProfile": {
+            "kind": "enum",
+            "values": [
+              "dev",
+              "prod"
+            ]
+          },
+          "recommendedTools": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "reports": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "alignment": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "pass": {
+                    "kind": "boolean"
+                  },
+                  "unknownEntitySets": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "contextPack": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "files": {
+                    "kind": "number"
+                  },
+                  "included": {
+                    "kind": "boolean"
+                  },
+                  "truncated": {
+                    "kind": "boolean"
+                  },
+                  "usedChars": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "officialGate": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "failedChecks": {
+                    "kind": "number"
+                  },
+                  "pass": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              },
+              "performance": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "high": {
+                    "kind": "number"
+                  },
+                  "low": {
+                    "kind": "number"
+                  },
+                  "medium": {
+                    "kind": "number"
+                  },
+                  "score": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "testPlan": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "cases": {
+                    "kind": "number"
+                  },
+                  "gaps": {
+                    "kind": "number"
+                  },
+                  "highPriority": {
+                    "kind": "number"
+                  },
+                  "suites": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "score": {
+            "kind": "number"
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "alignmentPass": {
+                "kind": "boolean"
+              },
+              "contextPackIncluded": {
+                "kind": "boolean"
+              },
+              "errorChecks": {
+                "kind": "number"
+              },
+              "failedChecks": {
+                "kind": "number"
+              },
+              "officialGatePass": {
+                "kind": "boolean"
+              },
+              "performanceScore": {
+                "kind": "number"
+              },
+              "testPlanHighPriorityCases": {
+                "kind": "number"
+              },
+              "warningChecks": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "ui5SourceDir": {
+            "kind": "string"
+          },
+          "validationCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "run_cap_official_quality_gate",
+      "title": null,
+      "description": "Run a read-only SAP CAP quality gate grounded in the curated official SAP documentation catalog.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "allowPublicServices": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "qualityProfile": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "dev",
+                "prod"
+              ]
+            }
+          },
+          "requireTestScript": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "requireTypescriptReadiness": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "pass": {
+                  "kind": "boolean"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "error",
+                    "warn"
+                  ]
+                }
+              },
+              "catchall": null
+            }
+          },
+          "officialOnly": {
+            "kind": "boolean"
+          },
+          "pass": {
+            "kind": "boolean"
+          },
+          "qualityProfile": {
+            "kind": "enum",
+            "values": [
+              "dev",
+              "prod"
+            ]
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "reports": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cap": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "detected": {
+                    "kind": "boolean"
+                  },
+                  "entities": {
+                    "kind": "number"
+                  },
+                  "services": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "capQualityGate": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "failedChecks": {
+                    "kind": "number"
+                  },
+                  "pass": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              },
+              "documentationCatalog": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "invalidReferences": {
+                    "kind": "number"
+                  },
+                  "references": {
+                    "kind": "number"
+                  },
+                  "staleReferences": {
+                    "kind": "number"
+                  },
+                  "valid": {
+                    "kind": "boolean"
+                  }
+                },
+                "catchall": null
+              },
+              "modelContract": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "entities": {
+                    "kind": "number"
+                  },
+                  "findings": {
+                    "kind": "number"
+                  },
+                  "highFindings": {
+                    "kind": "number"
+                  },
+                  "services": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              },
+              "typescriptReadiness": {
+                "kind": "object",
+                "unknownKeys": "strip",
+                "keys": {
+                  "blocking": {
+                    "kind": "number"
+                  },
+                  "ready": {
+                    "kind": "boolean"
+                  },
+                  "score": {
+                    "kind": "number"
+                  },
+                  "warnings": {
+                    "kind": "number"
+                  }
+                },
+                "catchall": null
+              }
+            },
+            "catchall": null
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "capHighFindings": {
+                "kind": "number"
+              },
+              "errorChecks": {
+                "kind": "number"
+              },
+              "failedChecks": {
+                "kind": "number"
+              },
+              "modelHighFindings": {
+                "kind": "number"
+              },
+              "typescriptScore": {
+                "kind": "number"
+              },
+              "warningChecks": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "run_cap_quality_gate",
       "title": null,
       "description": "Run a consolidated SAP CAP quality gate for project detection, model/service validation, handler risks, and test readiness.",
@@ -18760,6 +22024,208 @@
       }
     },
     {
+      "name": "validate_cap_typescript_readiness",
+      "title": null,
+      "description": "Validate SAP CAP Node.js readiness for TypeScript or typed JavaScript workflows with cds-typer and official CAP guidance.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "targetMode": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "javascript_jsdoc",
+                "typescript",
+                "mixed"
+              ]
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "checks": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "id": {
+                  "kind": "string"
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "pass": {
+                  "kind": "boolean"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "error",
+                    "warn",
+                    "info"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                }
+              },
+              "catchall": null
+            }
+          },
+          "detected": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "cdsTyperDependency": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "cdsTypesDependency": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "checkJs": {
+                "kind": "boolean"
+              },
+              "generatedTypesDir": {
+                "kind": "boolean"
+              },
+              "javascriptHandlers": {
+                "kind": "number"
+              },
+              "jsconfig": {
+                "kind": "boolean"
+              },
+              "packageImportsForCdsModels": {
+                "kind": "boolean"
+              },
+              "tsconfig": {
+                "kind": "boolean"
+              },
+              "typedCdsModelImports": {
+                "kind": "number"
+              },
+              "typedRequestUsage": {
+                "kind": "number"
+              },
+              "typescriptDependency": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              },
+              "typescriptFiles": {
+                "kind": "number"
+              },
+              "typescriptHandlers": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "ready": {
+            "kind": "boolean"
+          },
+          "recommendations": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "score": {
+            "kind": "number"
+          },
+          "sourceDir": {
+            "kind": "string"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "blocking": {
+                "kind": "number"
+              },
+              "passed": {
+                "kind": "number"
+              },
+              "warnings": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "targetMode": {
+            "kind": "enum",
+            "values": [
+              "javascript_jsdoc",
+              "typescript",
+              "mixed"
+            ]
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
       "name": "validate_project_agents",
       "title": null,
       "description": "Validate generated agent blueprint and guardrail artifacts for consistency, tool coverage, and MCP integration readiness.",
@@ -19016,6 +22482,539 @@
             "item": {
               "kind": "string"
             }
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "validate_sdd_backlog_quality",
+      "title": null,
+      "description": "Validate traceability and quality of a generated SDD CAP/UI backlog before coding agents start implementation.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "analysis": {
+            "kind": "optional",
+            "inner": {
+              "kind": "unknown"
+            }
+          },
+          "backlog": {
+            "kind": "optional",
+            "inner": {
+              "kind": "unknown"
+            }
+          },
+          "includeImages": {
+            "kind": "optional",
+            "inner": {
+              "kind": "boolean"
+            }
+          },
+          "language": {
+            "kind": "optional",
+            "inner": {
+              "kind": "enum",
+              "values": [
+                "es",
+                "en"
+              ]
+            }
+          },
+          "maxChars": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "sourcePaths": {
+            "kind": "optional",
+            "inner": {
+              "kind": "array",
+              "item": {
+                "kind": "string"
+              }
+            }
+          },
+          "specRoot": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "findings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "traceability",
+                    "acceptance",
+                    "cap",
+                    "ui",
+                    "risk"
+                  ]
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                },
+                "traceIds": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "gaps": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entitiesWithoutService": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "requirementsWithoutTasks": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "risksWithoutMitigation": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "screensWithoutFlow": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "tasksWithoutRequirements": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "weakAcceptanceCriteria": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "pass": {
+            "kind": "boolean"
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "high": {
+                "kind": "number"
+              },
+              "low": {
+                "kind": "number"
+              },
+              "medium": {
+                "kind": "number"
+              },
+              "totalFindings": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          }
+        },
+        "catchall": null
+      }
+    },
+    {
+      "name": "validate_ui5_cap_contract_alignment",
+      "title": null,
+      "description": "Validate UI5 manifest/bindings against the local SAP CAP service surface before coding or refactoring.",
+      "contractVersion": "1.0.0",
+      "inputSchema": {
+        "kind": "object",
+        "unknownKeys": "strict",
+        "keys": {
+          "capSourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "manifestPath": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          },
+          "maxFiles": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "maxFindings": {
+            "kind": "optional",
+            "inner": {
+              "kind": "number"
+            }
+          },
+          "ui5SourceDir": {
+            "kind": "optional",
+            "inner": {
+              "kind": "string"
+            }
+          }
+        },
+        "catchall": null
+      },
+      "outputSchema": {
+        "kind": "object",
+        "unknownKeys": "strip",
+        "keys": {
+          "cap": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "entitySets": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "servicePaths": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              },
+              "services": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "capSourceDir": {
+            "kind": "string"
+          },
+          "findings": {
+            "kind": "array",
+            "item": {
+              "kind": "object",
+              "unknownKeys": "strip",
+              "keys": {
+                "category": {
+                  "kind": "enum",
+                  "values": [
+                    "manifest",
+                    "binding",
+                    "service",
+                    "version"
+                  ]
+                },
+                "file": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                },
+                "line": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "number"
+                  }
+                },
+                "message": {
+                  "kind": "string"
+                },
+                "officialRefs": {
+                  "kind": "array",
+                  "item": {
+                    "kind": "object",
+                    "unknownKeys": "strip",
+                    "keys": {
+                      "id": {
+                        "kind": "string"
+                      },
+                      "product": {
+                        "kind": "enum",
+                        "values": [
+                          "cap",
+                          "ui5"
+                        ]
+                      },
+                      "title": {
+                        "kind": "string"
+                      },
+                      "topic": {
+                        "kind": "string"
+                      },
+                      "url": {
+                        "kind": "string"
+                      }
+                    },
+                    "catchall": null
+                  }
+                },
+                "rule": {
+                  "kind": "string"
+                },
+                "severity": {
+                  "kind": "enum",
+                  "values": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "suggestion": {
+                  "kind": "string"
+                },
+                "target": {
+                  "kind": "nullable",
+                  "inner": {
+                    "kind": "string"
+                  }
+                }
+              },
+              "catchall": null
+            }
+          },
+          "manifest": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "exists": {
+                "kind": "boolean"
+              },
+              "odataDataSources": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "matchedCapService": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "odataVersion": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "uri": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "odataModels": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "dataSource": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "name": {
+                      "kind": "string"
+                    },
+                    "odataVersion": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    },
+                    "type": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "string"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "path": {
+                "kind": "nullable",
+                "inner": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
+          },
+          "pass": {
+            "kind": "boolean"
+          },
+          "recommendedCommands": {
+            "kind": "array",
+            "item": {
+              "kind": "string"
+            }
+          },
+          "scanned": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "jsFiles": {
+                "kind": "number"
+              },
+              "ui5Files": {
+                "kind": "number"
+              },
+              "xmlFiles": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "summary": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "high": {
+                "kind": "number"
+              },
+              "low": {
+                "kind": "number"
+              },
+              "medium": {
+                "kind": "number"
+              },
+              "totalFindings": {
+                "kind": "number"
+              },
+              "truncated": {
+                "kind": "boolean"
+              },
+              "unknownEntitySets": {
+                "kind": "number"
+              },
+              "unmatchedDataSources": {
+                "kind": "number"
+              }
+            },
+            "catchall": null
+          },
+          "ui5SourceDir": {
+            "kind": "string"
+          },
+          "usage": {
+            "kind": "object",
+            "unknownKeys": "strip",
+            "keys": {
+              "referencedEntitySets": {
+                "kind": "array",
+                "item": {
+                  "kind": "object",
+                  "unknownKeys": "strip",
+                  "keys": {
+                    "entitySet": {
+                      "kind": "string"
+                    },
+                    "file": {
+                      "kind": "string"
+                    },
+                    "line": {
+                      "kind": "nullable",
+                      "inner": {
+                        "kind": "number"
+                      }
+                    }
+                  },
+                  "catchall": null
+                }
+              },
+              "referencedModels": {
+                "kind": "array",
+                "item": {
+                  "kind": "string"
+                }
+              }
+            },
+            "catchall": null
           }
         },
         "catchall": null

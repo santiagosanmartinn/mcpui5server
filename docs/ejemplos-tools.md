@@ -723,6 +723,505 @@ Entrada:
 }
 ```
 
+## 82) `analyze_cds_model_contract`
+
+Entrada:
+```json
+{
+  "tool": "analyze_cds_model_contract",
+  "arguments": {
+    "sourceDir": ".",
+    "includeRawSnippets": false
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "entities": 6,
+    "services": 1,
+    "projections": 3,
+    "associations": 4,
+    "highFindings": 0
+  },
+  "entities": [
+    {
+      "name": "Orders",
+      "hasKey": true,
+      "keyFields": ["ID"],
+      "exposedByServices": ["CatalogService"]
+    }
+  ],
+  "recommendedCommands": [
+    "npx cds compile srv --to csn",
+    "npx cds lint"
+  ]
+}
+```
+
+## 87) `validate_cap_typescript_readiness`
+
+Entrada:
+```json
+{
+  "tool": "validate_cap_typescript_readiness",
+  "arguments": {
+    "targetMode": "mixed"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "ready": false,
+  "score": 58,
+  "detected": {
+    "tsconfig": false,
+    "jsconfig": true,
+    "cdsTyperDependency": null,
+    "packageImportsForCdsModels": false
+  },
+  "recommendedCommands": [
+    "npx cds add typer",
+    "npx @cap-js/cds-typer \"*\" --outputDirectory @cds-models"
+  ]
+}
+```
+
+## 88) `run_cap_official_quality_gate`
+
+Entrada:
+```json
+{
+  "tool": "run_cap_official_quality_gate",
+  "arguments": {
+    "qualityProfile": "prod",
+    "requireTypescriptReadiness": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": false,
+  "officialOnly": true,
+  "summary": {
+    "errorChecks": 1,
+    "modelHighFindings": 0,
+    "typescriptScore": 64
+  },
+  "reports": {
+    "documentationCatalog": {
+      "valid": true,
+      "references": 15
+    }
+  },
+  "recommendedCommands": [
+    "npx cds lint",
+    "npx cds compile srv --to csn"
+  ]
+}
+```
+
+## 89) `analyze_cap_service_surface`
+
+Entrada:
+```json
+{
+  "tool": "analyze_cap_service_surface",
+  "arguments": {
+    "sourceDir": "."
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "services": 1,
+    "entitySets": 3,
+    "actions": 1,
+    "handlerBindings": 4
+  },
+  "services": [
+    {
+      "name": "CatalogService",
+      "odataPath": "/odata/v4/catalog",
+      "entitySets": [
+        {
+          "name": "Books",
+          "hasHandler": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+## 90) `validate_ui5_cap_contract_alignment`
+
+Entrada:
+```json
+{
+  "tool": "validate_ui5_cap_contract_alignment",
+  "arguments": {
+    "capSourceDir": ".",
+    "ui5SourceDir": "webapp"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": false,
+  "manifest": {
+    "odataDataSources": [
+      {
+        "name": "mainService",
+        "uri": "/odata/v4/catalog/",
+        "matchedCapService": "CatalogService"
+      }
+    ]
+  },
+  "summary": {
+    "unknownEntitySets": 1
+  },
+  "findings": [
+    {
+      "rule": "UI5_CAP_ENTITYSET_UNKNOWN",
+      "target": "Ghosts"
+    }
+  ]
+}
+```
+
+## 91) `generate_cap_test_plan`
+
+Entrada:
+```json
+{
+  "tool": "generate_cap_test_plan",
+  "arguments": {
+    "includeUi5Checks": true,
+    "testRunner": "node_test"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "summary": {
+    "suites": 3,
+    "cases": 8,
+    "highPriority": 2,
+    "ui5AlignmentIncluded": true
+  },
+  "gaps": [
+    {
+      "id": "CAP_CDS_TEST_DEPENDENCY_MISSING",
+      "severity": "medium"
+    }
+  ],
+  "recommendedCommands": [
+    "npm add -D @cap-js/cds-test",
+    "node --test"
+  ]
+}
+```
+
+## 92) `analyze_cap_change_impact`
+
+Entrada:
+```json
+{
+  "tool": "analyze_cap_change_impact",
+  "arguments": {
+    "changeRequest": "Actualizar Books en CatalogService y la lista UI5",
+    "entities": ["Books"],
+    "entitySets": ["Books"],
+    "includeUi5": true,
+    "includeTests": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "impact": {
+    "level": "high",
+    "score": 74
+  },
+  "impacted": {
+    "entitySets": ["Books"],
+    "files": [
+      {
+        "path": "db/schema.cds",
+        "area": "cds",
+        "priority": "high"
+      },
+      {
+        "path": "webapp/view/Main.view.xml",
+        "area": "ui5",
+        "priority": "medium"
+      }
+    ]
+  },
+  "validationCommands": [
+    "npx cds compile srv --to csn",
+    "npm test"
+  ]
+}
+```
+
+## 93) `build_cap_ai_context_pack`
+
+Entrada:
+```json
+{
+  "tool": "build_cap_ai_context_pack",
+  "arguments": {
+    "changeRequest": "Actualizar Books en CatalogService y la lista UI5",
+    "agentTarget": "codex",
+    "entities": ["Books"],
+    "maxFiles": 8,
+    "maxChars": 12000
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "agentTarget": "codex",
+  "budget": {
+    "usedChars": 8400,
+    "truncated": false
+  },
+  "files": [
+    {
+      "path": "srv/catalog-service.cds",
+      "priority": "high",
+      "reason": "matches change signals"
+    }
+  ],
+  "compactPrompt": "Agent target: codex\nTask: Actualizar Books...",
+  "handoffChecklist": [
+    "Read the high-priority files before editing."
+  ]
+}
+```
+
+## 94) `analyze_cap_performance_hotspots`
+
+Entrada:
+```json
+{
+  "tool": "analyze_cap_performance_hotspots",
+  "arguments": {
+    "sourceDir": ".",
+    "ui5SourceDir": "webapp",
+    "includeUi5": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "score": 72,
+  "summary": {
+    "totalHotspots": 3,
+    "high": 1,
+    "medium": 2
+  },
+  "hotspots": [
+    {
+      "rule": "CAP_PERF_UNBOUNDED_SELECT",
+      "file": "srv/catalog-service.js",
+      "severity": "high"
+    }
+  ]
+}
+```
+
+## 95) `run_cap_development_readiness`
+
+Entrada:
+```json
+{
+  "tool": "run_cap_development_readiness",
+  "arguments": {
+    "qualityProfile": "dev",
+    "changeRequest": "Actualizar Books en CatalogService",
+    "includeContextPack": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": false,
+  "score": 61,
+  "summary": {
+    "officialGatePass": false,
+    "alignmentPass": true,
+    "performanceScore": 72,
+    "contextPackIncluded": true
+  },
+  "nextActions": [
+    "Resolve official CAP quality gate failures before implementation."
+  ]
+}
+```
+
+## 83) `analyze_sdd_spec`
+
+Entrada:
+```json
+{
+  "tool": "analyze_sdd_spec",
+  "arguments": {
+    "specRoot": "specs",
+    "includeImages": true,
+    "maxChars": 120000
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "documents": [
+    {
+      "path": "specs/funcional.md",
+      "type": "markdown",
+      "extractionStatus": "ok"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-0001",
+      "type": "functional",
+      "title": "El sistema debe listar pedidos"
+    }
+  ],
+  "screens": [
+    {
+      "id": "REQ-0002",
+      "name": "Sales Orders List",
+      "visualEvidence": ["specs/visuals/sales-orders-list.png"]
+    }
+  ]
+}
+```
+
+## 84) `derive_cap_ui_backlog`
+
+Entrada:
+```json
+{
+  "tool": "derive_cap_ui_backlog",
+  "arguments": {
+    "specRoot": "specs",
+    "includeImages": true
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "mode": "mixed",
+  "summary": {
+    "stories": 4,
+    "tasks": 12,
+    "entities": 3,
+    "services": 3,
+    "uiScreens": 2
+  },
+  "ui": {
+    "screens": [
+      {
+        "name": "Sales Orders List",
+        "recommendation": "fiori_elements",
+        "traceIds": ["REQ-0002"]
+      }
+    ]
+  }
+}
+```
+
+## 85) `validate_sdd_backlog_quality`
+
+Entrada:
+```json
+{
+  "tool": "validate_sdd_backlog_quality",
+  "arguments": {
+    "specRoot": "specs"
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "pass": true,
+  "summary": {
+    "totalFindings": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "gaps": {
+    "requirementsWithoutTasks": [],
+    "tasksWithoutRequirements": []
+  }
+}
+```
+
+## 86) `plan_ai_coding_iterations`
+
+Entrada:
+```json
+{
+  "tool": "plan_ai_coding_iterations",
+  "arguments": {
+    "specRoot": "specs",
+    "targetAi": "codex",
+    "tokenBudget": 12000,
+    "maxTasksPerIteration": 4
+  }
+}
+```
+
+Salida (ejemplo):
+```json
+{
+  "targetAi": "codex",
+  "summary": {
+    "iterations": 3,
+    "tasks": 12
+  },
+  "iterations": [
+    {
+      "id": "ITER-001",
+      "taskIds": ["TASK-MODEL-001", "TASK-SERVICE-001"],
+      "checks": ["npx cds compile srv --to csn", "run_cap_quality_gate"]
+    }
+  ]
+}
+```
+
 Salida (ejemplo):
 ```json
 {

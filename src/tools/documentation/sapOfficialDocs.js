@@ -19,7 +19,26 @@ const SAP_OFFICIAL_REFERENCES = [
     lastReviewed: "2026-05-13",
     usedByRules: [
       "CAP_PROJECT_MISSING_CDS_DEPENDENCY",
-      "CAP_ENTITY_KEY_MISSING"
+      "CAP_ENTITY_KEY_MISSING",
+      "SDD_ENTITY_WITHOUT_SERVICE",
+      "CDS_CONTRACT_ENTITY_KEY_MISSING",
+      "CDS_CONTRACT_STRING_LENGTH_UNBOUNDED",
+      "CDS_CONTRACT_ASSOC_TARGET_UNKNOWN",
+      "CDS_CONTRACT_SERVICE_EMPTY",
+      "CAP_CHANGE_IMPACT_MODEL_BLOCKERS"
+    ]
+  },
+  {
+    id: "sap-cap-getting-started",
+    product: "cap",
+    topic: "getting-started",
+    title: "Getting Started with CAP",
+    url: "https://cap.cloud.sap/docs/get-started/",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "SDD_REQ_WITHOUT_TASK",
+      "SDD_TASK_WITHOUT_TRACE"
     ]
   },
   {
@@ -31,7 +50,8 @@ const SAP_OFFICIAL_REFERENCES = [
     officialDomain: "cap.cloud.sap",
     lastReviewed: "2026-05-13",
     usedByRules: [
-      "CAP_ENTITY_KEY_MISSING"
+      "CAP_ENTITY_KEY_MISSING",
+      "CDS_CONTRACT_ENTITY_KEY_MISSING"
     ]
   },
   {
@@ -44,7 +64,9 @@ const SAP_OFFICIAL_REFERENCES = [
     lastReviewed: "2026-05-13",
     usedByRules: [
       "CAP_SERVICE_AUTH_MISSING",
-      "CAP_SECRET_FILE_CONTAINS_CREDENTIAL"
+      "CAP_SECRET_FILE_CONTAINS_CREDENTIAL",
+      "CAP_SERVICE_SURFACE_PUBLIC_SERVICE",
+      "CAP_CHANGE_IMPACT_SERVICE_SECURITY"
     ]
   },
   {
@@ -56,7 +78,13 @@ const SAP_OFFICIAL_REFERENCES = [
     officialDomain: "cap.cloud.sap",
     lastReviewed: "2026-05-13",
     usedByRules: [
-      "CAP_TEST_SCRIPT_MISSING"
+      "CAP_TEST_SCRIPT_MISSING",
+      "CAP_CDS_TEST_DEPENDENCY_MISSING",
+      "CAP_OPERATION_HANDLER_TEST_RISK",
+      "CAP_MODEL_CONTRACT_BLOCKERS",
+      "UI5_CAP_ALIGNMENT_BLOCKERS",
+      "CAP_CHANGE_IMPACT_TEST_GAP",
+      "CAP_CHANGE_IMPACT_NO_MATCH"
     ]
   },
   {
@@ -70,7 +98,8 @@ const SAP_OFFICIAL_REFERENCES = [
     usedByRules: [
       "CAP_HANDLER_DYNAMIC_SQL",
       "CAP_HANDLER_UNBOUNDED_READ",
-      "CAP_HANDLER_MUTATES_REQ_DATA"
+      "CAP_HANDLER_MUTATES_REQ_DATA",
+      "CAP_SERVICE_SURFACE_OPERATION_HANDLER_MISSING"
     ]
   },
   {
@@ -83,6 +112,112 @@ const SAP_OFFICIAL_REFERENCES = [
     lastReviewed: "2026-05-13",
     usedByRules: [
       "CAP_PROJECT_MISSING_CDS_DEPENDENCY"
+    ]
+  },
+  {
+    id: "sap-cap-cds-lint",
+    product: "cap",
+    topic: "quality",
+    title: "CDS Lint",
+    url: "https://cap.cloud.sap/docs/tools/cds-lint/",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "SDD_WEAK_ACCEPTANCE_CRITERIA",
+      "CAP_OFFICIAL_CDS_LINT_MISSING",
+      "CAP_OFFICIAL_CDS_LINT_FAILED"
+    ]
+  },
+  {
+    id: "sap-cap-cds-compile",
+    product: "cap",
+    topic: "tooling",
+    title: "Parsing and Compiling Models",
+    url: "https://cap.cloud.sap/docs/node.js/cds-compile",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "SDD_ENTITY_WITHOUT_SERVICE",
+      "CAP_OFFICIAL_CDS_COMPILE_FAILED",
+      "CDS_CONTRACT_ASSOC_TARGET_UNKNOWN",
+      "CDS_CONTRACT_SERVICE_EMPTY",
+      "CAP_SERVICE_SURFACE_EMPTY"
+    ]
+  },
+  {
+    id: "sap-cap-performance-guide",
+    product: "cap",
+    topic: "performance",
+    title: "Performance Considerations for CDS Modeling",
+    url: "https://cap.cloud.sap/docs/guides/databases/performance",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "CAP_PERF_SELECT_STAR_OR_WIDE_READ",
+      "CAP_PERF_UNBOUNDED_SELECT",
+      "CAP_PERF_TO_MANY_EXPOSED_ASSOCIATION",
+      "CAP_PERF_LOCALIZED_UNBOUNDED_TEXT",
+      "CAP_PERF_EXPAND_IN_HANDLER"
+    ]
+  },
+  {
+    id: "sap-cap-cds-ql",
+    product: "cap",
+    topic: "nodejs-runtime",
+    title: "CDS Query Language API",
+    url: "https://cap.cloud.sap/docs/node.js/cds-ql",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "CAP_PERF_SELECT_STAR_OR_WIDE_READ",
+      "CAP_PERF_UNBOUNDED_SELECT",
+      "CAP_PERF_AWAIT_IN_LOOP"
+    ]
+  },
+  {
+    id: "sap-cap-odata",
+    product: "cap",
+    topic: "odata",
+    title: "Serving OData APIs",
+    url: "https://cap.cloud.sap/docs/advanced/odata.html",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "CAP_SERVICE_SURFACE_EMPTY",
+      "CAP_SERVICE_SURFACE_OPERATION_HANDLER_MISSING",
+      "UI5_CAP_DATASOURCE_UNKNOWN_SERVICE",
+      "UI5_CAP_ENTITYSET_UNKNOWN",
+      "UI5_CAP_ODATA_VERSION_UNDECLARED",
+      "CAP_CHANGE_IMPACT_UI5_NOT_SCANNED"
+    ]
+  },
+  {
+    id: "sap-cap-typescript",
+    product: "cap",
+    topic: "typescript",
+    title: "Using TypeScript",
+    url: "https://cap.cloud.sap/docs/node.js/typescript",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "CAP_TYPESCRIPT_CONFIG_MISSING",
+      "CAP_TYPESCRIPT_CDS_TYPES_MISSING",
+      "CAP_TYPESCRIPT_TYPED_REQUESTS_MISSING",
+      "CAP_TYPESCRIPT_JS_CHECK_DISABLED"
+    ]
+  },
+  {
+    id: "sap-cap-cds-typer",
+    product: "cap",
+    topic: "typescript",
+    title: "CDS Typer",
+    url: "https://cap.cloud.sap/docs/tools/cds-typer",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "CAP_TYPESCRIPT_TYPER_MISSING",
+      "CAP_TYPESCRIPT_MODEL_IMPORTS_MISSING",
+      "CAP_TYPESCRIPT_TYPED_REQUESTS_MISSING"
     ]
   },
   {
@@ -107,6 +242,85 @@ const SAP_OFFICIAL_REFERENCES = [
     lastReviewed: "2026-05-13",
     usedByRules: [
       "UI5_SECURITY"
+    ]
+  },
+  {
+    id: "sap-cap-fiori-uis",
+    product: "cap",
+    topic: "ui",
+    title: "Serving SAP Fiori UIs",
+    url: "https://cap.cloud.sap/docs/guides/uis/fiori",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "SDD_SCREEN_FLOW_MISSING"
+    ]
+  },
+  {
+    id: "sapui5-odata-v4-model",
+    product: "ui5",
+    topic: "odata",
+    title: "sap.ui.model.odata.v4.ODataModel",
+    url: "https://ui5.sap.com/#/api/sap.ui.model.odata.v4.ODataModel",
+    officialDomain: "ui5.sap.com",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "UI5_CAP_ODATA_VERSION_UNDECLARED",
+      "UI5_CAP_MODEL_MISSING",
+      "UI5_CAP_BINDING_MODEL_UNKNOWN",
+      "UI5_PERF_ODATA_CALL_IN_LOOP"
+    ]
+  },
+  {
+    id: "sapui5-odata-v2-model",
+    product: "ui5",
+    topic: "odata",
+    title: "sap.ui.model.odata.v2.ODataModel",
+    url: "https://ui5.sap.com/#/api/sap.ui.model.odata.v2.ODataModel",
+    officialDomain: "ui5.sap.com",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "UI5_PERF_ODATA_BATCH_DISABLED",
+      "UI5_PERF_ODATA_CALL_IN_LOOP"
+    ]
+  },
+  {
+    id: "sapui5-bindings",
+    product: "ui5",
+    topic: "odata",
+    title: "Bindings",
+    url: "https://ui5.sap.com/#/topic/54e0ddf695af4a6c978472cecb01c64d",
+    officialDomain: "ui5.sap.com",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "UI5_PERF_LIST_GROWING_MISSING"
+    ]
+  },
+  {
+    id: "sapui5-manifest-data-sources",
+    product: "ui5",
+    topic: "manifest",
+    title: "Descriptor for Applications, Components, and Libraries",
+    url: "https://ui5.sap.com/#/topic/be0cf40f61184b358b5faedaec98b2da",
+    officialDomain: "ui5.sap.com",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "UI5_CAP_MANIFEST_MISSING",
+      "UI5_CAP_DATASOURCE_UNKNOWN_SERVICE",
+      "UI5_CAP_MODEL_MISSING",
+      "UI5_CAP_BINDING_MODEL_UNKNOWN"
+    ]
+  },
+  {
+    id: "sap-cap-plugins",
+    product: "cap",
+    topic: "plugins",
+    title: "CAP Plugins and Enhancements",
+    url: "https://cap.cloud.sap/docs/plugins/",
+    officialDomain: "cap.cloud.sap",
+    lastReviewed: "2026-05-13",
+    usedByRules: [
+      "SDD_REQ_WITHOUT_TASK"
     ]
   }
 ];
